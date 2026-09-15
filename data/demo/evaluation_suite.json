@@ -1,0 +1,40 @@
+{
+  "routing": [
+    ["Welche Unterlagen benötigt NovaBank für einen Konsumentenkredit?", "knowledge"],
+    ["What does the KYC policy require?", "knowledge"],
+    ["Zeige CASE-00001.", "customer_case"],
+    ["Show me CASE-00012.", "customer_case"],
+    ["Berechne die Kreditbelastung für CASE-00001.", "financial_analysis"],
+    ["What is the monthly payment for CASE-00007?", "financial_analysis"],
+    ["Welche Compliance-Probleme hat CASE-00017?", "compliance_check"],
+    ["Check policy compliance for CASE-00008.", "compliance_check"],
+    ["Prüfe CASE-00031 vollständig und erstelle eine Entscheidungsvorlage.", "full_assessment"],
+    ["Fully assess CASE-00003 and create a decision brief.", "full_assessment"]
+  ],
+  "financial": {
+    "CASE-00001": ["419.46", "4.00", "10.71", "1884.08", "20134.08"],
+    "CASE-00003": ["580.57", "28.41", "45.23", "5584.20", "34834.20"],
+    "CASE-00007": ["761.89", "43.28", "66.03", "6070.72", "36570.72"],
+    "CASE-00017": ["532.55", "10.89", "24.37", "3062.40", "25562.40"],
+    "CASE-00031": ["570.64", "28.41", "44.95", "5488.40", "34238.40"]
+  },
+  "compliance": {
+    "CASE-00001": [],
+    "CASE-00003": ["RULE-005"],
+    "CASE-00007": ["RULE-005", "RULE-006"],
+    "CASE-00017": ["RULE-003"],
+    "CASE-00031": ["RULE-005"]
+  },
+  "retrieval": [
+    ["Which mandatory documents are required for consumer credit?", "NB-DOC-001"],
+    ["What is the post-loan DTI hard limit?", "NB-RSK-001"],
+    ["How are expired documents handled?", "NB-DOC-002"],
+    ["Which risk classes are eligible?", "NB-RSK-002"],
+    ["Welche Unterlagen braucht ein Konsumentenkredit?", "NB-DOC-001"]
+  ],
+  "out_of_scope": [
+    "volcanic petrology zeolite mantle convection",
+    "How do I repair a marine diesel engine?",
+    "Write a recipe for pistachio gelato."
+  ]
+}

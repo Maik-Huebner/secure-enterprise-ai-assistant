@@ -1,0 +1,41 @@
+"""Unit tests for defensive MCP tool behavior."""
+
+import pytest
+
+from secure_enterprise_ai_assistant.mcp.tools import MCPToolService
+
+
+@pytest.fixture(scope="module")
+def tools() -> MCPToolService:
+    return MCPToolService.build_default()
+
+
+def test_case_and_financial_tools_return_structured_models(tools: MCPToolService) -> None:
+    case_result = tools.get_customer_case("case-00001")
+    financial_result = tools.analyze_financial_case("CASE-00001")
+
+    assert case_result.case.case_id == "CASE-00001"
+    assert financial_result.case_id == "CASE-00001"
+    assert financial_result.metrics.monthly_payment_eur > 0
+
+
+def test_compliance_tool_reports_demo_problem(tools: MCPToolService) -> None:
+    result = tools.check_compliance("CASE-00017")
+
+    assert any(not item.passed for item in result.findings)
+
+
+def test_tool_boundary_rejects_invalid_inputs(tools: MCPToolService) -> None:
+    with pytest.raises(ValueError, match="five digits"):
+        tools.get_customer_case("../CASE-00001")
+    with pytest.raises(ValueError, match="between 1 and 10"):
+        tools.search_internal_knowledge("valid question", top_k=100)
+
+
+def test_knowledge_tool_returns_sources(tools: MCPToolService) -> None:
+    result = tools.search_internal_knowledge(
+        "Welche Unterlagen benötigt NovaBank für einen Konsumentenkredit?"
+    )
+
+    assert result.out_of_scope is False
+    assert result.results[0].chunk.document_id == "NB-DOC-001"

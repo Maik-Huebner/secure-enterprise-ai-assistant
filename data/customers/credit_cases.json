@@ -1,0 +1,1976 @@
+{
+  "case_count": 48,
+  "cases": [
+    {
+      "application": {
+        "annual_interest_rate_pct": "4.90",
+        "application_id": "A-20001",
+        "customer_id": "C-10001",
+        "purpose": "Energy-efficient home improvement",
+        "requested_amount_eur": "18250.00",
+        "status": "under_review",
+        "term_months": 48
+      },
+      "case_id": "CASE-00001",
+      "customer": {
+        "age": 31,
+        "customer_id": "C-10001",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "250.00",
+        "full_name": "Mara Winter",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "6250.00",
+        "months_employed": 85,
+        "risk_class": "A"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "6.20",
+        "application_id": "A-20002",
+        "customer_id": "C-10002",
+        "purpose": "Vehicle purchase",
+        "requested_amount_eur": "26500.00",
+        "status": "under_review",
+        "term_months": 60
+      },
+      "case_id": "CASE-00002",
+      "customer": {
+        "age": 38,
+        "customer_id": "C-10002",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "520.00",
+        "full_name": "Jonas Winter",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "4200.00",
+        "months_employed": 48,
+        "risk_class": "B"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "7.10",
+        "application_id": "A-20003",
+        "customer_id": "C-10003",
+        "purpose": "Energy-efficient home improvement",
+        "requested_amount_eur": "29250.00",
+        "status": "under_review",
+        "term_months": 60
+      },
+      "case_id": "CASE-00003",
+      "customer": {
+        "age": 45,
+        "customer_id": "C-10003",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "980.00",
+        "full_name": "Nele Winter",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "3450.00",
+        "months_employed": 34,
+        "risk_class": "C"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "6.40",
+        "application_id": "A-20004",
+        "customer_id": "C-10004",
+        "purpose": "Vehicle purchase",
+        "requested_amount_eur": "23000.00",
+        "status": "under_review",
+        "term_months": 48
+      },
+      "case_id": "CASE-00004",
+      "customer": {
+        "age": 52,
+        "customer_id": "C-10004",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "430.00",
+        "full_name": "Tobias Winter",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "3900.00",
+        "months_employed": 42,
+        "risk_class": "B"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "missing"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "5.80",
+        "application_id": "A-20005",
+        "customer_id": "C-10005",
+        "purpose": "Energy-efficient home improvement",
+        "requested_amount_eur": "24000.00",
+        "status": "under_review",
+        "term_months": 60
+      },
+      "case_id": "CASE-00005",
+      "customer": {
+        "age": 59,
+        "customer_id": "C-10005",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "360.00",
+        "full_name": "Aylin Winter",
+        "kyc_status": "pending",
+        "monthly_net_income_eur": "4750.00",
+        "months_employed": 60,
+        "risk_class": "B"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "7.40",
+        "application_id": "A-20006",
+        "customer_id": "C-10006",
+        "purpose": "Vehicle purchase",
+        "requested_amount_eur": "19750.00",
+        "status": "under_review",
+        "term_months": 48
+      },
+      "case_id": "CASE-00006",
+      "customer": {
+        "age": 27,
+        "customer_id": "C-10006",
+        "employment_status": "temporary",
+        "existing_monthly_debt_eur": "410.00",
+        "full_name": "Daniel Winter",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "3700.00",
+        "months_employed": 8,
+        "risk_class": "C"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "9.20",
+        "application_id": "A-20007",
+        "customer_id": "C-10007",
+        "purpose": "Energy-efficient home improvement",
+        "requested_amount_eur": "30500.00",
+        "status": "under_review",
+        "term_months": 48
+      },
+      "case_id": "CASE-00007",
+      "customer": {
+        "age": 34,
+        "customer_id": "C-10007",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "1450.00",
+        "full_name": "Sofia Winter",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "3350.00",
+        "months_employed": 28,
+        "risk_class": "D"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "6.00",
+        "application_id": "A-20008",
+        "customer_id": "C-10008",
+        "purpose": "Vehicle purchase",
+        "requested_amount_eur": "20750.00",
+        "status": "under_review",
+        "term_months": 48
+      },
+      "case_id": "CASE-00008",
+      "customer": {
+        "age": 41,
+        "customer_id": "C-10008",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "300.00",
+        "full_name": "Leon Winter",
+        "kyc_status": "rejected",
+        "monthly_net_income_eur": "5000.00",
+        "months_employed": 64,
+        "risk_class": "E"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "invalid"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "4.90",
+        "application_id": "A-20009",
+        "customer_id": "C-10009",
+        "purpose": "Energy-efficient home improvement",
+        "requested_amount_eur": "19000.00",
+        "status": "under_review",
+        "term_months": 48
+      },
+      "case_id": "CASE-00009",
+      "customer": {
+        "age": 48,
+        "customer_id": "C-10009",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "250.00",
+        "full_name": "Mara Falk",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "6250.00",
+        "months_employed": 87,
+        "risk_class": "A"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "6.20",
+        "application_id": "A-20010",
+        "customer_id": "C-10010",
+        "purpose": "Vehicle purchase",
+        "requested_amount_eur": "26000.00",
+        "status": "under_review",
+        "term_months": 60
+      },
+      "case_id": "CASE-00010",
+      "customer": {
+        "age": 55,
+        "customer_id": "C-10010",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "520.00",
+        "full_name": "Jonas Falk",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "4200.00",
+        "months_employed": 50,
+        "risk_class": "B"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "7.10",
+        "application_id": "A-20011",
+        "customer_id": "C-10011",
+        "purpose": "Energy-efficient home improvement",
+        "requested_amount_eur": "28750.00",
+        "status": "under_review",
+        "term_months": 60
+      },
+      "case_id": "CASE-00011",
+      "customer": {
+        "age": 62,
+        "customer_id": "C-10011",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "980.00",
+        "full_name": "Nele Falk",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "3450.00",
+        "months_employed": 36,
+        "risk_class": "C"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "6.40",
+        "application_id": "A-20012",
+        "customer_id": "C-10012",
+        "purpose": "Vehicle purchase",
+        "requested_amount_eur": "22500.00",
+        "status": "under_review",
+        "term_months": 48
+      },
+      "case_id": "CASE-00012",
+      "customer": {
+        "age": 30,
+        "customer_id": "C-10012",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "430.00",
+        "full_name": "Tobias Falk",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "3900.00",
+        "months_employed": 38,
+        "risk_class": "B"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "missing"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "5.80",
+        "application_id": "A-20013",
+        "customer_id": "C-10013",
+        "purpose": "Energy-efficient home improvement",
+        "requested_amount_eur": "24750.00",
+        "status": "under_review",
+        "term_months": 60
+      },
+      "case_id": "CASE-00013",
+      "customer": {
+        "age": 37,
+        "customer_id": "C-10013",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "360.00",
+        "full_name": "Aylin Falk",
+        "kyc_status": "pending",
+        "monthly_net_income_eur": "4750.00",
+        "months_employed": 56,
+        "risk_class": "B"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "7.40",
+        "application_id": "A-20014",
+        "customer_id": "C-10014",
+        "purpose": "Vehicle purchase",
+        "requested_amount_eur": "20500.00",
+        "status": "under_review",
+        "term_months": 48
+      },
+      "case_id": "CASE-00014",
+      "customer": {
+        "age": 44,
+        "customer_id": "C-10014",
+        "employment_status": "temporary",
+        "existing_monthly_debt_eur": "410.00",
+        "full_name": "Daniel Falk",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "3700.00",
+        "months_employed": 10,
+        "risk_class": "C"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "9.20",
+        "application_id": "A-20015",
+        "customer_id": "C-10015",
+        "purpose": "Energy-efficient home improvement",
+        "requested_amount_eur": "30000.00",
+        "status": "under_review",
+        "term_months": 48
+      },
+      "case_id": "CASE-00015",
+      "customer": {
+        "age": 51,
+        "customer_id": "C-10015",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "1450.00",
+        "full_name": "Sofia Falk",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "3350.00",
+        "months_employed": 30,
+        "risk_class": "D"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "6.00",
+        "application_id": "A-20016",
+        "customer_id": "C-10016",
+        "purpose": "Vehicle purchase",
+        "requested_amount_eur": "20250.00",
+        "status": "under_review",
+        "term_months": 48
+      },
+      "case_id": "CASE-00016",
+      "customer": {
+        "age": 58,
+        "customer_id": "C-10016",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "300.00",
+        "full_name": "Leon Falk",
+        "kyc_status": "rejected",
+        "monthly_net_income_eur": "5000.00",
+        "months_employed": 66,
+        "risk_class": "E"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "invalid"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "6.40",
+        "application_id": "A-20017",
+        "customer_id": "C-10017",
+        "purpose": "Energy-efficient home improvement",
+        "requested_amount_eur": "22500.00",
+        "status": "under_review",
+        "term_months": 48
+      },
+      "case_id": "CASE-00017",
+      "customer": {
+        "age": 26,
+        "customer_id": "C-10017",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "430.00",
+        "full_name": "Mara Berger",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "3950.00",
+        "months_employed": 43,
+        "risk_class": "B"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "missing"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "6.20",
+        "application_id": "A-20018",
+        "customer_id": "C-10018",
+        "purpose": "Vehicle purchase",
+        "requested_amount_eur": "26750.00",
+        "status": "under_review",
+        "term_months": 60
+      },
+      "case_id": "CASE-00018",
+      "customer": {
+        "age": 33,
+        "customer_id": "C-10018",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "520.00",
+        "full_name": "Jonas Berger",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "4200.00",
+        "months_employed": 46,
+        "risk_class": "B"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "7.10",
+        "application_id": "A-20019",
+        "customer_id": "C-10019",
+        "purpose": "Energy-efficient home improvement",
+        "requested_amount_eur": "29500.00",
+        "status": "under_review",
+        "term_months": 60
+      },
+      "case_id": "CASE-00019",
+      "customer": {
+        "age": 40,
+        "customer_id": "C-10019",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "980.00",
+        "full_name": "Nele Berger",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "3450.00",
+        "months_employed": 32,
+        "risk_class": "C"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "6.40",
+        "application_id": "A-20020",
+        "customer_id": "C-10020",
+        "purpose": "Vehicle purchase",
+        "requested_amount_eur": "22000.00",
+        "status": "under_review",
+        "term_months": 48
+      },
+      "case_id": "CASE-00020",
+      "customer": {
+        "age": 47,
+        "customer_id": "C-10020",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "430.00",
+        "full_name": "Tobias Berger",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "3900.00",
+        "months_employed": 40,
+        "risk_class": "B"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "missing"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "5.80",
+        "application_id": "A-20021",
+        "customer_id": "C-10021",
+        "purpose": "Energy-efficient home improvement",
+        "requested_amount_eur": "24250.00",
+        "status": "under_review",
+        "term_months": 60
+      },
+      "case_id": "CASE-00021",
+      "customer": {
+        "age": 54,
+        "customer_id": "C-10021",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "360.00",
+        "full_name": "Aylin Berger",
+        "kyc_status": "pending",
+        "monthly_net_income_eur": "4750.00",
+        "months_employed": 58,
+        "risk_class": "B"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "7.40",
+        "application_id": "A-20022",
+        "customer_id": "C-10022",
+        "purpose": "Vehicle purchase",
+        "requested_amount_eur": "20000.00",
+        "status": "under_review",
+        "term_months": 48
+      },
+      "case_id": "CASE-00022",
+      "customer": {
+        "age": 61,
+        "customer_id": "C-10022",
+        "employment_status": "temporary",
+        "existing_monthly_debt_eur": "410.00",
+        "full_name": "Daniel Berger",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "3700.00",
+        "months_employed": 12,
+        "risk_class": "C"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "9.20",
+        "application_id": "A-20023",
+        "customer_id": "C-10023",
+        "purpose": "Energy-efficient home improvement",
+        "requested_amount_eur": "30750.00",
+        "status": "under_review",
+        "term_months": 48
+      },
+      "case_id": "CASE-00023",
+      "customer": {
+        "age": 29,
+        "customer_id": "C-10023",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "1450.00",
+        "full_name": "Sofia Berger",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "3350.00",
+        "months_employed": 32,
+        "risk_class": "D"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "6.00",
+        "application_id": "A-20024",
+        "customer_id": "C-10024",
+        "purpose": "Vehicle purchase",
+        "requested_amount_eur": "21000.00",
+        "status": "under_review",
+        "term_months": 48
+      },
+      "case_id": "CASE-00024",
+      "customer": {
+        "age": 36,
+        "customer_id": "C-10024",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "300.00",
+        "full_name": "Leon Berger",
+        "kyc_status": "rejected",
+        "monthly_net_income_eur": "5000.00",
+        "months_employed": 62,
+        "risk_class": "E"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "invalid"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "4.90",
+        "application_id": "A-20025",
+        "customer_id": "C-10025",
+        "purpose": "Energy-efficient home improvement",
+        "requested_amount_eur": "18000.00",
+        "status": "under_review",
+        "term_months": 48
+      },
+      "case_id": "CASE-00025",
+      "customer": {
+        "age": 43,
+        "customer_id": "C-10025",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "250.00",
+        "full_name": "Mara Kern",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "6250.00",
+        "months_employed": 85,
+        "risk_class": "A"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "6.20",
+        "application_id": "A-20026",
+        "customer_id": "C-10026",
+        "purpose": "Vehicle purchase",
+        "requested_amount_eur": "26250.00",
+        "status": "under_review",
+        "term_months": 60
+      },
+      "case_id": "CASE-00026",
+      "customer": {
+        "age": 50,
+        "customer_id": "C-10026",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "520.00",
+        "full_name": "Jonas Kern",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "4200.00",
+        "months_employed": 48,
+        "risk_class": "B"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "7.10",
+        "application_id": "A-20027",
+        "customer_id": "C-10027",
+        "purpose": "Energy-efficient home improvement",
+        "requested_amount_eur": "29000.00",
+        "status": "under_review",
+        "term_months": 60
+      },
+      "case_id": "CASE-00027",
+      "customer": {
+        "age": 57,
+        "customer_id": "C-10027",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "980.00",
+        "full_name": "Nele Kern",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "3450.00",
+        "months_employed": 34,
+        "risk_class": "C"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "6.40",
+        "application_id": "A-20028",
+        "customer_id": "C-10028",
+        "purpose": "Vehicle purchase",
+        "requested_amount_eur": "22750.00",
+        "status": "under_review",
+        "term_months": 48
+      },
+      "case_id": "CASE-00028",
+      "customer": {
+        "age": 25,
+        "customer_id": "C-10028",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "430.00",
+        "full_name": "Tobias Kern",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "3900.00",
+        "months_employed": 42,
+        "risk_class": "B"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "missing"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "5.80",
+        "application_id": "A-20029",
+        "customer_id": "C-10029",
+        "purpose": "Energy-efficient home improvement",
+        "requested_amount_eur": "25000.00",
+        "status": "under_review",
+        "term_months": 60
+      },
+      "case_id": "CASE-00029",
+      "customer": {
+        "age": 32,
+        "customer_id": "C-10029",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "360.00",
+        "full_name": "Aylin Kern",
+        "kyc_status": "pending",
+        "monthly_net_income_eur": "4750.00",
+        "months_employed": 60,
+        "risk_class": "B"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "7.40",
+        "application_id": "A-20030",
+        "customer_id": "C-10030",
+        "purpose": "Vehicle purchase",
+        "requested_amount_eur": "19500.00",
+        "status": "under_review",
+        "term_months": 48
+      },
+      "case_id": "CASE-00030",
+      "customer": {
+        "age": 39,
+        "customer_id": "C-10030",
+        "employment_status": "temporary",
+        "existing_monthly_debt_eur": "410.00",
+        "full_name": "Daniel Kern",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "3700.00",
+        "months_employed": 8,
+        "risk_class": "C"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "7.10",
+        "application_id": "A-20031",
+        "customer_id": "C-10031",
+        "purpose": "Energy-efficient home improvement",
+        "requested_amount_eur": "28750.00",
+        "status": "under_review",
+        "term_months": 60
+      },
+      "case_id": "CASE-00031",
+      "customer": {
+        "age": 46,
+        "customer_id": "C-10031",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "980.00",
+        "full_name": "Sofia Kern",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "3450.00",
+        "months_employed": 32,
+        "risk_class": "C"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "6.00",
+        "application_id": "A-20032",
+        "customer_id": "C-10032",
+        "purpose": "Vehicle purchase",
+        "requested_amount_eur": "20500.00",
+        "status": "under_review",
+        "term_months": 48
+      },
+      "case_id": "CASE-00032",
+      "customer": {
+        "age": 53,
+        "customer_id": "C-10032",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "300.00",
+        "full_name": "Leon Kern",
+        "kyc_status": "rejected",
+        "monthly_net_income_eur": "5000.00",
+        "months_employed": 64,
+        "risk_class": "E"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "invalid"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "4.90",
+        "application_id": "A-20033",
+        "customer_id": "C-10033",
+        "purpose": "Energy-efficient home improvement",
+        "requested_amount_eur": "18750.00",
+        "status": "under_review",
+        "term_months": 48
+      },
+      "case_id": "CASE-00033",
+      "customer": {
+        "age": 60,
+        "customer_id": "C-10033",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "250.00",
+        "full_name": "Mara Adler",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "6250.00",
+        "months_employed": 87,
+        "risk_class": "A"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "6.20",
+        "application_id": "A-20034",
+        "customer_id": "C-10034",
+        "purpose": "Vehicle purchase",
+        "requested_amount_eur": "27000.00",
+        "status": "under_review",
+        "term_months": 60
+      },
+      "case_id": "CASE-00034",
+      "customer": {
+        "age": 28,
+        "customer_id": "C-10034",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "520.00",
+        "full_name": "Jonas Adler",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "4200.00",
+        "months_employed": 50,
+        "risk_class": "B"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "7.10",
+        "application_id": "A-20035",
+        "customer_id": "C-10035",
+        "purpose": "Energy-efficient home improvement",
+        "requested_amount_eur": "28500.00",
+        "status": "under_review",
+        "term_months": 60
+      },
+      "case_id": "CASE-00035",
+      "customer": {
+        "age": 35,
+        "customer_id": "C-10035",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "980.00",
+        "full_name": "Nele Adler",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "3450.00",
+        "months_employed": 36,
+        "risk_class": "C"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "6.40",
+        "application_id": "A-20036",
+        "customer_id": "C-10036",
+        "purpose": "Vehicle purchase",
+        "requested_amount_eur": "22250.00",
+        "status": "under_review",
+        "term_months": 48
+      },
+      "case_id": "CASE-00036",
+      "customer": {
+        "age": 42,
+        "customer_id": "C-10036",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "430.00",
+        "full_name": "Tobias Adler",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "3900.00",
+        "months_employed": 38,
+        "risk_class": "B"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "missing"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "5.80",
+        "application_id": "A-20037",
+        "customer_id": "C-10037",
+        "purpose": "Energy-efficient home improvement",
+        "requested_amount_eur": "24500.00",
+        "status": "under_review",
+        "term_months": 60
+      },
+      "case_id": "CASE-00037",
+      "customer": {
+        "age": 49,
+        "customer_id": "C-10037",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "360.00",
+        "full_name": "Aylin Adler",
+        "kyc_status": "pending",
+        "monthly_net_income_eur": "4750.00",
+        "months_employed": 56,
+        "risk_class": "B"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "7.40",
+        "application_id": "A-20038",
+        "customer_id": "C-10038",
+        "purpose": "Vehicle purchase",
+        "requested_amount_eur": "20250.00",
+        "status": "under_review",
+        "term_months": 48
+      },
+      "case_id": "CASE-00038",
+      "customer": {
+        "age": 56,
+        "customer_id": "C-10038",
+        "employment_status": "temporary",
+        "existing_monthly_debt_eur": "410.00",
+        "full_name": "Daniel Adler",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "3700.00",
+        "months_employed": 10,
+        "risk_class": "C"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "9.20",
+        "application_id": "A-20039",
+        "customer_id": "C-10039",
+        "purpose": "Energy-efficient home improvement",
+        "requested_amount_eur": "31000.00",
+        "status": "under_review",
+        "term_months": 48
+      },
+      "case_id": "CASE-00039",
+      "customer": {
+        "age": 24,
+        "customer_id": "C-10039",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "1450.00",
+        "full_name": "Sofia Adler",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "3350.00",
+        "months_employed": 30,
+        "risk_class": "D"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "6.00",
+        "application_id": "A-20040",
+        "customer_id": "C-10040",
+        "purpose": "Vehicle purchase",
+        "requested_amount_eur": "20000.00",
+        "status": "under_review",
+        "term_months": 48
+      },
+      "case_id": "CASE-00040",
+      "customer": {
+        "age": 31,
+        "customer_id": "C-10040",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "300.00",
+        "full_name": "Leon Adler",
+        "kyc_status": "rejected",
+        "monthly_net_income_eur": "5000.00",
+        "months_employed": 66,
+        "risk_class": "E"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "invalid"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "4.90",
+        "application_id": "A-20041",
+        "customer_id": "C-10041",
+        "purpose": "Energy-efficient home improvement",
+        "requested_amount_eur": "18250.00",
+        "status": "under_review",
+        "term_months": 48
+      },
+      "case_id": "CASE-00041",
+      "customer": {
+        "age": 38,
+        "customer_id": "C-10041",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "250.00",
+        "full_name": "Mara Lind",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "6250.00",
+        "months_employed": 89,
+        "risk_class": "A"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "6.20",
+        "application_id": "A-20042",
+        "customer_id": "C-10042",
+        "purpose": "Vehicle purchase",
+        "requested_amount_eur": "26500.00",
+        "status": "under_review",
+        "term_months": 60
+      },
+      "case_id": "CASE-00042",
+      "customer": {
+        "age": 45,
+        "customer_id": "C-10042",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "520.00",
+        "full_name": "Jonas Lind",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "4200.00",
+        "months_employed": 46,
+        "risk_class": "B"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "7.10",
+        "application_id": "A-20043",
+        "customer_id": "C-10043",
+        "purpose": "Energy-efficient home improvement",
+        "requested_amount_eur": "29250.00",
+        "status": "under_review",
+        "term_months": 60
+      },
+      "case_id": "CASE-00043",
+      "customer": {
+        "age": 52,
+        "customer_id": "C-10043",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "980.00",
+        "full_name": "Nele Lind",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "3450.00",
+        "months_employed": 32,
+        "risk_class": "C"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "6.40",
+        "application_id": "A-20044",
+        "customer_id": "C-10044",
+        "purpose": "Vehicle purchase",
+        "requested_amount_eur": "23000.00",
+        "status": "under_review",
+        "term_months": 48
+      },
+      "case_id": "CASE-00044",
+      "customer": {
+        "age": 59,
+        "customer_id": "C-10044",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "430.00",
+        "full_name": "Tobias Lind",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "3900.00",
+        "months_employed": 40,
+        "risk_class": "B"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "missing"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "5.80",
+        "application_id": "A-20045",
+        "customer_id": "C-10045",
+        "purpose": "Energy-efficient home improvement",
+        "requested_amount_eur": "24000.00",
+        "status": "under_review",
+        "term_months": 60
+      },
+      "case_id": "CASE-00045",
+      "customer": {
+        "age": 27,
+        "customer_id": "C-10045",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "360.00",
+        "full_name": "Aylin Lind",
+        "kyc_status": "pending",
+        "monthly_net_income_eur": "4750.00",
+        "months_employed": 58,
+        "risk_class": "B"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "7.40",
+        "application_id": "A-20046",
+        "customer_id": "C-10046",
+        "purpose": "Vehicle purchase",
+        "requested_amount_eur": "19750.00",
+        "status": "under_review",
+        "term_months": 48
+      },
+      "case_id": "CASE-00046",
+      "customer": {
+        "age": 34,
+        "customer_id": "C-10046",
+        "employment_status": "temporary",
+        "existing_monthly_debt_eur": "410.00",
+        "full_name": "Daniel Lind",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "3700.00",
+        "months_employed": 12,
+        "risk_class": "C"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "9.20",
+        "application_id": "A-20047",
+        "customer_id": "C-10047",
+        "purpose": "Energy-efficient home improvement",
+        "requested_amount_eur": "30500.00",
+        "status": "under_review",
+        "term_months": 48
+      },
+      "case_id": "CASE-00047",
+      "customer": {
+        "age": 41,
+        "customer_id": "C-10047",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "1450.00",
+        "full_name": "Sofia Lind",
+        "kyc_status": "verified",
+        "monthly_net_income_eur": "3350.00",
+        "months_employed": 32,
+        "risk_class": "D"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "present"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "application": {
+        "annual_interest_rate_pct": "6.00",
+        "application_id": "A-20048",
+        "customer_id": "C-10048",
+        "purpose": "Vehicle purchase",
+        "requested_amount_eur": "20750.00",
+        "status": "under_review",
+        "term_months": 48
+      },
+      "case_id": "CASE-00048",
+      "customer": {
+        "age": 48,
+        "customer_id": "C-10048",
+        "employment_status": "permanent",
+        "existing_monthly_debt_eur": "300.00",
+        "full_name": "Leon Lind",
+        "kyc_status": "rejected",
+        "monthly_net_income_eur": "5000.00",
+        "months_employed": 62,
+        "risk_class": "E"
+      },
+      "documents": [
+        {
+          "document_type": "identity_document",
+          "status": "invalid"
+        },
+        {
+          "document_type": "income_statement",
+          "status": "present"
+        },
+        {
+          "document_type": "bank_statements_90_days",
+          "status": "present"
+        },
+        {
+          "document_type": "credit_application_form",
+          "status": "present"
+        }
+      ]
+    }
+  ],
+  "dataset_id": "NOVABANK-SYNTHETIC-CREDIT-CASES-V1",
+  "dataset_seed": 20260914,
+  "synthetic_data_disclaimer": "NovaBank Financial Services AG is a fictional organization. All customers, applications, policies, rules, and financial data included in this project are synthetic and created solely for demonstration, testing, and portfolio purposes."
+}

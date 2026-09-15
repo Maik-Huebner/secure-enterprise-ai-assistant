@@ -1,0 +1,110 @@
+{
+  "ruleset_id": "NOVABANK-CONSUMER-CREDIT-COMPLIANCE-V1",
+  "version": "1.0.0",
+  "effective_date": "2026-09-01",
+  "rules": [
+    {
+      "rule_id": "RULE-001",
+      "title": "KYC must not be rejected",
+      "description": "A rejected customer identity verification blocks credit approval.",
+      "category": "kyc",
+      "severity": "critical",
+      "parameters": {"predicate": "kyc_not_in", "statuses": "rejected"},
+      "source_document": "NB-KYC-001 — Customer Identification and KYC Policy",
+      "source_section": "4.3 Rejected verification"
+    },
+    {
+      "rule_id": "RULE-002",
+      "title": "KYC must be verified before approval",
+      "description": "Pending or incomplete verification requires manual review and remediation.",
+      "category": "kyc",
+      "severity": "warning",
+      "parameters": {"predicate": "kyc_equals", "status": "verified"},
+      "source_document": "NB-KYC-001 — Customer Identification and KYC Policy",
+      "source_section": "4.2 Verification gate"
+    },
+    {
+      "rule_id": "RULE-003",
+      "title": "Required application documents must be present",
+      "description": "Identity, income, bank-statement, and signed application evidence is mandatory.",
+      "category": "documents",
+      "severity": "critical",
+      "parameters": {
+        "predicate": "required_documents_present",
+        "document_types": "identity_document,income_statement,bank_statements_90_days,credit_application_form"
+      },
+      "source_document": "NB-DOC-001 — Consumer Credit Required Documents Policy",
+      "source_section": "3.1 Mandatory evidence"
+    },
+    {
+      "rule_id": "RULE-004",
+      "title": "Submitted documents must be valid",
+      "description": "Expired or invalid evidence cannot support an automated credit decision.",
+      "category": "documents",
+      "severity": "critical",
+      "parameters": {"predicate": "all_documents_valid"},
+      "source_document": "NB-DOC-002 — Document Verification Procedure",
+      "source_section": "5.2 Validity controls"
+    },
+    {
+      "rule_id": "RULE-005",
+      "title": "Post-loan DTI review threshold",
+      "description": "Post-loan debt-to-income above 40 percent requires manual affordability review.",
+      "category": "affordability",
+      "severity": "warning",
+      "parameters": {"predicate": "dti_at_most", "maximum_pct": 40.0},
+      "source_document": "NB-CRD-001 — Consumer Lending Policy",
+      "source_section": "6.2 Affordability thresholds"
+    },
+    {
+      "rule_id": "RULE-006",
+      "title": "Post-loan DTI hard limit",
+      "description": "Post-loan debt-to-income above 50 percent is outside lending appetite.",
+      "category": "affordability",
+      "severity": "critical",
+      "parameters": {"predicate": "dti_at_most", "maximum_pct": 50.0},
+      "source_document": "NB-RSK-001 — Retail Credit Risk Handbook",
+      "source_section": "7.4 Hard decline indicators"
+    },
+    {
+      "rule_id": "RULE-007",
+      "title": "Risk class must remain inside credit appetite",
+      "description": "Risk class E is excluded from standard consumer-credit approval.",
+      "category": "credit_risk",
+      "severity": "critical",
+      "parameters": {"predicate": "risk_class_in", "classes": "A,B,C,D"},
+      "source_document": "NB-RSK-002 — Risk Classification Guide",
+      "source_section": "4.1 Eligible risk classes"
+    },
+    {
+      "rule_id": "RULE-008",
+      "title": "Temporary employment stability",
+      "description": "Temporary employees require at least twelve months of documented continuity.",
+      "category": "employment",
+      "severity": "warning",
+      "parameters": {"predicate": "temporary_employment_months", "minimum_months": 12},
+      "source_document": "NB-CRD-002 — Manual Review Guidelines",
+      "source_section": "5.3 Temporary employment"
+    },
+    {
+      "rule_id": "RULE-009",
+      "title": "Consumer-credit amount limit",
+      "description": "Standard consumer-credit applications may not exceed EUR 75000.",
+      "category": "product",
+      "severity": "critical",
+      "parameters": {"predicate": "amount_at_most", "maximum_eur": 75000.0},
+      "source_document": "NB-PRD-001 — Consumer Credit Product Catalogue",
+      "source_section": "2.1 Product limits"
+    },
+    {
+      "rule_id": "RULE-010",
+      "title": "Standard term limit",
+      "description": "Terms above 84 months require an exception review.",
+      "category": "product",
+      "severity": "warning",
+      "parameters": {"predicate": "term_at_most", "maximum_months": 84},
+      "source_document": "NB-PRD-001 — Consumer Credit Product Catalogue",
+      "source_section": "2.1 Product limits"
+    }
+  ]
+}
