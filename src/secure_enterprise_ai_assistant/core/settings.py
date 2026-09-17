@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from typing import Literal
 
 from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -24,6 +25,7 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("OLLAMA_FAST_MODEL", "OLLAMA_MODEL"),
     )
     ollama_complex_model: str = Field(default="mistral-small3.2:24b", min_length=1)
+    full_assessment_mode: Literal["verified_mcp", "agentic"] = "verified_mcp"
     ollama_request_timeout_seconds: int = Field(default=180, ge=15, le=900)
     embedding_model: str = ""
     app_env: str = "development"

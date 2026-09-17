@@ -34,7 +34,9 @@ def test_flow_dispatches_router_result_to_workflow(monkeypatch) -> None:
     assert trace["execution_mode"] == "crewai"
 
 
-def test_full_assessment_trace_exposes_mistral_and_fallback(monkeypatch) -> None:
+def test_full_assessment_trace_exposes_demo_safe_mode_without_claiming_model_run(
+    monkeypatch,
+) -> None:
     def fallback(
         orchestrator: CrewOrchestrator,
         _query: str,
@@ -42,7 +44,9 @@ def test_full_assessment_trace_exposes_mistral_and_fallback(monkeypatch) -> None
         _selection: object = None,
     ) -> str:
         orchestrator.execution_mode = "deterministic_mcp_fallback"
-        orchestrator.fallback_reason = "Native guardrail rejected incomplete output"
+        orchestrator.fallback_reason = (
+            "Demo-Safe-Modus – verifizierter MCP-Pfad für reproduzierbare lokale Ausführung"
+        )
         return "verified fallback output"
 
     monkeypatch.setattr(CrewOrchestrator, "run", fallback)
@@ -60,7 +64,13 @@ def test_full_assessment_trace_exposes_mistral_and_fallback(monkeypatch) -> None
 
     trace = {event.event: event.detail for event in flow.state.trace}
     assert result == "verified fallback output"
-    assert trace["model_selected"] == "mistral-small3.2:24b"
+    assert "model_selected" not in trace
+    assert trace["configured_complex_model"] == "mistral-small3.2:24b"
     assert trace["model_profile"] == "complex_agentic"
-    assert trace["fallback_reason"] == "Native guardrail rejected incomplete output"
+    assert trace["full_assessment_mode"] == "verified_mcp"
+    assert trace["fallback_reason"].startswith("Demo-Safe-Modus")
     assert trace["execution_mode"] == "deterministic_mcp_fallback"
+    assert trace["tools_selected"] == (
+        "get_customer_case, analyze_financial_case, check_compliance, "
+        "search_internal_knowledge"
+    )

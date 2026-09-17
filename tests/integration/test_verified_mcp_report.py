@@ -10,8 +10,30 @@ def test_verified_report_uses_all_structured_evidence() -> None:
 
     report = VerifiedMCPReportBuilder().build(query, route)
 
-    assert "EUR 570.64" in report
-    assert "44.95%" in report
-    assert "RULE-005" in report
+    assert "Sofia Kern" in report
+    assert "570,64 EUR" in report
+    assert "28,41 %" in report
+    assert "44,95 %" in report
+    assert "5.488,40 EUR" in report
+    assert "RULE-005" in report and "FAIL (nicht bestanden)" in report
+    assert "MANUAL REVIEW" in report
     assert "NB-CRD-001" in report or "NB-RSK-001" in report
     assert report.endswith("END OF VERIFIED REPORT")
+    assert "## Empfehlung" in report
+    assert "Monatliche Rate" in report
+    assert "Executive Recommendation" not in report
+    assert "monthly payment" not in report
+    assert "Risikoklasse:" in report
+    assert all(
+        tool in report
+        for tool in (
+            "get_customer_case",
+            "analyze_financial_case",
+            "check_compliance",
+            "search_internal_knowledge",
+        )
+    )
+    assert "echten lokalen MCP-stdio-Session" in report
+    assert "Maximum" not in report
+    assert "Höchstwert 40,0%" in report
+    assert "28.750,00 EUR" in report

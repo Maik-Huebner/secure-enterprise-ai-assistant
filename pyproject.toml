@@ -1,6 +1,6 @@
 [project]
 name = "secure-enterprise-ai-assistant"
-version = "0.1.0"
+version = "1.0.1"
 description = "Local-first agentic AI platform with CrewAI, MCP, advanced RAG and enterprise financial workflows."
 readme = "README.md"
 requires-python = ">=3.11,<3.14"

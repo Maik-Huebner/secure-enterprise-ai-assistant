@@ -8,7 +8,11 @@ from pydantic import BaseModel, Field
 from secure_enterprise_ai_assistant.agents.factory import CrewOrchestrator
 from secure_enterprise_ai_assistant.flows.router import IntentRouter
 from secure_enterprise_ai_assistant.guardrails import validate_user_query
-from secure_enterprise_ai_assistant.models.orchestration import RouteDecision, TraceEvent
+from secure_enterprise_ai_assistant.models.orchestration import (
+    QueryIntent,
+    RouteDecision,
+    TraceEvent,
+)
 
 
 class AssistantFlowState(BaseModel):
@@ -50,13 +54,27 @@ class NovaBankAssistantFlow(Flow[AssistantFlowState]):
             raise RuntimeError("Flow route has not been selected.")
         orchestrator = CrewOrchestrator()
         selection = orchestrator.select_model(self.state.route)
-        self.state.trace.extend(
-            [
-                TraceEvent(event="model_selected", detail=selection.model),
-                TraceEvent(event="model_profile", detail=selection.profile.value),
-                TraceEvent(event="model_reason", detail=selection.reason),
-            ]
+        demo_safe_mode = (
+            self.state.route.intent == QueryIntent.FULL_ASSESSMENT
+            and orchestrator.factory.settings.full_assessment_mode == "verified_mcp"
         )
+        if demo_safe_mode:
+            self.state.trace.extend(
+                [
+                    TraceEvent(event="configured_complex_model", detail=selection.model),
+                    TraceEvent(event="model_profile", detail=selection.profile.value),
+                    TraceEvent(event="model_reason", detail=selection.reason),
+                    TraceEvent(event="full_assessment_mode", detail="verified_mcp"),
+                ]
+            )
+        else:
+            self.state.trace.extend(
+                [
+                    TraceEvent(event="model_selected", detail=selection.model),
+                    TraceEvent(event="model_profile", detail=selection.profile.value),
+                    TraceEvent(event="model_reason", detail=selection.reason),
+                ]
+            )
         self.state.trace.append(
             TraceEvent(
                 event="tools_selected",

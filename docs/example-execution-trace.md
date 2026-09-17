@@ -1,7 +1,7 @@
 # Verified dual-model execution traces
 
-These traces were re-verified locally on 15 September 2026 with CrewAI 1.15.20, the real
-NovaBank stdio MCP server, and both configured Ollama models.
+The Qwen trace was verified locally on 15 September 2026. The demo-safe full-assessment trace
+was re-verified on 17 September 2026 with the real NovaBank stdio MCP server.
 
 ## Qwen financial analysis
 
@@ -23,7 +23,7 @@ metrics: monthly payment EUR 570.64, total interest EUR 5,488.40, total repaymen
 34,238.40, DTI before 28.41%, and DTI after 44.95%. The evidence-boundary guardrail passed;
 the final answer contained no unqueried compliance or RAG evidence section.
 
-## Mistral full assessment
+## Demo-safe full assessment
 
 Request: `Prüfe CASE-00031 vollständig und erstelle eine Entscheidungsvorlage einschließlich
 finanzieller Kennzahlen, Policy-Abgleich, Compliance-Risiken und Quellen.`
@@ -31,25 +31,21 @@ finanzieller Kennzahlen, Policy-Abgleich, Compliance-Risiken und Quellen.`
 ```text
 request_received: Request received
 intent_classified: full_assessment
-model_selected: mistral-small3.2:24b
+configured_complex_model: mistral-small3.2:24b
 model_profile: complex_agentic
 model_reason: full multi-agent assessment requires robust tool calling
+full_assessment_mode: verified_mcp
 tools_selected: get_customer_case, analyze_financial_case, check_compliance,
                 search_internal_knowledge
-fallback_reason: Task failed guardrail validation after 2 retries ...
-                 Validation issues: DTI label and monthly payment are missing;
-                 out-of-scope policy/compliance language was present.
+fallback_reason: Demo-Safe-Modus – verifizierter MCP-Pfad für reproduzierbare lokale Ausführung
 execution_mode: deterministic_mcp_fallback
 workflow_completed: Workflow completed
 ```
 
-The native Mistral crew made real MCP calls, but the first financial task omitted required
-financial fields and introduced policy/compliance language outside that agent's two-tool
-evidence boundary after the configured guardrail retries. The task therefore failed before the
-compliance and reviewer agents could complete. This was not a routing or MCP transport failure.
-
-The existing fail-safe then opened a fresh stdio MCP session and called all four structured
-tools. Its decision brief passed every completeness invariant:
+With the demo default `FULL_ASSESSMENT_MODE=verified_mcp`, the configured Mistral model was not
+started. The UI request completed in 1.034 seconds end to end. The verified builder opened one
+fresh stdio MCP session and called all four structured tools. Its German decision brief passed
+every completeness invariant:
 
 - case: `CASE-00031`;
 - monthly payment: EUR 570.64;
@@ -61,6 +57,8 @@ tools. Its decision brief passed every completeness invariant:
 - terminal marker: `END OF VERIFIED REPORT`;
 - no unsupported general 36–40% regulatory-threshold statement.
 
-This is intentional fail-safe behavior. The trace records both the model originally selected
-and the exact technical guardrail reason, then states `deterministic_mcp_fallback`; it never
-presents deterministic output as a successful native model review.
+This is intentional demo-safe behavior. The trace records Mistral only as the configured model,
+states why the verified path was chosen, and reports `deterministic_mcp_fallback`; it never
+presents deterministic output as a successful native model review. The former native path
+remains available with `FULL_ASSESSMENT_MODE=agentic` for experimental testing and retains the
+same verified MCP fail-safe after terminal or completeness failure.

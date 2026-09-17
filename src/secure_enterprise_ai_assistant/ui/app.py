@@ -10,13 +10,109 @@ from typing import Any
 import gradio as gr
 import httpx
 
-from secure_enterprise_ai_assistant.core.company import COMPANY_NAME, PROJECT_DISCLAIMER
+from secure_enterprise_ai_assistant.core.company import COMPANY_NAME
 from secure_enterprise_ai_assistant.core.settings import get_settings
 from secure_enterprise_ai_assistant.flows import NovaBankAssistantFlow
 from secure_enterprise_ai_assistant.mcp import create_mcp_server
 from secure_enterprise_ai_assistant.mcp.tools import MCPToolService
 
 SOURCE_PATTERN = re.compile(r"\bNB-[A-Z]+-\d{3}\b")
+
+UI_TITLE = "Sicherer Enterprise-KI-Assistent"
+UI_DISCLAIMER = (
+    "NovaBank Financial Services AG ist eine fiktive Organisation. Alle Kunden, Anträge, "
+    "Richtlinien, Regeln und Finanzdaten in diesem Projekt sind synthetisch und wurden "
+    "ausschließlich für Demonstrations-, Test- und Portfoliozwecke erstellt."
+)
+
+TRACE_EVENT_LABELS = {
+    "request_received": "Anfrage empfangen",
+    "intent_classified": "Anfragetyp erkannt",
+    "model_selected": "Modell ausgewählt",
+    "configured_complex_model": "Konfiguriertes komplexes Modell",
+    "model_profile": "Modellprofil",
+    "model_reason": "Routing-Grund",
+    "full_assessment_mode": "Modus für vollständige Prüfung",
+    "tools_selected": "MCP-Werkzeuge ausgewählt",
+    "fallback_reason": "Fallback-Grund",
+    "execution_mode": "Ausführungsmodus",
+    "workflow_completed": "Workflow abgeschlossen",
+}
+
+UI_VALUE_LABELS = {
+    "knowledge": "Wissensabfrage",
+    "customer_case": "Fallabfrage",
+    "financial_analysis": "Finanzanalyse",
+    "compliance_check": "Compliance-Prüfung",
+    "full_assessment": "Vollständige Prüfung",
+    "fast_local": "Schnell und lokal",
+    "complex_agentic": "Komplex und agentisch",
+    "simple knowledge workflow": "Einfacher Wissensworkflow",
+    "simple customer-case workflow": "Einfacher Fallworkflow",
+    "simple financial-analysis workflow": "Einfacher Finanzanalyse-Workflow",
+    "simple compliance workflow": "Einfacher Compliance-Workflow",
+    "full multi-agent assessment requires robust tool calling": (
+        "Die vollständige Multi-Agenten-Prüfung erfordert robusten Werkzeugaufruf"
+    ),
+    "crewai": "CrewAI",
+    "deterministic_mcp_fallback": "Deterministischer MCP-Fallback",
+    "verified_mcp": "Verifizierter MCP-Pfad",
+    "agentic": "Experimenteller Agentic-Modus",
+    "Request received": "Anfrage empfangen",
+    "Workflow completed": "Workflow abgeschlossen",
+    "not recorded": "nicht erfasst",
+    "available": "verfügbar",
+    "unavailable": "nicht verfügbar",
+    "ready": "bereit",
+    "development": "Entwicklung",
+    "production": "Produktion",
+    "test": "Test",
+    "permanent": "unbefristet beschäftigt",
+    "temporary": "befristet beschäftigt",
+    "self_employed": "selbstständig",
+    "retired": "im Ruhestand",
+    "student": "in Ausbildung",
+    "unemployed": "arbeitslos",
+    "verified": "verifiziert",
+    "pending": "ausstehend",
+    "incomplete": "unvollständig",
+    "rejected": "abgelehnt",
+    "under_review": "in Prüfung",
+    "present": "vorhanden",
+    "missing": "fehlend",
+    "expired": "abgelaufen",
+    "invalid": "ungültig",
+    "identity_document": "Identitätsnachweis",
+    "income_statement": "Einkommensnachweis",
+    "bank_statements_90_days": "Kontoauszüge der letzten 90 Tage",
+    "credit_application_form": "Kreditantragsformular",
+    "Energy-efficient home improvement": "Energieeffiziente Wohnungsmodernisierung",
+    "Vehicle purchase": "Fahrzeugkauf",
+}
+
+CASE_FIELD_LABELS = {
+    "case": "Fall",
+    "case_id": "Fall-ID",
+    "customer": "Kunde",
+    "customer_id": "Kunden-ID",
+    "full_name": "Vollständiger Name",
+    "age": "Alter",
+    "employment_status": "Beschäftigungsstatus",
+    "months_employed": "Beschäftigungsdauer in Monaten",
+    "monthly_net_income_eur": "Monatliches Nettoeinkommen in EUR",
+    "existing_monthly_debt_eur": "Bestehende monatliche Schuldenlast in EUR",
+    "risk_class": "Risikoklasse",
+    "kyc_status": "KYC-Status",
+    "application": "Kreditantrag",
+    "application_id": "Antrags-ID",
+    "requested_amount_eur": "Beantragter Betrag in EUR",
+    "term_months": "Laufzeit in Monaten",
+    "annual_interest_rate_pct": "Jährlicher Zinssatz in Prozent",
+    "purpose": "Verwendungszweck",
+    "status": "Status",
+    "documents": "Dokumente",
+    "document_type": "Dokumenttyp",
+}
 
 CSS = """
 :root { --nova-navy: #10233f; --nova-blue: #1b5eaa; --nova-mist: #eef3f8; }
@@ -28,6 +124,111 @@ CSS = """
 .status-card { border-left: 4px solid #1b5eaa; }
 footer { display: none !important; }
 """
+
+GRADIO_UI_LOCALIZATION_JS = """
+(() => {
+  document.documentElement.lang = "de";
+  const translations = new Map([
+    ["Copy conversation", "Unterhaltung kopieren"],
+    ["Copy message", "Nachricht kopieren"],
+    ["chatbot conversation", "Unterhaltung mit dem Assistenten"],
+    ["bot's message", "Antwort des Assistenten"],
+    ["user's message", "Anfrage des Benutzers"],
+    ["Loading response", "Antwort wird geladen"],
+    ["Loading content", "Inhalt wird geladen"],
+    ["Loading...", "Wird geladen …"],
+    ["processing", "Verarbeitung"],
+    ["Empty value", "Kein Wert vorhanden"],
+    ["Table actions", "Tabellenaktionen"],
+    ["Copy table data", "Tabellendaten kopieren"],
+    ["Fullscreen", "Vollbild"],
+    ["More tabs", "Weitere Tabs"],
+    ["Open cell menu", "Zellenmenü öffnen"],
+    ["File upload", "Datei hochladen"],
+    ["Gradio footer navigation", "Gradio-Fußzeilennavigation"],
+    ["Download JSON", "JSON herunterladen"],
+    ["Copy JSON", "JSON kopieren"],
+    ["View as JSON", "Als JSON anzeigen"],
+    ["Line number", "Zeilennummer"],
+    ["Collapse", "Einklappen"],
+    ["Expand", "Ausklappen"],
+    ["Object", "Objekt"],
+    ["Copy", "Kopieren"],
+    ["Close", "Schließen"],
+  ]);
+  const translate = (input) => {
+    let output = input;
+    for (const [source, target] of translations) {
+      output = output.replaceAll(source, target);
+    }
+    return output;
+  };
+  const localize = (root) => {
+    if (root !== document && !(root instanceof Element)) return;
+    const elements = root instanceof Element
+      ? [root, ...root.querySelectorAll("*")]
+      : [...document.querySelectorAll("*")];
+    for (const element of elements) {
+      for (const attribute of ["aria-label", "title"]) {
+        let value = element.getAttribute(attribute);
+        if (!value) continue;
+        value = translate(value);
+        if (value !== element.getAttribute(attribute)) {
+          element.setAttribute(attribute, value);
+        }
+      }
+      const localizableText = element.matches(
+        "button, [role='status'], [class*='progress-text'], [class*='sr-only']"
+      );
+      if (localizableText) {
+        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+        let textNode;
+        while ((textNode = walker.nextNode())) {
+          const localizedText = translate(textNode.nodeValue || "");
+          if (localizedText !== textNode.nodeValue) textNode.nodeValue = localizedText;
+        }
+      }
+    }
+  };
+  localize(document);
+  new MutationObserver((records) => {
+    for (const record of records) {
+      if (record.type === "attributes") localize(record.target);
+      if (record.type === "characterData") localize(record.target.parentElement);
+      for (const node of record.addedNodes) localize(node);
+    }
+  }).observe(document.documentElement, {
+    subtree: true,
+    childList: true,
+    characterData: true,
+    attributes: true,
+    attributeFilter: ["aria-label", "title"],
+  });
+})();
+"""
+
+
+def _ui_value(value: Any) -> Any:
+    """Translate known presentation values without changing backend data."""
+    if isinstance(value, dict):
+        return {CASE_FIELD_LABELS.get(key, key): _ui_value(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_ui_value(item) for item in value]
+    if isinstance(value, str):
+        return UI_VALUE_LABELS.get(value, value)
+    return value
+
+
+def _trace_detail(event: str, detail: str) -> str:
+    """Return a safe German display value for one technical trace detail."""
+    if event == "fallback_reason":
+        if detail.startswith("Demo-Safe-Modus"):
+            return detail
+        return (
+            "Die native CrewAI-Ausgabe hat die Qualitätsprüfung nicht bestanden; "
+            "der deterministische MCP-Fallback wurde verwendet."
+        )
+    return str(_ui_value(detail))
 
 
 class AssistantController:
@@ -54,7 +255,13 @@ class AssistantController:
         history = list(history or [])
         query = message.strip()
         if not query:
-            return history, "No sources.", [], {}, "Enter a request."
+            return (
+                history,
+                "### Quellen\nNoch keine Quellen vorhanden.",
+                [],
+                {},
+                ("Bitte eine Anfrage eingeben."),
+            )
         history.append({"role": "user", "content": query})
         try:
             answer, route, trace = self.flow_runner(query)
@@ -62,52 +269,79 @@ class AssistantController:
                 raise RuntimeError("Workflow completed without a route.")
             source_ids = sorted(set(SOURCE_PATTERN.findall(answer)))
             sources = (
-                "\n".join(f"- `{source_id}`" for source_id in source_ids)
+                "### Quellen\n" + "\n".join(f"- `{source_id}`" for source_id in source_ids)
                 if source_ids
-                else "No source ID was cited in the generated response."
+                else "### Quellen\nIn der generierten Antwort wurde keine Quellen-ID genannt."
             )
             trace_rows = [
-                [event.timestamp.isoformat(), event.event, event.detail] for event in trace
+                [
+                    event.timestamp.isoformat(),
+                    TRACE_EVENT_LABELS.get(event.event, event.event),
+                    _trace_detail(event.event, event.detail),
+                ]
+                for event in trace
             ]
             trace_details = {event.event: event.detail for event in trace}
             tools = {
-                "intent": route.intent.value,
-                "case_id": route.case_id,
-                "model": trace_details.get("model_selected", "not recorded"),
-                "model_profile": trace_details.get("model_profile", "not recorded"),
-                "mcp_tools": route.required_tools,
-                "execution_mode": trace_details.get("execution_mode", "not recorded"),
+                "Anfragetyp": _ui_value(route.intent.value),
+                "Fall-ID": route.case_id,
+                "Modellprofil": _ui_value(trace_details.get("model_profile", "not recorded")),
+                "MCP-Werkzeuge": route.required_tools,
+                "Ausführungsmodus": _ui_value(trace_details.get("execution_mode", "not recorded")),
             }
+            if "configured_complex_model" in trace_details:
+                tools["Konfiguriertes komplexes Modell"] = trace_details[
+                    "configured_complex_model"
+                ]
+                tools["Modus für vollständige Prüfung"] = _ui_value(
+                    trace_details.get("full_assessment_mode", "not recorded")
+                )
+            else:
+                tools["Ausgewähltes Modell"] = trace_details.get(
+                    "model_selected", "nicht erfasst"
+                )
             if "fallback_reason" in trace_details:
-                tools["fallback_reason"] = trace_details["fallback_reason"]
-            status = (
-                f"Completed via `{route.intent.value}` using "
-                f"`{tools['model']}` in `{tools['execution_mode']}` mode; "
-                f"{len(trace_rows)} technical trace events."
-            )
+                tools["Fallback-Grund"] = _trace_detail(
+                    "fallback_reason", trace_details["fallback_reason"]
+                )
+            if "Konfiguriertes komplexes Modell" in tools:
+                status = (
+                    f"Abgeschlossen als `{tools['Anfragetyp']}` über "
+                    f"`{tools['Modus für vollständige Prüfung']}` im Modus "
+                    f"`{tools['Ausführungsmodus']}`. Das konfigurierte Modell "
+                    f"`{tools['Konfiguriertes komplexes Modell']}` wurde nicht ausgeführt; "
+                    f"{len(trace_rows)} technische Ereignisse."
+                )
+            else:
+                status = (
+                    f"Abgeschlossen als `{tools['Anfragetyp']}` mit "
+                    f"`{tools['Ausgewähltes Modell']}` im Modus "
+                    f"`{tools['Ausführungsmodus']}`; {len(trace_rows)} technische Ereignisse."
+                )
         except Exception:
             answer = (
-                "The local workflow could not complete. Verify that Ollama is running "
-                "and that the configured model is installed, then retry."
+                "Der lokale Workflow konnte nicht abgeschlossen werden. Prüfe, ob Ollama läuft "
+                "und das konfigurierte Modell installiert ist, und versuche es erneut."
             )
-            sources = "No sources — workflow did not complete."
+            sources = "### Quellen\nKeine Quellen — der Workflow wurde nicht abgeschlossen."
             trace_rows = []
             tools = {}
-            status = "Workflow unavailable; no sensitive exception details were exposed."
+            status = "Workflow nicht verfügbar; vertrauliche Fehlerdetails wurden nicht ausgegeben."
         history.append({"role": "assistant", "content": answer})
         return history, sources, trace_rows, tools, status
 
     def case_view(self, case_id: str) -> dict[str, Any]:
         """Return a structured case view for the non-agent browse tab."""
-        return self.tools.get_customer_case(case_id).model_dump(mode="json")
+        case_data = self.tools.get_customer_case(case_id).model_dump(mode="json")
+        return _ui_value(case_data)
 
     def diagnostics(self) -> dict[str, Any]:
         """Check local components without sending enterprise data externally."""
         settings = get_settings()
-        ollama = "unavailable"
+        ollama = "nicht verfügbar"
         try:
             response = httpx.get(f"{settings.ollama_base_url.rstrip('/')}/api/tags", timeout=1.0)
-            ollama = "available" if response.is_success else f"HTTP {response.status_code}"
+            ollama = "verfügbar" if response.is_success else f"HTTP {response.status_code}"
         except httpx.HTTPError:
             pass
         try:
@@ -116,15 +350,16 @@ class AssistantController:
         except Exception:
             mcp_tools = []
         return {
-            "environment": settings.app_env,
-            "ollama": ollama,
-            "ollama_fast_model": settings.ollama_fast_model,
-            "ollama_complex_model": settings.ollama_complex_model,
-            "mcp_status": "ready" if len(mcp_tools) == 4 else "unavailable",
-            "mcp_tools": mcp_tools,
-            "synthetic_cases": len(self.tools.repository.list_cases()),
-            "knowledge_documents": 18,
-            "external_cloud_required": False,
+            "Umgebung": _ui_value(settings.app_env),
+            "Ollama": ollama,
+            "Schnelles lokales Modell": settings.ollama_fast_model,
+            "Komplexes agentisches Modell": settings.ollama_complex_model,
+            "Modus für vollständige Prüfung": _ui_value(settings.full_assessment_mode),
+            "MCP-Status": "bereit" if len(mcp_tools) == 4 else "nicht verfügbar",
+            "MCP-Werkzeuge": mcp_tools,
+            "Synthetische Fälle": len(self.tools.repository.list_cases()),
+            "Dokumente in der Wissensbasis": 18,
+            "Externe Cloud erforderlich": "Nein",
         }
 
 
@@ -133,38 +368,38 @@ def build_app(controller: AssistantController | None = None) -> gr.Blocks:
     controller = controller or AssistantController()
     case_ids = [case.case_id for case in controller.tools.repository.list_cases()]
 
-    with gr.Blocks(title="Secure Enterprise AI Assistant") as app:
+    with gr.Blocks(title=UI_TITLE) as app:
         gr.HTML(
-            f"<div class='hero'><h1>Secure Enterprise AI Assistant</h1>"
-            f"<p>{COMPANY_NAME} · Local-first agentic decision support</p></div>"
+            f"<div class='hero'><h1>{UI_TITLE}</h1>"
+            f"<p>{COMPANY_NAME} · Lokale agentische Entscheidungsunterstützung</p></div>"
         )
-        gr.Markdown(f"> **Synthetic demo:** {PROJECT_DISCLAIMER}")
+        gr.Markdown(f"> **Synthetische Demo:** {UI_DISCLAIMER}")
 
         with gr.Tabs():
-            with gr.Tab("Assistant"):
+            with gr.Tab("Assistent"):
                 chatbot = gr.Chatbot(
                     value=[
                         {
                             "role": "assistant",
                             "content": (
-                                "Ready for synthetic NovaBank policy and credit-case "
-                                "questions. Every business capability is accessed through MCP."
+                                "Bereit für Fragen zu synthetischen NovaBank-Richtlinien und "
+                                "Kreditfällen. Sämtliche Fachfunktionen werden über MCP aufgerufen."
                             ),
                         }
                     ],
-                    label="Assistant",
+                    label="Assistent",
                     height=420,
                     layout="panel",
-                    placeholder="Ask about policies or a synthetic CASE-00000 record.",
+                    placeholder="Frage nach Richtlinien oder einem synthetischen CASE-00000.",
                 )
                 with gr.Row():
                     prompt = gr.Textbox(
-                        label="Request",
+                        label="Anfrage",
                         placeholder="Prüfe CASE-00031 vollständig …",
                         lines=2,
                         scale=5,
                     )
-                    submit = gr.Button("Run secure workflow", variant="primary", scale=1)
+                    submit = gr.Button("Prüfung starten", variant="primary", scale=1)
                 gr.Examples(
                     examples=[
                         ["Welche Unterlagen benötigt NovaBank für einen Konsumentenkredit?"],
@@ -174,16 +409,16 @@ def build_app(controller: AssistantController | None = None) -> gr.Blocks:
                         ["Prüfe CASE-00031 vollständig und erstelle eine Entscheidungsvorlage."],
                     ],
                     inputs=prompt,
-                    label="Demo scenarios",
+                    label="Demo-Szenarien",
                 )
-                run_status = gr.Markdown("Ready.", elem_classes="status-card")
+                run_status = gr.Markdown("Bereit.", elem_classes="status-card")
                 with gr.Row():
-                    sources = gr.Markdown("No sources yet.")
-                    tools_used = gr.JSON(label="Routing, model and MCP tools")
+                    sources = gr.Markdown("### Quellen\nNoch keine Quellen vorhanden.")
+                    tools_used = gr.JSON(label="Routing, Modell und MCP-Werkzeuge")
                 trace = gr.Dataframe(
-                    headers=["Timestamp", "Event", "Detail"],
+                    headers=["Zeitstempel", "Ereignis", "Details"],
                     datatype=["str", "str", "str"],
-                    label="Execution trace (technical events only)",
+                    label="Ausführungsprotokoll (nur technische Ereignisse)",
                     interactive=False,
                 )
                 submit.click(
@@ -197,28 +432,35 @@ def build_app(controller: AssistantController | None = None) -> gr.Blocks:
                     outputs=[chatbot, sources, trace, tools_used, run_status],
                 )
 
-            with gr.Tab("Cases"):
-                gr.Markdown("Browse validated synthetic records without invoking an LLM.")
-                case_selector = gr.Dropdown(case_ids, value="CASE-00001", label="Synthetic case")
-                case_json = gr.JSON(value=controller.case_view("CASE-00001"), label="Case data")
+            with gr.Tab("Fälle"):
+                gr.Markdown(
+                    "Validierte synthetische Datensätze durchsuchen, ohne ein Sprachmodell "
+                    "aufzurufen."
+                )
+                case_selector = gr.Dropdown(
+                    case_ids, value="CASE-00001", label="Synthetischer Fall"
+                )
+                case_json = gr.JSON(value=controller.case_view("CASE-00001"), label="Falldaten")
                 case_selector.change(controller.case_view, inputs=case_selector, outputs=case_json)
 
-            with gr.Tab("Knowledge & Documents"):
+            with gr.Tab("Wissensbasis & Dokumente"):
                 gr.Markdown(
-                    "The repository contains 18 synthetic, versioned internal policies. "
-                    "Search results retain document, section, version, owner, and page metadata."
+                    "Das Repository enthält 18 synthetische, versionierte interne Richtlinien. "
+                    "Suchergebnisse bewahren Metadaten zu Dokument, Abschnitt, Version, "
+                    "Verantwortlichen und Seite."
                 )
                 gr.Markdown(
-                    "Key controls: `NB-CRD-001`, `NB-KYC-001`, `NB-DOC-001`, "
-                    "`NB-RSK-001`, and `NB-SEC-001`."
+                    "Zentrale Kontrollgrundlagen: `NB-CRD-001`, `NB-KYC-001`, `NB-DOC-001`, "
+                    "`NB-RSK-001` und `NB-SEC-001`."
                 )
 
-            with gr.Tab("System / Diagnostics"):
+            with gr.Tab("System / Diagnose"):
                 gr.Markdown(
-                    "Health checks remain local. No case content is sent to an external service."
+                    "Systemprüfungen bleiben lokal. Es werden keine Fallinhalte an externe "
+                    "Dienste gesendet."
                 )
-                diagnostic_output = gr.JSON(label="Local system status")
-                diagnostic_button = gr.Button("Run diagnostics")
+                diagnostic_output = gr.JSON(label="Lokaler Systemstatus")
+                diagnostic_button = gr.Button("Diagnose starten")
                 diagnostic_button.click(controller.diagnostics, outputs=diagnostic_output)
 
     return app
@@ -233,6 +475,7 @@ def main() -> None:
         share=False,
         show_error=False,
         css=CSS,
+        js=GRADIO_UI_LOCALIZATION_JS,
         theme=gr.themes.Soft(),
     )
 

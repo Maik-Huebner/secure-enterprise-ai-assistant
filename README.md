@@ -32,7 +32,7 @@ support for employees; it does not automate final credit approval.
 - deterministic five-route classification, dual-model selection, and CrewAI Flow orchestration;
 - case, financial, compliance, knowledge, and evidence-review specialists using local Ollama;
 - a Gradio Blocks UI with sources, selected tools, trace, cases, documents, and diagnostics;
-- a visible deterministic all-MCP fallback when local-model review fails validation;
+- a visible deterministic all-MCP demo-safe path for reproducible local full assessments;
 - active input guardrails, sanitized errors, local runtime storage, and no arbitrary code tools;
 - measured offline evaluation, unit/integration tests, CI, and a Docker entry point.
 
@@ -47,10 +47,13 @@ flowchart LR
     F --> R{Intent router}
     R --> MR{Model router}
     MR -->|simple| Q[Qwen 3.5 9B]
-    MR -->|full assessment| MS[Mistral Small 3.2 24B]
+    MR -->|full-assessment profile| CFG[Mistral Small 3.2 24B configured]
     Q --> A[CrewAI specialists]
-    MS --> A
+    CFG --> MODE{FULL_ASSESSMENT_MODE}
+    MODE -->|verified_mcp default| D[Verified MCP report builder]
+    MODE -->|agentic experimental| A
     A -->|stdio discovery| M[FastMCP server]
+    D -->|fresh stdio session| M
     M --> C[Case repository]
     M --> N[Decimal finance]
     M --> P[Compliance rules]
@@ -85,19 +88,20 @@ The deterministic router selects the smallest sufficient route:
 | Customer case | `fast_local` / Qwen | case lookup | Case specialist |
 | Financial | `fast_local` / Qwen | case + calculator | Financial analyst |
 | Compliance | `fast_local` / Qwen | case + rules + policy | Compliance analyst |
-| Full assessment | `complex_agentic` / Mistral | all four tools | Financial → Compliance → Evidence reviewer |
+| Full assessment | `complex_agentic` / Mistral configured | all four tools | Default: verified MCP report; opt-in: agentic CrewAI |
 
-The deterministic model router performs no model call. It selects one configured LLM before
-the crew is built, and every agent in that run receives that same LLM instance. CrewAI Flow
-records intent, selected model/profile/reason, tools, and execution mode. It never displays
-private chain-of-thought. A sanitized technical fallback reason is added when the native crew
-fails validation. Numeric values must remain identical to MCP calculator output, and the
-reviewer may not invent general thresholds, rules, or sources outside MCP evidence.
+The deterministic model router performs no model call. It assigns full assessments to the
+`complex_agentic` profile and records `mistral-small3.2:24b` as the configured complex model.
+With the demo default `FULL_ASSESSMENT_MODE=verified_mcp`, the execution gate deliberately does
+not start that model: it opens a fresh real MCP-stdio session, calls all four tools, and renders
+a bounded German report as `deterministic_mcp_fallback`. The trace distinguishes a configured
+model from an executed model and states the demo-safe reason explicitly.
 
-For a full assessment, the router first selects `mistral-small3.2:24b`. If the native CrewAI
-output does not satisfy the strict evidence guardrails, execution changes transparently to
-`deterministic_mcp_fallback`, which obtains all four capabilities through a fresh real MCP-stdio
-session rather than a direct Python-service bypass.
+`FULL_ASSESSMENT_MODE=agentic` retains the experimental native Mistral/CrewAI sequence for
+later testing. Its strict evidence guardrails still switch to the same verified MCP path if the
+crew fails or returns an incomplete report. Simple Qwen routes are unaffected. Neither mode
+uses a direct Python-service bypass. This hardware-dependent local demo is not presented as a
+production-ready decision system.
 
 ## Advanced RAG
 
@@ -158,6 +162,7 @@ python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
 cp .env.example .env
 ollama pull qwen3.5:9b
+# Only required for experimental FULL_ASSESSMENT_MODE=agentic:
 ollama pull mistral-small3.2:24b
 ```
 
@@ -205,7 +210,7 @@ novabank-evaluate
 The full test suite does not need a running model or network connection. End-to-end generation
 does require the configured Ollama server and model.
 
-Current `v1.0.0` release gate: **64 tests passing**.
+Current local release gate: **74 tests passing**.
 
 ## Demo path
 
@@ -224,13 +229,7 @@ An actual local run, including transparent fail-safe behavior, is recorded in
 The screenshots use synthetic data and show only technical execution metadata—never private
 chain-of-thought.
 
-![Main assistant view with Qwen routing metadata](docs/assets/ui-overview.png)
-
-![Full-assessment recommendation](docs/assets/ui-full-assessment.png)
-
-![Compliance rules and source panel](docs/assets/ui-full-assessment-evidence.png)
-
-![Verified report ending and reviewer notes](docs/assets/ui-full-assessment-report.png)
+![Verified full-assessment execution trace](docs/assets/ui-execution-trace.png)
 
 ## Repository map
 

@@ -26,16 +26,17 @@ Prompt: `Welche Compliance-Probleme hat CASE-00017?`
 
 Expected failed rule: `RULE-003`, missing income statement.
 
-## 5 — Full agentic assessment
+## 5 — Demo-safe full assessment
 
 Prompt: `Prüfe CASE-00031 vollständig und erstelle eine Entscheidungsvorlage einschließlich
 finanzieller Kennzahlen, Policy-Abgleich, Compliance-Risiken und Quellen.`
 
-Expected route: full assessment using `mistral-small3.2:24b` / `complex_agentic` with
-financial, compliance, knowledge, and reviewer stages. Expected warning: `RULE-005`, post-loan
-DTI 44.95% above the structured 40% NovaBank review threshold; recommendation `MANUAL REVIEW`.
-If the native crew fails its strict content guardrail, the transparent
-`deterministic_mcp_fallback` must open a fresh MCP-stdio session and produce the verified report.
+Expected profile: `complex_agentic`, with `mistral-small3.2:24b` recorded as the configured
+complex model. With the demo default `FULL_ASSESSMENT_MODE=verified_mcp`, Mistral is not run.
+The transparent `deterministic_mcp_fallback` opens a fresh MCP-stdio session, calls all four
+tools, and produces the verified German report. Expected warning: `RULE-005`, post-loan DTI
+44.95% above the structured 40% NovaBank review threshold; recommendation `MANUAL REVIEW`.
+Set `FULL_ASSESSMENT_MODE=agentic` only to test the experimental native Mistral crew.
 
 For an unequivocally problematic comparison, use `CASE-00007` (post-loan DTI above 50%) or
 `CASE-00008` (rejected KYC and risk class E).
