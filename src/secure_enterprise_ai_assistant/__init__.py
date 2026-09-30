@@ -5,3 +5,5 @@ import os
 # Local-first is the secure default; an operator can explicitly override it before import.
 os.environ.setdefault("CREWAI_DISABLE_TELEMETRY", "true")
 os.environ.setdefault("CREWAI_TRACING_ENABLED", "false")
+
+__version__ = "1.0.2"

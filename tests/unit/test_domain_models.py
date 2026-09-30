@@ -82,9 +82,7 @@ def test_customer_id_must_follow_schema() -> None:
 
 
 def test_case_rejects_mismatched_customer() -> None:
-    application = build_application().model_copy(
-        update={"customer_id": "C-99999"}
-    )
+    application = build_application().model_copy(update={"customer_id": "C-99999"})
 
     with pytest.raises(
         ValueError,

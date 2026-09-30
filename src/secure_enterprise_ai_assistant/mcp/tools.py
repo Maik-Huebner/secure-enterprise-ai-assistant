@@ -22,6 +22,7 @@ from secure_enterprise_ai_assistant.services import (
 
 CASE_ID_PATTERN = re.compile(r"^CASE-\d{5}$")
 ALLOWED_METADATA_FILTERS = {"document_id", "owner", "version"}
+DOCUMENT_ID_PATTERN = re.compile(r"^NB-[A-Z]+-\d{3}$")
 
 
 class MCPToolService:
@@ -57,6 +58,8 @@ class MCPToolService:
 
     @staticmethod
     def _case_id(case_id: str) -> str:
+        if not isinstance(case_id, str):
+            raise ValueError("case_id must be a string.")
         normalized = case_id.strip().upper()
         if not CASE_ID_PATTERN.fullmatch(normalized):
             raise ValueError("case_id must match CASE- followed by five digits.")
@@ -93,23 +96,36 @@ class MCPToolService:
         version: str | None = None,
     ) -> KnowledgeSearchResponse:
         """Search synthetic internal policies and return attributable chunks."""
+        if not isinstance(question, str):
+            raise ValueError("question must be a string.")
         normalized_question = validate_user_query(question)
         if len(normalized_question) > 1000:
             raise ValueError("question must contain at most 1000 characters.")
-        if not 1 <= top_k <= 10:
+        if type(top_k) is not int or not 1 <= top_k <= 10:
             raise ValueError("top_k must be between 1 and 10.")
         supplied_filters = {
             "document_id": document_id,
             "owner": owner,
             "version": version,
         }
-        metadata_filter = {
-            key: value.strip()
-            for key, value in supplied_filters.items()
-            if value is not None and value.strip()
-        }
+        metadata_filter: dict[str, str] = {}
+        for key, value in supplied_filters.items():
+            if value is None:
+                continue
+            if not isinstance(value, str):
+                raise ValueError(f"{key} filter must be a string.")
+            normalized = value.strip()
+            if not normalized:
+                continue
+            if len(normalized) > 120 or any(ord(character) < 32 for character in normalized):
+                raise ValueError(f"{key} filter contains unsupported content.")
+            metadata_filter[key] = normalized
         if not metadata_filter.keys() <= ALLOWED_METADATA_FILTERS:
             raise ValueError("Unsupported metadata filter.")
+        if document_id is not None and "document_id" in metadata_filter:
+            metadata_filter["document_id"] = metadata_filter["document_id"].upper()
+            if not DOCUMENT_ID_PATTERN.fullmatch(metadata_filter["document_id"]):
+                raise ValueError("document_id filter must match NB-<TYPE>-000.")
         return self.knowledge_service.search(
             normalized_question,
             top_k=top_k,

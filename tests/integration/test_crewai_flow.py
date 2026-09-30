@@ -71,6 +71,5 @@ def test_full_assessment_trace_exposes_demo_safe_mode_without_claiming_model_run
     assert trace["fallback_reason"].startswith("Demo-Safe-Modus")
     assert trace["execution_mode"] == "deterministic_mcp_fallback"
     assert trace["tools_selected"] == (
-        "get_customer_case, analyze_financial_case, check_compliance, "
-        "search_internal_knowledge"
+        "get_customer_case, analyze_financial_case, check_compliance, search_internal_knowledge"
     )

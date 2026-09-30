@@ -2,7 +2,7 @@
 
 from decimal import Decimal
 
-from scripts.generate_synthetic_data import build_dataset
+from secure_enterprise_ai_assistant.development.synthetic_data import build_dataset
 from secure_enterprise_ai_assistant.services.financial_analysis import FinancialAnalysisService
 
 

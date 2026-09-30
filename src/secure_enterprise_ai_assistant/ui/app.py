@@ -12,7 +12,6 @@ import httpx
 
 from secure_enterprise_ai_assistant.core.company import COMPANY_NAME
 from secure_enterprise_ai_assistant.core.settings import get_settings
-from secure_enterprise_ai_assistant.flows import NovaBankAssistantFlow
 from secure_enterprise_ai_assistant.mcp import create_mcp_server
 from secure_enterprise_ai_assistant.mcp.tools import MCPToolService
 
@@ -244,6 +243,8 @@ class AssistantController:
 
     @staticmethod
     def _run_flow(query: str) -> tuple[str, Any, list[Any]]:
+        from secure_enterprise_ai_assistant.flows import NovaBankAssistantFlow
+
         flow = NovaBankAssistantFlow()
         answer = str(flow.kickoff(inputs={"query": query}))
         return answer, flow.state.route, flow.state.trace
@@ -290,16 +291,12 @@ class AssistantController:
                 "Ausführungsmodus": _ui_value(trace_details.get("execution_mode", "not recorded")),
             }
             if "configured_complex_model" in trace_details:
-                tools["Konfiguriertes komplexes Modell"] = trace_details[
-                    "configured_complex_model"
-                ]
+                tools["Konfiguriertes komplexes Modell"] = trace_details["configured_complex_model"]
                 tools["Modus für vollständige Prüfung"] = _ui_value(
                     trace_details.get("full_assessment_mode", "not recorded")
                 )
             else:
-                tools["Ausgewähltes Modell"] = trace_details.get(
-                    "model_selected", "nicht erfasst"
-                )
+                tools["Ausgewähltes Modell"] = trace_details.get("model_selected", "nicht erfasst")
             if "fallback_reason" in trace_details:
                 tools["Fallback-Grund"] = _trace_detail(
                     "fallback_reason", trace_details["fallback_reason"]
@@ -400,16 +397,13 @@ def build_app(controller: AssistantController | None = None) -> gr.Blocks:
                         scale=5,
                     )
                     submit = gr.Button("Prüfung starten", variant="primary", scale=1)
-                gr.Examples(
-                    examples=[
-                        ["Welche Unterlagen benötigt NovaBank für einen Konsumentenkredit?"],
-                        ["Zeige CASE-00001."],
-                        ["Berechne die Kreditbelastung für CASE-00001."],
-                        ["Welche Compliance-Probleme hat CASE-00017?"],
-                        ["Prüfe CASE-00031 vollständig und erstelle eine Entscheidungsvorlage."],
-                    ],
-                    inputs=prompt,
-                    label="Demo-Szenarien",
+                gr.Markdown(
+                    "**Demo-Szenarien**  \n"
+                    "`Welche Unterlagen benötigt NovaBank für einen Konsumentenkredit?`  \n"
+                    "`Zeige CASE-00001.`  \n"
+                    "`Berechne die Kreditbelastung für CASE-00001.`  \n"
+                    "`Welche Compliance-Probleme hat CASE-00017?`  \n"
+                    "`Prüfe CASE-00031 vollständig und erstelle eine Entscheidungsvorlage.`"
                 )
                 run_status = gr.Markdown("Bereit.", elem_classes="status-card")
                 with gr.Row():

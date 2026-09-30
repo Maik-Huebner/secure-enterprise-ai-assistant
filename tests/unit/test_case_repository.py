@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from scripts.generate_synthetic_data import build_dataset
+from secure_enterprise_ai_assistant.development.synthetic_data import build_dataset
 from secure_enterprise_ai_assistant.services.case_repository import CustomerCaseRepository
 from secure_enterprise_ai_assistant.services.errors import (
     CaseNotFoundError,

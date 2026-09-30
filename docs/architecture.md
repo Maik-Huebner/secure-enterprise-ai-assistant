@@ -53,8 +53,9 @@ Generation uses an Ollama-compatible endpoint with centrally configured temperat
 limit, request timeout, and thinking mode. `OLLAMA_FAST_MODEL` and `OLLAMA_COMPLEX_MODEL`
 configure the profiles; `FULL_ASSESSMENT_MODE` accepts `verified_mcp` (the demo default) or
 `agentic`. The legacy `OLLAMA_MODEL` environment variable remains a fallback alias for the
-fast profile. CrewAI task-output SQLite state is deliberately
-relocated from the operating-system user directory to git-ignored `runtime/crewai/`. The default
+fast profile. CrewAI task-output SQLite state is deliberately stored below the platform-specific
+per-user application-state directory (overridable with `RUNTIME_DIR`), never inside the installed
+package or repository. The default
 retriever boots offline with deterministic hashing; deployments can set a locally installed
 Sentence Transformer through the existing embedder abstraction.
 

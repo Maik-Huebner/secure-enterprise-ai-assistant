@@ -4,16 +4,32 @@
     "llm_only": "not_run_requires_local_model",
     "rag": "measured_offline"
   },
+  "counts": {
+    "compliance_cases": 5,
+    "financial_cases": 5,
+    "guardrail_queries": 6,
+    "out_of_scope_queries": 3,
+    "retrieval_queries": 5,
+    "routing_queries": 10
+  },
   "dataset": "NOVABANK-SYNTHETIC-CREDIT-CASES-V1",
-  "evaluated_at": "2026-09-15T08:35:04.355684+00:00",
+  "inputs": {
+    "cases_sha256": "6640b2f128c598c9346a5aa943878913bf92581db5ac6252e0c937bdd44a371a",
+    "knowledge_corpus_sha256": "c1152a53484329b30ce4cdbe8798c8b9913a300cbe40fb88825795cd06910354",
+    "rules_sha256": "7dac39256e2f2f047f69908d8d543a0992c773695c587bddf2d69323d560bda9",
+    "suite_sha256": "684de13ed4915dffa052c55d1fef4a5d5eba9e163a7b18d29131b3f02220e428"
+  },
+  "limitations": "Small synthetic regression suite; it does not measure real lending quality, legal compliance, free-form model accuracy, or production security.",
   "metrics": {
     "compliance_rule_exact_match": 1.0,
     "financial_calculation_exact_match": 1.0,
+    "input_guardrail_accuracy": 1.0,
     "out_of_scope_accuracy": 1.0,
     "retrieval_recall_at_5": 1.0,
     "routing_accuracy": 1.0,
     "source_attribution_rate": 1.0,
     "tool_selection_accuracy": 1.0
   },
-  "suite": "data/demo/evaluation_suite.json"
+  "schema_version": 1,
+  "suite": "secure_enterprise_ai_assistant/resources/evaluation/evaluation_suite.json"
 }

@@ -30,6 +30,12 @@ def test_tool_boundary_rejects_invalid_inputs(tools: MCPToolService) -> None:
         tools.get_customer_case("../CASE-00001")
     with pytest.raises(ValueError, match="between 1 and 10"):
         tools.search_internal_knowledge("valid question", top_k=100)
+    with pytest.raises(ValueError, match="between 1 and 10"):
+        tools.search_internal_knowledge("valid question", top_k=True)
+    with pytest.raises(ValueError, match="document_id filter"):
+        tools.search_internal_knowledge("valid question", document_id="../../secrets")
+    with pytest.raises(ValueError, match="unsupported content"):
+        tools.search_internal_knowledge("valid question", owner="A" * 121)
 
 
 def test_knowledge_tool_returns_sources(tools: MCPToolService) -> None:

@@ -33,9 +33,7 @@ class FinancialAnalysisService:
         with localcontext() as context:
             context.prec = 28
             monthly_rate = (
-                application.annual_interest_rate_pct
-                / PERCENT_DENOMINATOR
-                / MONTHS_PER_YEAR
+                application.annual_interest_rate_pct / PERCENT_DENOMINATOR / MONTHS_PER_YEAR
             )
             if monthly_rate == 0:
                 unrounded_payment = principal / Decimal(periods)

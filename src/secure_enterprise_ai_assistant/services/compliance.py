@@ -16,12 +16,24 @@ from secure_enterprise_ai_assistant.models.domain import (
     DocumentStatus,
     EmploymentStatus,
 )
+from secure_enterprise_ai_assistant.resources import RULES_PATH
 from secure_enterprise_ai_assistant.services.errors import ComplianceConfigurationError
 from secure_enterprise_ai_assistant.services.financial_analysis import FinancialAnalysisService
 
-DEFAULT_RULES_PATH = Path(__file__).resolve().parents[3] / "data" / "compliance" / "rules.json"
+DEFAULT_RULES_PATH = RULES_PATH
 
 RuleEvaluator = Callable[[CreditCase, ComplianceRule], tuple[bool, str]]
+REQUIRED_PARAMETERS: dict[str, frozenset[str]] = {
+    "kyc_not_in": frozenset({"statuses"}),
+    "kyc_equals": frozenset({"status"}),
+    "required_documents_present": frozenset({"document_types"}),
+    "all_documents_valid": frozenset(),
+    "dti_at_most": frozenset({"maximum_pct"}),
+    "risk_class_in": frozenset({"classes"}),
+    "temporary_employment_months": frozenset({"minimum_months"}),
+    "amount_at_most": frozenset({"maximum_eur"}),
+    "term_at_most": frozenset({"maximum_months"}),
+}
 
 
 class ComplianceService:
@@ -45,21 +57,34 @@ class ComplianceService:
             "amount_at_most": self._amount_at_most,
             "term_at_most": self._term_at_most,
         }
-        unknown = {
-            str(rule.parameters.get("predicate")) for rule in rules
-        } - self._evaluators.keys()
+        rule_ids = [rule.rule_id for rule in rules]
+        if len(rule_ids) != len(set(rule_ids)):
+            raise ComplianceConfigurationError("Ruleset contains duplicate rule IDs.")
+        predicates = {str(rule.parameters.get("predicate")) for rule in rules}
+        unknown = predicates - self._evaluators.keys()
         if unknown:
             raise ComplianceConfigurationError(
                 f"Ruleset contains non-allowlisted predicates: {sorted(unknown)}"
             )
+        for rule in rules:
+            predicate = str(rule.parameters["predicate"])
+            missing = REQUIRED_PARAMETERS[predicate] - rule.parameters.keys()
+            if missing:
+                raise ComplianceConfigurationError(
+                    f"{rule.rule_id} is missing required parameters: {sorted(missing)}"
+                )
 
     @classmethod
     def from_json(cls, path: Path = DEFAULT_RULES_PATH) -> ComplianceService:
         """Load a local ruleset and validate every rule against the domain schema."""
         try:
             payload = json.loads(path.read_text(encoding="utf-8"))
-        except (FileNotFoundError, json.JSONDecodeError) as exc:
-            raise ComplianceConfigurationError(f"Cannot load compliance rules: {path}") from exc
+        except FileNotFoundError as exc:
+            raise ComplianceConfigurationError(
+                "Compliance rules are missing from the installation."
+            ) from exc
+        except json.JSONDecodeError as exc:
+            raise ComplianceConfigurationError("Compliance rules are not valid JSON.") from exc
         if not isinstance(payload, dict) or not isinstance(payload.get("rules"), list):
             raise ComplianceConfigurationError("Compliance ruleset must contain a 'rules' list.")
         try:
@@ -107,9 +132,7 @@ class ComplianceService:
     ) -> tuple[bool, str]:
         required = self._csv_parameter(rule, "document_types")
         present = {
-            item.document_type
-            for item in case.documents
-            if item.status == DocumentStatus.PRESENT
+            item.document_type for item in case.documents if item.status == DocumentStatus.PRESENT
         }
         missing = sorted(required - present)
         return not missing, "All mandatory documents are present." if not missing else (
@@ -139,9 +162,7 @@ class ComplianceService:
         return actual in allowed, f"Risk class is {actual}; eligible classes are {sorted(allowed)}."
 
     @staticmethod
-    def _temporary_employment_months(
-        case: CreditCase, rule: ComplianceRule
-    ) -> tuple[bool, str]:
+    def _temporary_employment_months(case: CreditCase, rule: ComplianceRule) -> tuple[bool, str]:
         minimum = int(rule.parameters["minimum_months"])
         if case.customer.employment_status != EmploymentStatus.TEMPORARY:
             return True, "Employment is not temporary; rule is not applicable."

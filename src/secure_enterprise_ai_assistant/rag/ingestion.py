@@ -28,6 +28,10 @@ class KnowledgeIngestor:
 
     def ingest_directory(self) -> list[KnowledgeChunk]:
         """Ingest supported files in deterministic filename order."""
+        if not self.knowledge_root.is_dir():
+            raise FileNotFoundError(
+                "Configured knowledge root does not exist or is not a directory."
+            )
         chunks: list[KnowledgeChunk] = []
         for path in sorted(self.knowledge_root.iterdir()):
             if path.suffix.lower() in {".md", ".txt", ".pdf"}:
@@ -54,8 +58,7 @@ class KnowledgeIngestor:
     def _ingest_pdf(self, path: Path) -> list[KnowledgeChunk]:
         with pdfplumber.open(path) as pdf:
             pages = [
-                (number, page.extract_text() or "")
-                for number, page in enumerate(pdf.pages, 1)
+                (number, page.extract_text() or "") for number, page in enumerate(pdf.pages, 1)
             ]
         full_text = "\n".join(text for _, text in pages)
         metadata = self._metadata(full_text, path)

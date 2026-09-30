@@ -15,6 +15,8 @@ Implemented controls:
 - UI errors sanitized before display;
 - CrewAI telemetry and tracing disabled by secure default;
 - `.env` and runtime databases excluded from version control;
+- package-local read-only synthetic resources and platform-specific mutable runtime storage;
+- bounded local model and MCP subprocess request timeouts;
 - all customers, cases, policies, and decision labels are synthetic;
 - UI binds to loopback and Gradio sharing is disabled;
 - Task and report guardrails reject missing evidence and unsupported source categories;

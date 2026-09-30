@@ -15,9 +15,15 @@ reports
 tests
 logs
 tmp
+output
+docs
+notebooks
+configs
 vectorstore
 indexes
 data/generated
+dist
+build
 *.pyc
 .env
 .env.*

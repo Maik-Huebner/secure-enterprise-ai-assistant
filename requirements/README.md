@@ -1,0 +1,18 @@
+# Dependency lock strategy
+
+`lock-py313.txt` is the exact transitive environment used by CI and the container for Python 3.13.
+The project metadata also constrains every direct runtime and development dependency. Install the
+lock first and then install the project non-editably with `--no-deps --no-build-isolation`.
+
+PyTorch should be installed from its official CPU wheel index before the lock on Linux CI or in
+the container. The local-version CPU wheel satisfies the pinned public version without installing
+unused CUDA runtime packages.
+
+Release v1.0.2 officially supports Python `>=3.13,<3.14`. Python 3.13.9 plus this lock is the
+reproducibly validated runtime used by the release gate, CI, Fresh-Clone validation, and Docker.
+Earlier Python versions are not claimed as supported until they pass equivalent lock-level
+validation.
+
+To refresh the lock, resolve from `pyproject.toml` on Python 3.13, review the diff, install it in a
+fresh virtual environment, and run every Make target plus the wheel smoke test. Do not hand-edit
+individual transitive versions without repeating that validation.

@@ -1,11 +1,10 @@
 """Tests for CrewAI agent least-privilege configuration."""
 
-from crewai.tasks.task_output import TaskOutput
-
 from secure_enterprise_ai_assistant.agents.factory import (
     DEMO_SAFE_FALLBACK_REASON,
     AgentFactory,
     CrewOrchestrator,
+    TaskOutput,
     language_guardrail,
     sanitize_model_output,
     validate_compliance_output,
@@ -67,11 +66,12 @@ def test_reviewer_guardrail_accepts_substantive_sourced_output() -> None:
     assert validate_decision_brief(output) == (True, body.strip())
 
 
-def test_full_assessment_crew_builds_with_reviewer_guardrail() -> None:
+def test_full_assessment_crew_builds_with_reviewer_guardrail(tmp_path) -> None:
     settings = Settings(
         ollama_fast_model="fast-test-model",
         ollama_complex_model="complex-test-model",
         ollama_base_url="http://127.0.0.1:11434",
+        runtime_dir=tmp_path,
     )
     route = IntentRouter().classify(
         "Prüfe CASE-00031 vollständig und erstelle eine Entscheidungsvorlage."
@@ -90,10 +90,11 @@ def test_full_assessment_crew_builds_with_reviewer_guardrail() -> None:
     )
 
 
-def test_german_financial_task_enforces_german_user_facing_output() -> None:
+def test_german_financial_task_enforces_german_user_facing_output(tmp_path) -> None:
     settings = Settings(
         ollama_fast_model="fast-test-model",
         ollama_base_url="http://127.0.0.1:11434",
+        runtime_dir=tmp_path,
     )
     query = "Berechne die finanzielle Belastung für CASE-00031."
     route = IntentRouter().classify(query)

@@ -117,8 +117,10 @@ no passages. Retrieved content is explicitly treated as untrusted evidence, not 
 
 ## Measured evaluation
 
-The generated report at `reports/evaluation/latest.json` comes from the versioned suite at
-`data/demo/evaluation_suite.json`. No benchmark number is hand-written or inferred.
+The generated report at `reports/evaluation/latest.json` comes from the versioned suite shipped
+inside the package at `src/secure_enterprise_ai_assistant/resources/evaluation/`. No benchmark
+number is hand-written or inferred. The evidence check also verifies exact hashes for the suite,
+cases, rules, and knowledge corpus.
 
 | Metric | Result | Evaluation set |
 |---|---:|---:|
@@ -129,8 +131,9 @@ The generated report at `reports/evaluation/latest.json` comes from the versione
 | Retrieval Recall@5 | 1.0000 | 5 questions |
 | Source-attribution rate | 1.0000 | 5 questions |
 | Out-of-scope accuracy | 1.0000 | 3 questions |
+| Input-guardrail accuracy | 1.0000 | 6 blocked/benign queries |
 
-These seven perfect scores describe only a **synthetic offline benchmark** implemented as a
+These eight perfect scores describe only a **synthetic offline benchmark** implemented as a
 deliberately small regression suite. They do not measure real credit-decision accuracy, certify regulatory compliance,
 or establish that the complete agentic pipeline is 100% accurate. LLM-only comparison is not
 part of this benchmark; measured live-model behavior is documented separately in
@@ -145,7 +148,7 @@ part of this benchmark; measured live-model behavior is documented separately in
 - no secrets, production customer data, arbitrary SQL, shell, or model-written arithmetic;
 - error sanitization at the UI boundary;
 - CrewAI telemetry and remote tracing disabled by default;
-- local CrewAI runtime storage under ignored `runtime/`;
+- local CrewAI runtime storage in the platform-specific per-user state directory;
 - loopback UI binding and Gradio sharing disabled by default;
 - synthetic-data boundary repeated in data artifacts, policies, prompts, and UI.
 
@@ -153,13 +156,15 @@ See [docs/security.md](docs/security.md) for controls and known production gaps.
 
 ## Local setup
 
-Requirements: Python 3.13, Ollama, and sufficient memory for the chosen local model.
+Requirements: Python 3.13 (`>=3.13,<3.14`), Ollama, and sufficient memory for the chosen
+local model. Python 3.13.9 is the reproducibly validated runtime for release v1.0.2.
 
 ```bash
 python3.13 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install -e ".[dev]"
+python -m pip install --no-deps -r requirements/lock-py313.txt
+python -m pip install --no-deps --no-build-isolation .
 cp .env.example .env
 ollama pull qwen3.5:9b
 # Only required for experimental FULL_ASSESSMENT_MODE=agentic:
@@ -201,16 +206,21 @@ On Linux, configure an equivalent reachable Ollama host address for the containe
 ## Quality checks
 
 ```bash
-ruff check src scripts tests
-pytest -q
+make quality
+make test
+make evidence-check
+make audit
 python -m pip check
-novabank-evaluate
+make reproduce-evidence
+make build
 ```
 
 The full test suite does not need a running model or network connection. End-to-end generation
 does require the configured Ollama server and model.
 
-Current local release gate: **74 tests passing**.
+Current local release gate: **84 tests passing** under Python 3.13 with warnings treated as
+errors. CI installs the package non-editably and proves that imports resolve from
+`site-packages`.
 
 ## Demo path
 
@@ -234,10 +244,11 @@ chain-of-thought.
 ## Repository map
 
 ```text
-data/                 synthetic cases, labels, compliance rules, and policies
 docs/                 architecture, security, and demo guidance
 reports/evaluation/   measured evaluation output
-scripts/              reproducible data and knowledge generators
+requirements/         exact Python 3.13 dependency lock and lock policy
+scripts/              thin repository wrappers for generation, evidence, and audit
+src/.../resources/    packaged synthetic cases, rules, policies, and evaluation suite
 src/.../agents/       CrewAI specialists and MCP configuration
 src/.../flows/        deterministic router and CrewAI Flow
 src/.../mcp/          FastMCP server and defensive tool boundary
@@ -259,5 +270,7 @@ tests/                unit and integration regression suite
 
 ## License and responsible use
 
-No real bank policies or customer data are included. No explicit open-source license is
-currently granted; model and dependency licenses must also be checked for any intended use.
+No real bank policies or customer data are included. Original repository code and documentation
+are available under the [MIT License](LICENSE); model, model-server, dependency, and externally
+supplied document licenses remain separate. See [RESPONSIBLE_USE.md](RESPONSIBLE_USE.md) and
+[SECURITY.md](SECURITY.md).

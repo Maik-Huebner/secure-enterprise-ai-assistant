@@ -7,8 +7,9 @@ from pathlib import Path
 from secure_enterprise_ai_assistant.models.knowledge import KnowledgeSearchResponse
 from secure_enterprise_ai_assistant.rag.ingestion import KnowledgeIngestor
 from secure_enterprise_ai_assistant.rag.retrieval import Embedder, HybridRetriever
+from secure_enterprise_ai_assistant.resources import KNOWLEDGE_ROOT
 
-DEFAULT_KNOWLEDGE_ROOT = Path(__file__).resolve().parents[3] / "data" / "knowledge_base"
+DEFAULT_KNOWLEDGE_ROOT = KNOWLEDGE_ROOT
 
 
 class KnowledgeService:

@@ -1,6 +1,12 @@
 """Tests for synthetic policy generation and secure ingestion."""
 
-from scripts.generate_knowledge_base import POLICIES, write_knowledge_base
+import pytest
+
+from secure_enterprise_ai_assistant.development.knowledge_base import (
+    POLICIES,
+    write_knowledge_base,
+)
+from secure_enterprise_ai_assistant.models.knowledge import KnowledgeChunk
 from secure_enterprise_ai_assistant.rag.ingestion import KnowledgeIngestor
 from secure_enterprise_ai_assistant.rag.retrieval import HybridRetriever
 
@@ -61,3 +67,24 @@ def test_injection_flagged_chunk_is_excluded_from_retrieval(tmp_path) -> None:
     response = HybridRetriever(chunks).search("credit policy evidence")
     assert response.results
     assert {item.chunk.document_id for item in response.results} == {"NB-TST-001"}
+
+
+def test_missing_knowledge_root_has_clear_error(tmp_path) -> None:
+    with pytest.raises(FileNotFoundError, match="knowledge root"):
+        KnowledgeIngestor(tmp_path / "missing").ingest_directory()
+
+
+def test_duplicate_chunk_ids_are_rejected() -> None:
+    chunk = KnowledgeChunk(
+        chunk_id="NB-TST-001::chunk-001",
+        document_id="NB-TST-001",
+        title="Test",
+        version="1.0",
+        effective_date="2026-09-01",
+        owner="Test",
+        section="Evidence",
+        content="Synthetic policy evidence.",
+    )
+
+    with pytest.raises(ValueError, match="unique chunk IDs"):
+        HybridRetriever([chunk, chunk])

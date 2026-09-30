@@ -2,7 +2,15 @@
 
 from __future__ import annotations
 
-from crewai.flow.flow import Flow, listen, router, start
+import warnings
+
+with warnings.catch_warnings():
+    warnings.filterwarnings(
+        "ignore",
+        message=r"Cannot set an attribute on 'crewai\.rag' for child module 'embeddings'",
+        category=ImportWarning,
+    )
+    from crewai.flow.flow import Flow, listen, router, start
 from pydantic import BaseModel, Field
 
 from secure_enterprise_ai_assistant.agents.factory import CrewOrchestrator

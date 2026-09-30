@@ -1,6 +1,7 @@
 """Tests for deterministic synthetic NovaBank dataset generation."""
 
-from scripts.generate_synthetic_data import build_dataset
+from secure_enterprise_ai_assistant.development.synthetic_data import build_dataset, write_dataset
+from secure_enterprise_ai_assistant.resources import CASES_PATH
 
 
 def test_dataset_contains_required_scenarios_and_decision_groups() -> None:
@@ -39,3 +40,11 @@ def test_dataset_generation_is_reproducible() -> None:
 
     assert first_cases == second_cases
     assert first_labels == second_labels
+
+
+def test_committed_runtime_cases_match_generator(tmp_path) -> None:
+    cases_path = tmp_path / "cases.json"
+    labels_path = tmp_path / "labels.json"
+    write_dataset(cases_path, labels_path)
+
+    assert cases_path.read_bytes() == CASES_PATH.read_bytes()

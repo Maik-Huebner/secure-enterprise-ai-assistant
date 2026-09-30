@@ -1,6 +1,6 @@
 """Offline integration tests for hybrid retrieval and source attribution."""
 
-from scripts.generate_knowledge_base import write_knowledge_base
+from secure_enterprise_ai_assistant.development.knowledge_base import write_knowledge_base
 from secure_enterprise_ai_assistant.rag.service import KnowledgeService
 
 

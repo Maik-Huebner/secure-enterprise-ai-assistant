@@ -11,6 +11,7 @@ from typing import Any
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
+from secure_enterprise_ai_assistant.core.settings import get_settings
 from secure_enterprise_ai_assistant.models.orchestration import RouteDecision
 
 MCP_MODULE = "secure_enterprise_ai_assistant.mcp.server"
@@ -110,12 +111,26 @@ def _format_decimal_de(value: Any, places: int = 2) -> str:
 class VerifiedMCPReportBuilder:
     """Build a complete report only from structured results fetched over MCP."""
 
+    def __init__(self, timeout_seconds: int | None = None) -> None:
+        self.timeout_seconds = timeout_seconds or get_settings().mcp_request_timeout_seconds
+
     def build(self, query: str, route: RouteDecision) -> str:
         """Fetch all evidence in one stdio session and render a bounded report."""
         if route.case_id is None:
             raise MCPClientError("A full assessment requires a case ID.")
-        evidence = asyncio.run(self._fetch(query, route.case_id))
+        try:
+            evidence = asyncio.run(self._fetch_with_timeout(query, route.case_id))
+        except TimeoutError as exc:
+            raise MCPClientError(
+                f"Local MCP evidence collection exceeded {self.timeout_seconds} seconds."
+            ) from exc
         return self._render(route.case_id, evidence)
+
+    async def _fetch_with_timeout(self, query: str, case_id: str) -> dict[str, dict[str, Any]]:
+        return await asyncio.wait_for(
+            self._fetch(query, case_id),
+            timeout=self.timeout_seconds,
+        )
 
     async def _fetch(self, query: str, case_id: str) -> dict[str, dict[str, Any]]:
         parameters = StdioServerParameters(

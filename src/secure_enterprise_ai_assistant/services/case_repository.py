@@ -9,15 +9,14 @@ from pathlib import Path
 from pydantic import TypeAdapter, ValidationError
 
 from secure_enterprise_ai_assistant.models.domain import CreditCase
+from secure_enterprise_ai_assistant.resources import CASES_PATH
 from secure_enterprise_ai_assistant.services.errors import (
     CaseNotFoundError,
     CustomerNotFoundError,
     DatasetError,
 )
 
-DEFAULT_CASES_PATH = (
-    Path(__file__).resolve().parents[3] / "data" / "customers" / "credit_cases.json"
-)
+DEFAULT_CASES_PATH = CASES_PATH
 
 
 class CustomerCaseRepository:
@@ -26,9 +25,7 @@ class CustomerCaseRepository:
     def __init__(self, cases: Iterable[CreditCase]) -> None:
         validated_cases = list(cases)
         self._by_case_id = {case.case_id: case for case in validated_cases}
-        self._by_customer_id = {
-            case.customer.customer_id: case for case in validated_cases
-        }
+        self._by_customer_id = {case.customer.customer_id: case for case in validated_cases}
         if len(self._by_case_id) != len(validated_cases):
             raise DatasetError("Synthetic dataset contains duplicate case IDs.")
         if len(self._by_customer_id) != len(validated_cases):
@@ -40,7 +37,7 @@ class CustomerCaseRepository:
         try:
             payload = json.loads(path.read_text(encoding="utf-8"))
         except FileNotFoundError as exc:
-            raise DatasetError(f"Synthetic case dataset not found: {path}") from exc
+            raise DatasetError("Synthetic case dataset is missing from the installation.") from exc
         except json.JSONDecodeError as exc:
             raise DatasetError(f"Synthetic case dataset is not valid JSON: {path}") from exc
 
@@ -64,9 +61,7 @@ class CustomerCaseRepository:
         try:
             return self._by_customer_id[customer_id]
         except KeyError as exc:
-            raise CustomerNotFoundError(
-                f"Unknown synthetic customer ID: {customer_id}"
-            ) from exc
+            raise CustomerNotFoundError(f"Unknown synthetic customer ID: {customer_id}") from exc
 
     def list_cases(self) -> tuple[CreditCase, ...]:
         """Return cases in stable case-ID order."""

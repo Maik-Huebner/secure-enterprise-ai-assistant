@@ -102,12 +102,11 @@ class HybridRetriever:
         embedder: Embedder | None = None,
         relevance_threshold: float = 0.014,
     ) -> None:
-        flagged_documents = {
-            chunk.document_id for chunk in chunks if chunk.security_flags
-        }
-        safe_chunks = [
-            chunk for chunk in chunks if chunk.document_id not in flagged_documents
-        ]
+        chunk_ids = [chunk.chunk_id for chunk in chunks]
+        if len(chunk_ids) != len(set(chunk_ids)):
+            raise ValueError("Knowledge chunks must have unique chunk IDs.")
+        flagged_documents = {chunk.document_id for chunk in chunks if chunk.security_flags}
+        safe_chunks = [chunk for chunk in chunks if chunk.document_id not in flagged_documents]
         if not safe_chunks:
             raise ValueError("At least one knowledge chunk is required.")
         self._chunks = safe_chunks
@@ -136,6 +135,8 @@ class HybridRetriever:
     ) -> KnowledgeSearchResponse:
         """Return ranked, attributable results and reject weak out-of-scope matches."""
         normalized_query = query.strip()
+        if type(top_k) is not int or not 1 <= top_k <= 100:
+            raise ValueError("top_k must be an integer between 1 and 100.")
         if len(normalized_query) < 3:
             return KnowledgeSearchResponse(query=query, results=[], out_of_scope=True)
         expanded_query = self._expand_query(normalized_query)
@@ -144,9 +145,7 @@ class HybridRetriever:
             self._embedder.encode([expanded_query]), candidate_count
         )
         lexical_indices, lexical_scores = self._bm25.retrieve(
-            bm25s.tokenize(
-                [expanded_query], stopwords=SEARCH_STOPWORDS, show_progress=False
-            ),
+            bm25s.tokenize([expanded_query], stopwords=SEARCH_STOPWORDS, show_progress=False),
             k=candidate_count,
             show_progress=False,
         )
@@ -167,9 +166,7 @@ class HybridRetriever:
                 str(getattr(chunk, key, "")) != value for key, value in metadata_filter.items()
             ):
                 continue
-            combined = (0.55 / (60 + semantic_rank[index])) + (
-                0.45 / (60 + lexical_rank[index])
-            )
+            combined = (0.55 / (60 + semantic_rank[index])) + (0.45 / (60 + lexical_rank[index]))
             results.append(
                 RetrievalResult(
                     chunk=chunk,
@@ -197,8 +194,6 @@ class HybridRetriever:
     @staticmethod
     def _expand_query(query: str) -> str:
         additions = [
-            expansion
-            for term, expansion in QUERY_EXPANSIONS.items()
-            if term in query.casefold()
+            expansion for term, expansion in QUERY_EXPANSIONS.items() if term in query.casefold()
         ]
         return " ".join([query, *additions])

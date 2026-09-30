@@ -1,35 +1,52 @@
 """Smoke tests for the Gradio application and safe controller errors."""
 
 import json
+import subprocess
+import sys
 
 from secure_enterprise_ai_assistant.flows.router import IntentRouter
 from secure_enterprise_ai_assistant.models.orchestration import TraceEvent
 from secure_enterprise_ai_assistant.ui.app import (
     GRADIO_UI_LOCALIZATION_JS,
     AssistantController,
-    build_app,
 )
 
 
-def test_gradio_blocks_builds_without_launching() -> None:
-    app = build_app()
+def _probe_ui_in_subprocess() -> dict[str, object]:
+    """Build Gradio outside Pytest's process to isolate its Python 3.13 cleanup."""
+    code = """
+import json
+from secure_enterprise_ai_assistant.ui.app import build_app
+app = build_app()
+visible = []
+for component in app.config["components"]:
+    properties = component.get("props", {})
+    visible.append({key: properties[key] for key in (
+        "label", "value", "placeholder", "headers", "title"
+    ) if key in properties})
+print("UI_PROBE=" + json.dumps({"title": app.title, "visible": visible}, ensure_ascii=False))
+app.close()
+"""
+    completed = subprocess.run(
+        [sys.executable, "-c", code],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    marker = next(
+        line.removeprefix("UI_PROBE=")
+        for line in completed.stdout.splitlines()
+        if line.startswith("UI_PROBE=")
+    )
+    return json.loads(marker)
 
-    assert app.title == "Sicherer Enterprise-KI-Assistent"
+
+def test_gradio_blocks_builds_without_launching() -> None:
+    assert _probe_ui_in_subprocess()["title"] == "Sicherer Enterprise-KI-Assistent"
 
 
 def test_rendered_ui_configuration_has_no_english_navigation_labels() -> None:
-    app = build_app()
-    visible_properties = []
-    for component in app.config["components"]:
-        properties = component.get("props", {})
-        visible_properties.append(
-            {
-                key: properties[key]
-                for key in ("label", "value", "placeholder", "headers", "title")
-                if key in properties
-            }
-        )
-    rendered = json.dumps(visible_properties, ensure_ascii=False)
+    rendered = json.dumps(_probe_ui_in_subprocess()["visible"], ensure_ascii=False)
 
     forbidden_labels = (
         "Execution Trace",
@@ -158,8 +175,7 @@ def test_controller_exposes_full_assessment_safe_mode_transparently() -> None:
         TraceEvent(
             event="fallback_reason",
             detail=(
-                "Demo-Safe-Modus – verifizierter MCP-Pfad für reproduzierbare lokale "
-                "Ausführung"
+                "Demo-Safe-Modus – verifizierter MCP-Pfad für reproduzierbare lokale Ausführung"
             ),
         ),
         TraceEvent(event="execution_mode", detail="deterministic_mcp_fallback"),

@@ -1,19 +1,36 @@
 """CrewAI specialists configured to discover all business tools through MCP."""
 
+import gc
+import os
 import re
 import sys
+import warnings
 from collections.abc import Callable
 from functools import wraps
 from pathlib import Path
 
-from crewai import LLM, Agent, Crew, Process, Task
-from crewai.mcp.config import MCPServerStdio
-from crewai.mcp.filters import create_static_tool_filter
-from crewai.memory.storage.kickoff_task_outputs_storage import (
-    KickoffTaskOutputsSQLiteStorage,
-)
-from crewai.tasks.task_output import TaskOutput
-from crewai.utilities.task_output_storage_handler import TaskOutputStorageHandler
+from secure_enterprise_ai_assistant.core.settings import Settings, get_settings
+
+# CrewAI resolves several default database paths during import. Point that documented override
+# at the same explicit runtime root used by this package before importing the third-party module.
+os.environ.setdefault("CREWAI_STORAGE_DIR", str(get_settings().runtime_dir))
+
+with warnings.catch_warnings():
+    # CrewAI 1.15.20 triggers this Python 3.13 import-protocol warning while registering
+    # ``crewai.rag.embeddings``. It is scoped to the exact third-party message.
+    warnings.filterwarnings(
+        "ignore",
+        message=r"Cannot set an attribute on 'crewai\.rag' for child module 'embeddings'",
+        category=ImportWarning,
+    )
+    from crewai import LLM, Agent, Crew, Process, Task
+    from crewai.mcp.config import MCPServerStdio
+    from crewai.mcp.filters import create_static_tool_filter
+    from crewai.memory.storage.kickoff_task_outputs_storage import (
+        KickoffTaskOutputsSQLiteStorage,
+    )
+    from crewai.tasks.task_output import TaskOutput
+    from crewai.utilities.task_output_storage_handler import TaskOutputStorageHandler
 from pydantic import PrivateAttr
 
 from secure_enterprise_ai_assistant.agents.model_router import (
@@ -26,12 +43,10 @@ from secure_enterprise_ai_assistant.core.language import (
     is_german_request,
     response_language_instruction,
 )
-from secure_enterprise_ai_assistant.core.settings import Settings, get_settings
 from secure_enterprise_ai_assistant.mcp.client import VerifiedMCPReportBuilder
 from secure_enterprise_ai_assistant.models.orchestration import QueryIntent, RouteDecision
 
 MCP_MODULE = "secure_enterprise_ai_assistant.mcp.server"
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
 DEMO_SAFE_FALLBACK_REASON = (
     "Demo-Safe-Modus – verifizierter MCP-Pfad für reproduzierbare lokale Ausführung"
 )
@@ -48,23 +63,58 @@ def sanitize_model_output(text: str) -> str:
     return _PATH_DERIVED_MCP_ALIAS.sub("NovaBank_MCP_tool", sanitized)
 
 
-class ProjectTaskOutputStorageHandler(TaskOutputStorageHandler):
-    """Keep CrewAI task-output state inside the repository runtime directory."""
+class LocalTaskOutputStorageHandler(TaskOutputStorageHandler):
+    """Keep mutable CrewAI task output in the configured per-user state directory."""
 
-    def __init__(self) -> None:
-        runtime_dir = PROJECT_ROOT / "runtime" / "crewai"
+    def __init__(self, runtime_root: Path) -> None:
+        runtime_dir = runtime_root / "crewai"
         runtime_dir.mkdir(parents=True, exist_ok=True)
-        self.storage = KickoffTaskOutputsSQLiteStorage(
-            db_path=str(runtime_dir / "latest_kickoff_task_outputs.db")
+        self.storage = self._run_storage_operation(
+            lambda: KickoffTaskOutputsSQLiteStorage(
+                db_path=str(runtime_dir / "latest_kickoff_task_outputs.db")
+            )
         )
+
+    @staticmethod
+    def _run_storage_operation(operation: Callable[[], object]) -> object:
+        """Contain CrewAI's Python 3.13 sqlite connection cleanup warning."""
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                message=r"unclosed database in <sqlite3\.Connection object.*",
+                category=ResourceWarning,
+            )
+            result = operation()
+            gc.collect()
+        return result
+
+    def add(self, *args: object, **kwargs: object) -> None:
+        self._run_storage_operation(lambda: super().add(*args, **kwargs))
+
+    def update(self, task_index: int, log: dict[str, object]) -> None:
+        self._run_storage_operation(lambda: super().update(task_index, log))
+
+    def reset(self) -> None:
+        self._run_storage_operation(super().reset)
+
+    def load(self) -> list[dict[str, object]] | None:
+        return self._run_storage_operation(super().load)  # type: ignore[return-value]
 
 
 class LocalFirstCrew(Crew):
-    """CrewAI Crew whose mutable storage remains inside the local project."""
+    """CrewAI Crew whose mutable storage uses the configured runtime directory."""
 
-    _task_output_handler: TaskOutputStorageHandler = PrivateAttr(
-        default_factory=ProjectTaskOutputStorageHandler
-    )
+    _task_output_handler: TaskOutputStorageHandler = PrivateAttr()
+
+    def __init__(self, *, runtime_dir: Path, **data: object) -> None:
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                message=r"function_calling_llm is deprecated and will be removed.*",
+                category=DeprecationWarning,
+            )
+            super().__init__(**data)
+        self._task_output_handler = LocalTaskOutputStorageHandler(runtime_dir)
 
 
 def _mcp_server(*allowed_tools: str) -> MCPServerStdio:
@@ -75,6 +125,22 @@ def _mcp_server(*allowed_tools: str) -> MCPServerStdio:
         tool_filter=create_static_tool_filter(allowed_tool_names=list(allowed_tools)),
         cache_tools_list=True,
     )
+
+
+def _agent(**kwargs: object) -> Agent:
+    """Construct an agent while scoping one acknowledged CrewAI deprecation."""
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            message=r"function_calling_llm is deprecated and will be removed.*",
+            category=DeprecationWarning,
+        )
+        warnings.filterwarnings(
+            "ignore",
+            message=r"^deprecated$",
+            category=DeprecationWarning,
+        )
+        return Agent(**kwargs)
 
 
 class AgentFactory:
@@ -96,7 +162,7 @@ class AgentFactory:
         )
 
     def case_agent(self, llm: LLM) -> Agent:
-        return Agent(
+        return _agent(
             role="Synthetic Customer Case Specialist",
             goal=(
                 f"Report validated NovaBank case facts without inference. {GERMAN_RESPONSE_RULE}"
@@ -114,7 +180,7 @@ class AgentFactory:
         )
 
     def knowledge_agent(self, llm: LLM) -> Agent:
-        return Agent(
+        return _agent(
             role="NovaBank Policy Knowledge Specialist",
             goal=(
                 "Answer only from retrieved policy evidence with exact source metadata. "
@@ -133,7 +199,7 @@ class AgentFactory:
         )
 
     def financial_agent(self, llm: LLM) -> Agent:
-        return Agent(
+        return _agent(
             role="Consumer Credit Financial Analyst",
             goal=(
                 "Use deterministic MCP metrics; never calculate values or infer compliance and "
@@ -152,7 +218,7 @@ class AgentFactory:
         )
 
     def compliance_agent(self, llm: LLM) -> Agent:
-        return Agent(
+        return _agent(
             role="NovaBank Compliance Analyst",
             goal=(
                 f"Connect structured findings to retrieved policy sections. {GERMAN_RESPONSE_RULE}"
@@ -176,7 +242,7 @@ class AgentFactory:
         )
 
     def reviewer_agent(self, llm: LLM) -> Agent:
-        return Agent(
+        return _agent(
             role="Evidence and Decision Reviewer",
             goal=(
                 "Verify completeness, reconcile evidence, and produce a bounded recommendation. "
@@ -380,6 +446,7 @@ class CrewOrchestrator:
             agents = [financial, compliance, reviewer]
             tasks = [financial_task, compliance_task, review_task]
         return LocalFirstCrew(
+            runtime_dir=self.factory.settings.runtime_dir,
             agents=agents,
             tasks=tasks,
             process=Process.sequential,

@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from pathlib import Path
 from typing import Literal
 
+from platformdirs import user_state_path
 from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -34,6 +36,10 @@ class Settings(BaseSettings):
     llm_max_tokens: int = Field(default=4096, ge=512, le=32768)
     ollama_think: bool = False
     agent_max_execution_seconds: int = Field(default=90, ge=15, le=600)
+    mcp_request_timeout_seconds: int = Field(default=30, ge=5, le=300)
+    runtime_dir: Path = Field(
+        default_factory=lambda: user_state_path("secure-enterprise-ai-assistant")
+    )
     ui_server_name: str = "127.0.0.1"
     ui_server_port: int = Field(default=7860, ge=1024, le=65535)
 
