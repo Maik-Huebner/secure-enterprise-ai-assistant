@@ -2,7 +2,7 @@
 
 ## Projektdokumentation zum Abschlussprojekt „NLP & Generative AI“
 
-**Technischer Stand:** `v1.0.2`  
+**Technischer Stand:** `v1.0.2`
 **Fiktiver Business-Kontext:** NovaBank Financial Services AG
 
 > **Hinweis zu Daten und Einsatzbereich:** NovaBank Financial Services AG ist vollständig
