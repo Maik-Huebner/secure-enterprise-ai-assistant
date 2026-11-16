@@ -59,11 +59,13 @@ jobs:
           from pathlib import Path
           import secure_enterprise_ai_assistant as package
           from secure_enterprise_ai_assistant.mcp.tools import MCPToolService
+          from secure_enterprise_ai_assistant.security import Principal
 
           package_path = Path(package.__file__).resolve()
           assert "site-packages" in package_path.parts, package_path
           assert package.__version__ == version("secure-enterprise-ai-assistant")
-          assert MCPToolService.build_default().get_customer_case("CASE-00001").case.case_id == "CASE-00001"
+          tools = MCPToolService.build_default()
+          assert tools.get_customer_case("CASE-00001", principal=Principal.system()).case.case_id == "CASE-00001"
           print(package_path)
           PY
 

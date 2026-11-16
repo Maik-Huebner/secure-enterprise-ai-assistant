@@ -20,7 +20,7 @@
   "inputs": {
     "cases_sha256": "f9d5838ebbbfe9dbdff008b5d3e1d155a2aaa866e10f31883bbde47eeca2f5b4",
     "guardrail_suite_sha256": "b0124d7c8d62263dca2fc805ac807fa57f0f9d2fc9a86b63361b3060f542139a",
-    "knowledge_corpus_sha256": "56b42708a90125cd4d563b2d051c2d5eeb7b4820423fc284d2df4be1c396a59b",
+    "knowledge_corpus_sha256": "578cc84e97ede778357bc2a003658609261f222ad0cf3ff20b2e2589dbc5bdc7",
     "retrieval_suite_sha256": "fdd7f5c0db1b001de30e4aa87b95b81f7ce43065d6d89d82a1700b747eb7ae05",
     "routing_suite_sha256": "e079d3dfe54d759c4c54b3dbf6446b98065fd5ee0f1534aaa137e04892cf9ead",
     "rules_sha256": "7c993cc89a9945d4046ee1e65b299b1f788e128ef2a58bfa08a4f34d8d005e89",

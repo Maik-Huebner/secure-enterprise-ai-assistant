@@ -41,6 +41,8 @@ SECRET_PATTERNS = (
     re.compile(r"\bsk-[A-Za-z0-9_-]{20,}\b"),
     re.compile(r"\bgh[pousr]_[A-Za-z0-9]{20,}\b"),
     re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
+    # A filled-in signing key in an env-style file (JWT_SECRET=<value>).
+    re.compile(r"^[ \t]*JWT_SECRET[ \t]*=[ \t]*\S{16,}", re.MULTILINE),
 )
 OVERCLAIM_PATTERNS = (
     re.compile(r"\b(?:is|are|remains?)\s+enterprise-ready\b", re.I),

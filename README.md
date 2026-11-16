@@ -207,18 +207,51 @@ and source attribution only checks that returned chunks carry metadata. The rout
 consists of the demo phrasings; it is extended in v1.2. The v1.0.2 audit probe
 ([docs/audit-v1.md](docs/audit-v1.md)) had measured 1 of 12 attack phrasings blocked.
 
+## REST API and security (v1.3)
+
+The FastAPI backend is the single entry point for the Gradio UI and for other systems (for
+example PHP or Java applications). OpenAPI documentation is served at `/docs`.
+
+| Endpoint | Purpose |
+|---|---|
+| `POST /v1/auth/token` | log in, returns a JWT (HS256, 15 minutes) |
+| `GET /v1/me` | own role and rights |
+| `GET /v1/cases`, `GET /v1/cases/{id}` | permitted cases |
+| `GET /v1/cases/{id}/financials`, `/compliance` | deterministic metrics and rule results |
+| `POST /v1/search` | knowledge search, filtered before ranking |
+| `POST /v1/chat` | the assistant workflow |
+| `GET /health`, `GET /ready` | liveness and readiness |
+
+| Role | Cases | Documents | Decision brief |
+|---|---|---|---|
+| `sachbearbeiter` | own team only | `intern` | no (four-eyes principle) |
+| `pruefer` | all | `intern`, `vertraulich` | yes |
+| `admin` | all | `intern`, `vertraulich` | yes |
+
+Authorization is enforced in code and inside every MCP tool, never in a prompt. The caller's
+token travels from the API through the workflow into the MCP stdio subprocess, which verifies it
+and scopes every tool call. A foreign case returns the same 404 as an unknown case; a
+confidential document is excluded before ranking, so neither its rank nor a changed "no answer"
+reveals it. Tests cover direct, filter-based, identifier-based and MCP-level detours
+(`tests/security/`).
+
 ## Security controls
 
+- JWT bearer authentication (fixed algorithm, issuer/audience/expiry required), Argon2id
+  password hashes, users stored outside the repository with owner-only file permissions;
+- role- and team-based authorization in code and in the MCP tools;
+- knowledge filters before ranking, including BM25 statistics on the permitted subset;
+- rate limits for login, chat and API calls; restrictive CORS (none by default);
+- security headers (CSP, `nosniff`, `DENY` framing, `no-referrer`, `no-store`, optional HSTS);
+- hash-chained audit log without passwords or query text (`novabank-audit verify`);
+- RFC 9457 problem responses in German without internal details or echoed input;
 - strict input and output schemas with forbidden extra fields;
-- tool and per-agent allowlists;
+- tool and per-agent allowlists; MCP subprocesses receive only allowlisted settings;
 - a first-layer German/English prompt-injection filter with obfuscation normalization (holdout
-  recall 0.75, no false positives on 50 benign questions);
+  recall 0.75, no false positives on 50 benign questions), applied in the API and the workflow;
 - safe knowledge-root containment and supported-extension checks;
-- no secrets, production customer data, arbitrary SQL, shell, or model-written arithmetic;
-- error sanitization at the UI boundary;
-- CrewAI telemetry and remote tracing disabled by default;
-- local CrewAI runtime storage in the platform-specific per-user state directory;
-- loopback UI binding and Gradio sharing disabled by default;
+- no secrets in the repository (`JWT_SECRET` has no default; the audit flags filled-in keys);
+- CrewAI telemetry and remote tracing disabled by default; loopback binding by default;
 - synthetic-data boundary repeated in data artifacts, policies, prompts, and UI.
 
 See [docs/security.md](docs/security.md) for controls and known production gaps.
@@ -226,7 +259,7 @@ See [docs/security.md](docs/security.md) for controls and known production gaps.
 ## Local setup
 
 Requirements: Python 3.13 (`>=3.13,<3.14`), Ollama, and sufficient memory for the chosen
-local model. Python 3.13.9 is the reproducibly validated runtime for release v1.2.0.
+local model. Python 3.13.9 is the reproducibly validated runtime for release v1.3.0.
 
 ```bash
 python3.13 -m venv .venv
@@ -249,14 +282,18 @@ python scripts/generate_synthetic_data.py
 python scripts/generate_knowledge_base.py
 ```
 
-Start the interface:
+Create users (the password is prompted, never stored in plain text) and start API and UI:
 
 ```bash
-novabank-ui
+export JWT_SECRET=$(python -c 'import secrets; print(secrets.token_urlsafe(48))')
+novabank-users add anna.becker --role pruefer --name "Anna Becker"
+novabank-users add max.muster --role sachbearbeiter --team team-nord
+novabank-api      # http://127.0.0.1:8000, OpenAPI at /docs
+novabank-ui       # http://127.0.0.1:7860, logs in at the API
 ```
 
-Open `http://127.0.0.1:7860`. The MCP server is normally launched automatically by CrewAI,
-but it can be inspected separately with `novabank-mcp` over stdio.
+The MCP server is launched automatically per request with the caller's token; it can be
+inspected separately with `novabank-mcp` over stdio (without a token every call is denied).
 
 ## Container usage
 
@@ -290,7 +327,7 @@ make build
 The full test suite does not need a running model or network connection. End-to-end generation
 does require the configured Ollama server and model.
 
-Current local release gate: **216 tests passing** under Python 3.13 with warnings treated as
+Current local release gate: **274 tests passing** under Python 3.13 with warnings treated as
 errors. CI installs the package non-editably and proves that imports resolve from
 `site-packages`.
 
@@ -334,8 +371,11 @@ tests/                unit and integration regression suite
 
 - The committed regression suite is intentionally compact and synthetic.
 - End-to-end answer quality and latency depend on the locally selected Ollama model.
-- Authentication, role-based authorization, encrypted storage, malware scanning, distributed
-  tracing, and formal regulatory validation remain production work.
+- Security limits of v1.3: one shared HS256 key instead of an identity provider (OAuth 2.1/OIDC,
+  SSO), users in a JSON file, in-memory rate limits per process, no TLS termination (belongs to
+  a reverse proxy), and an audit log that is tamper-evident, not tamper-proof. Encrypted
+  storage, malware scanning, distributed tracing, and formal regulatory validation remain
+  production work.
 - A larger adversarial corpus, a cross-encoder reranker, and a measured LLM/RAG/agentic
   baseline comparison are logical next steps after choosing final local-model hardware.
 - One dependency exception is open: `chromadb` (pulled in only by CrewAI, unused by this

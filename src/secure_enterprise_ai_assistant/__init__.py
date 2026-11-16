@@ -6,4 +6,4 @@ import os
 os.environ.setdefault("CREWAI_DISABLE_TELEMETRY", "true")
 os.environ.setdefault("CREWAI_TRACING_ENABLED", "false")
 
-__version__ = "1.2.0"
+__version__ = "1.3.0"
