@@ -20,6 +20,9 @@ LOGGER_NAMESPACE = "secure_enterprise_ai_assistant"
 
 _request_id: ContextVar[str | None] = ContextVar("request_id", default=None)
 
+# Library default: stay silent until an entry point calls configure_logging().
+logging.getLogger(LOGGER_NAMESPACE).addHandler(logging.NullHandler())
+
 # Attributes every LogRecord has; anything else was passed via ``extra`` and is emitted as data.
 _STANDARD_RECORD_FIELDS = frozenset(
     logging.LogRecord("", 0, "", 0, "", None, None).__dict__.keys() | {"message", "asctime"}
