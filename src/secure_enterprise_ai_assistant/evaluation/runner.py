@@ -131,6 +131,18 @@ def run_evaluation(
             "out_of_scope_accuracy": _ratio(out_of_scope_correct, counts["out_of_scope_queries"]),
             "input_guardrail_accuracy": _ratio(guardrail_correct, counts["guardrail_queries"]),
         },
+        "metric_notes": {
+            "tool_selection_accuracy": (
+                "Derived from the routed intent via TOOLS_BY_INTENT; equals routing accuracy "
+                "by construction and is not an independent measurement."
+            ),
+            "source_attribution_rate": (
+                "Checks only that returned chunks carry document ID, title, and section; "
+                "ingestion always fills these fields. It does not check that a cited source "
+                "supports an answer."
+            ),
+            "retrieval_recall_at_5": "Four of five suite questions are English.",
+        },
         "comparisons": {
             "llm_only": "not_run_requires_local_model",
             "rag": "measured_offline",

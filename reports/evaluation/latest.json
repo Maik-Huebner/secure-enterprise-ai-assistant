@@ -20,6 +20,11 @@
     "suite_sha256": "684de13ed4915dffa052c55d1fef4a5d5eba9e163a7b18d29131b3f02220e428"
   },
   "limitations": "Small synthetic regression suite; it does not measure real lending quality, legal compliance, free-form model accuracy, or production security.",
+  "metric_notes": {
+    "retrieval_recall_at_5": "Four of five suite questions are English.",
+    "source_attribution_rate": "Checks only that returned chunks carry document ID, title, and section; ingestion always fills these fields. It does not check that a cited source supports an answer.",
+    "tool_selection_accuracy": "Derived from the routed intent via TOOLS_BY_INTENT; equals routing accuracy by construction and is not an independent measurement."
+  },
   "metrics": {
     "compliance_rule_exact_match": 1.0,
     "financial_calculation_exact_match": 1.0,

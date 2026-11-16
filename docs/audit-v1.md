@@ -19,7 +19,7 @@ Die Schwäche liegt woanders: **Die Bestnoten (8 × 1,0) messen fast nur die Dem
 | Umformulierte Anfragen richtig geroutet | **2 von 8** |
 | Deutsche Wissensfragen gefunden (Recall@5, Hashing) | **4 von 14** |
 
-Alle sieben bekannten Schwächen aus der Aufgabenstellung sind **bestätigt** (Abschnitt 4). Dazu kommen weitere Befunde, die bisher nicht auf der Liste standen (Abschnitt 5), und ein **Abhängigkeitskonflikt**, der die Reihenfolge der v2-Arbeitspakete beeinflusst (Abschnitt 7).
+Alle sieben bekannten Schwächen aus der Aufgabenstellung sind **bestätigt** (Abschnitt 4). Ein Nachtrag (Abschnitt 9) dokumentiert 104 bekannte Sicherheitslücken in den festgeschriebenen Abhängigkeiten. Sie wurden in Paket 0 behoben. Dazu kommen weitere Befunde, die bisher nicht auf der Liste standen (Abschnitt 5), und ein **Abhängigkeitskonflikt**, der die Reihenfolge der v2-Arbeitspakete beeinflusst (Abschnitt 7).
 
 **Einordnung:** Als Portfolio-Prototyp gut. Für den Produktivbetrieb fehlen Anmeldung, Rechte, API, Beobachtbarkeit und eine belastbare Messung der Antwortqualität.
 
@@ -208,7 +208,19 @@ Der `embeddinggemma`-Lauf nutzte die **unveränderten** Schwellen und das 8-Begr
 
 ---
 
-## 9. Quellen
+## 9. Nachtrag: Bekannte Sicherheitslücken in den Abhängigkeiten
+
+*Gefunden am 16.11.2026 bei der Arbeit an Paket 0, betrifft bereits v1.0.2.*
+
+`pip-audit` 2.10.1 gegen die unveränderte Lock-Datei von v1.0.2 meldet **104 bekannte Sicherheitslücken in 14 Paketen**. Betroffen sind u. a. `pillow` (42), `pyjwt` (15), `filelock` (13), `aiohttp` (8), `chromadb` (5), `mcp` (4) und `urllib3` (3). Fast alle kommen nicht direkt, sondern über CrewAI, Gradio oder torch herein.
+
+| Schwere | Befund | Wo |
+|---|---|---|
+| Hoch | Die CI hatte keinen Schwachstellen-Scan, daher fiel das nicht auf. Die Lock-Datei sorgt für Reproduzierbarkeit, hält aber auch alte, verwundbare Versionen fest, wenn niemand regelmäßig prüft. | `requirements/lock-py313.txt`, `.github/workflows/ci.yml` |
+
+**Stand nach Paket 0:** 0 offene Lücken außer 5 Meldungen zu `chromadb`. Dafür gibt es noch keine reparierte Version, das Paket kommt nur über CrewAI herein und wird von diesem Projekt nicht benutzt. Die Ausnahme ist in `make deps-audit` begründet und fällt mit CrewAI in Paket 4 weg.
+
+## 10. Quellen
 
 - [MCP Python SDK: Migration Guide v1 → v2](https://py.sdk.modelcontextprotocol.io/migration/)
 - [MCP-Spezifikation 2026-07-28: Authorization](https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization)
