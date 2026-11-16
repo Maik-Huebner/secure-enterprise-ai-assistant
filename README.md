@@ -232,7 +232,7 @@ make build
 The full test suite does not need a running model or network connection. End-to-end generation
 does require the configured Ollama server and model.
 
-Current local release gate: **84 tests passing** under Python 3.13 with warnings treated as
+Current local release gate: **92 tests passing** under Python 3.13 with warnings treated as
 errors. CI installs the package non-editably and proves that imports resolve from
 `site-packages`.
 
