@@ -28,6 +28,7 @@ UI_DISCLAIMER = PROJECT_DISCLAIMER
 TRACE_EVENT_LABELS = {
     "request_received": "Anfrage empfangen",
     "intent_classified": "Anfragetyp erkannt",
+    "routing_method": "Erkennungsmethode",
     "model_selected": "Modell ausgewählt",
     "configured_complex_model": "Konfiguriertes komplexes Modell",
     "model_profile": "Modellprofil",
@@ -54,6 +55,9 @@ UI_VALUE_LABELS = {
     "verified_mcp": "Verifizierter MCP-Pfad",
     "agentic": "Experimenteller agentischer Modus",
     "not recorded": "nicht erfasst",
+    "rule": "Regel",
+    "keyword": "Schlüsselwörter",
+    "semantic": "Bedeutung (Embedding)",
     "development": "Entwicklung",
     "production": "Produktion",
     "test": "Test",

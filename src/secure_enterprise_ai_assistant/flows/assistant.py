@@ -15,7 +15,7 @@ with warnings.catch_warnings():
 from pydantic import BaseModel, Field
 
 from secure_enterprise_ai_assistant.agents.factory import CrewOrchestrator
-from secure_enterprise_ai_assistant.flows.router import IntentRouter
+from secure_enterprise_ai_assistant.flows.router import get_router
 from secure_enterprise_ai_assistant.guardrails import validate_user_query
 from secure_enterprise_ai_assistant.models.orchestration import (
     QueryIntent,
@@ -59,9 +59,14 @@ class NovaBankAssistantFlow(Flow[AssistantFlowState]):
     @router(receive_request)
     def select_route(self, query: str) -> str:
         state = self.typed_state
-        route = IntentRouter().classify(query)
+        route = get_router().classify(query)
         state.route = route
-        state.trace.append(TraceEvent(event="intent_classified", detail=route.intent.value))
+        state.trace.extend(
+            [
+                TraceEvent(event="intent_classified", detail=route.intent.value),
+                TraceEvent(event="routing_method", detail=route.routing_method),
+            ]
+        )
         return route.intent.value
 
     def _execute_selected_route(self) -> str:

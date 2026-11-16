@@ -1,0 +1,43 @@
+{
+  "description": "Example requests per case intent for the semantic router. Must not overlap with resources/evaluation/routing_suite.json.",
+  "customer_case": [
+    "Zeige CASE-00001.",
+    "Lade die Falldaten von CASE-00002.",
+    "Welche Daten liegen zu CASE-00003 vor?",
+    "Wer ist der Kunde in CASE-00004?",
+    "Zeig mir den Antrag CASE-00005.",
+    "Welche Dokumente hat CASE-00006 eingereicht?",
+    "Wie hoch ist das Nettoeinkommen in CASE-00007?",
+    "Fasse die Akte CASE-00008 zusammen."
+  ],
+  "financial_analysis": [
+    "Berechne die monatliche Rate für CASE-00001.",
+    "Wie hoch ist die Kreditbelastung bei CASE-00002?",
+    "Wie viel zahlt der Kunde in CASE-00003 jeden Monat?",
+    "Berechne die Schuldendienstquote für CASE-00004.",
+    "Wie hoch sind Gesamtzins und Gesamtrückzahlung bei CASE-00005?",
+    "Wie verändert sich die DTI durch den neuen Kredit in CASE-00006?",
+    "Rechne nach, ob die Rate für CASE-00007 tragbar ist.",
+    "Finanzanalyse für CASE-00008."
+  ],
+  "compliance_check": [
+    "Welche Compliance-Probleme hat CASE-00001?",
+    "Prüfe CASE-00002 gegen die Richtlinien.",
+    "Gegen welche Regeln verstößt CASE-00003?",
+    "Gibt es Auffälligkeiten bei der KYC-Prüfung von CASE-00004?",
+    "Sind die Unterlagen von CASE-00005 gültig?",
+    "Welche Prüfregeln sind bei CASE-00006 nicht bestanden?",
+    "Führe die Compliance-Prüfung für CASE-00007 durch.",
+    "Verletzt CASE-00008 eine Vorgabe des Regelwerks?"
+  ],
+  "full_assessment": [
+    "Prüfe CASE-00001 vollständig und erstelle eine Entscheidungsvorlage.",
+    "Erstelle eine Entscheidungsvorlage für CASE-00002.",
+    "Soll der Kredit für CASE-00003 genehmigt werden?",
+    "Gib mir eine Gesamtbewertung für CASE-00004.",
+    "Bewerte CASE-00005 abschließend mit Empfehlung.",
+    "Komplette Prüfung von CASE-00006 bitte.",
+    "Wie lautet deine Empfehlung zu CASE-00007?",
+    "Fasse alle Prüfergebnisse zu CASE-00008 mit einer Empfehlung zusammen."
+  ]
+}

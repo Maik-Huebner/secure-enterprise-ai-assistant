@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 from enum import StrEnum
+from typing import Literal
 
 from pydantic import Field
 
@@ -26,6 +27,7 @@ class RouteDecision(DomainModel):
     intent: QueryIntent
     case_id: str | None = Field(default=None, pattern=r"^CASE-\d{5}$")
     required_tools: list[str]
+    routing_method: Literal["rule", "keyword", "semantic"] = "keyword"
 
 
 class TraceEvent(DomainModel):
