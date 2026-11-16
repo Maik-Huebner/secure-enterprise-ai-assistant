@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import re
+import time
 from collections.abc import Callable
 from typing import Any
 
@@ -11,11 +12,13 @@ import gradio as gr
 import httpx
 
 from secure_enterprise_ai_assistant.core.company import COMPANY_NAME
+from secure_enterprise_ai_assistant.core.logs import configure_logging, get_logger, request_context
 from secure_enterprise_ai_assistant.core.settings import get_settings
 from secure_enterprise_ai_assistant.mcp import create_mcp_server
 from secure_enterprise_ai_assistant.mcp.tools import MCPToolService
 
 SOURCE_PATTERN = re.compile(r"\bNB-[A-Z]+-\d{3}\b")
+logger = get_logger(__name__)
 
 UI_TITLE = "Sicherer Enterprise-KI-Assistent"
 UI_DISCLAIMER = (
@@ -253,6 +256,12 @@ class AssistantController:
         self, message: str, history: list[dict[str, str]] | None
     ) -> tuple[list[dict[str, str]], str, list[list[str]], dict[str, Any], str]:
         """Execute a Flow and return chat, sources, trace, tools, and status."""
+        with request_context():
+            return self._submit(message, history)
+
+    def _submit(
+        self, message: str, history: list[dict[str, str]] | None
+    ) -> tuple[list[dict[str, str]], str, list[list[str]], dict[str, Any], str]:
         history = list(history or [])
         query = message.strip()
         if not query:
@@ -264,6 +273,7 @@ class AssistantController:
                 ("Bitte eine Anfrage eingeben."),
             )
         history.append({"role": "user", "content": query})
+        started = time.perf_counter()
         try:
             answer, route, trace = self.flow_runner(query)
             if route is None:
@@ -315,7 +325,23 @@ class AssistantController:
                     f"`{tools['Ausgewähltes Modell']}` im Modus "
                     f"`{tools['Ausführungsmodus']}`; {len(trace_rows)} technische Ereignisse."
                 )
+            logger.info(
+                "request_completed",
+                extra={
+                    "intent": route.intent.value,
+                    "execution_mode": trace_details.get("execution_mode"),
+                    "query_length": len(query),
+                    "duration_ms": round((time.perf_counter() - started) * 1000, 1),
+                },
+            )
         except Exception:
+            logger.exception(
+                "request_failed",
+                extra={
+                    "query_length": len(query),
+                    "duration_ms": round((time.perf_counter() - started) * 1000, 1),
+                },
+            )
             answer = (
                 "Der lokale Workflow konnte nicht abgeschlossen werden. Prüfe, ob Ollama läuft "
                 "und das konfigurierte Modell installiert ist, und versuche es erneut."
@@ -467,6 +493,7 @@ def build_app(controller: AssistantController | None = None) -> gr.Blocks:
 def main() -> None:
     """Launch on loopback only with sharing disabled."""
     settings = get_settings()
+    configure_logging(settings.log_level)
     build_app().launch(
         server_name=settings.ui_server_name,
         server_port=settings.ui_server_port,

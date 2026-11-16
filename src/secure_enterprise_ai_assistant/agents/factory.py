@@ -10,6 +10,7 @@ from functools import wraps
 from pathlib import Path
 from typing import Any
 
+from secure_enterprise_ai_assistant.core.logs import get_logger
 from secure_enterprise_ai_assistant.core.settings import Settings, get_settings
 
 # CrewAI resolves several default database paths during import. Point that documented override
@@ -47,6 +48,8 @@ from secure_enterprise_ai_assistant.core.language import (
 )
 from secure_enterprise_ai_assistant.mcp.client import VerifiedMCPReportBuilder
 from secure_enterprise_ai_assistant.models.orchestration import QueryIntent, RouteDecision
+
+logger = get_logger(__name__)
 
 MCP_MODULE = "secure_enterprise_ai_assistant.mcp.server"
 DEMO_SAFE_FALLBACK_REASON = (
@@ -485,6 +488,10 @@ class CrewOrchestrator:
                     self.fallback_reason = message
                 else:
                     self.fallback_reason = f"{type(exc).__name__}: native CrewAI execution failed"
+                logger.warning(
+                    "full_assessment_fallback",
+                    extra={"cause": "crew_execution_failed", "error_type": type(exc).__name__},
+                )
                 return VerifiedMCPReportBuilder().build(query, route)
             raise
         if route.intent == QueryIntent.FULL_ASSESSMENT and not is_complete_decision_brief(output):
@@ -492,6 +499,7 @@ class CrewOrchestrator:
             self.fallback_reason = (
                 "Native CrewAI output failed decision-brief completeness validation"
             )
+            logger.warning("full_assessment_fallback", extra={"cause": "incomplete_brief"})
             return VerifiedMCPReportBuilder().build(query, route)
         return sanitize_model_output(output)
 

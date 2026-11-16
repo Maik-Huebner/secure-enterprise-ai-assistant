@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     ollama_request_timeout_seconds: int = Field(default=180, ge=15, le=900)
     embedding_model: str = ""
     app_env: str = "development"
-    log_level: str = "INFO"
+    log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
     llm_temperature: float = Field(default=0.1, ge=0, le=2)
     llm_max_tokens: int = Field(default=4096, ge=512, le=32768)
     ollama_think: bool = False
