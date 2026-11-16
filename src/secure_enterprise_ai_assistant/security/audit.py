@@ -8,7 +8,6 @@ write-once storage.
 
 from __future__ import annotations
 
-import argparse
 import hashlib
 import json
 import threading
@@ -16,6 +15,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from secure_enterprise_ai_assistant.core.cli import GermanArgumentParser
 from secure_enterprise_ai_assistant.core.logs import current_request_id
 from secure_enterprise_ai_assistant.security.models import Principal
 
@@ -90,9 +90,19 @@ def verify_chain(path: Path) -> tuple[bool, int, int | None]:
 def main(argv: list[str] | None = None) -> int:
     from secure_enterprise_ai_assistant.core.settings import get_settings
 
-    parser = argparse.ArgumentParser(description="Audit-Log prüfen.")
-    parser.add_argument("command", choices=("verify",))
-    parser.add_argument("--path", type=Path)
+    parser = GermanArgumentParser(prog="novabank-audit", description="Audit-Log prüfen.")
+    commands = parser.add_subparsers(dest="command", required=True)
+    check = commands.add_parser(
+        "pruefen", aliases=["verify"], help="Hash-Kette des Audit-Logs prüfen"
+    )
+    check.add_argument(
+        "--pfad",
+        "--path",
+        dest="path",
+        type=Path,
+        metavar="DATEI",
+        help="anderes Audit-Log als in den Einstellungen",
+    )
     args = parser.parse_args(argv)
     path = args.path or get_settings().resolved_audit_log
     intact, count, broken = verify_chain(path)

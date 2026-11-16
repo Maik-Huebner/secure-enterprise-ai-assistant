@@ -1,16 +1,15 @@
 """``novabank-langfuse``: connect the assistant to a (self-hosted) Langfuse project.
 
-Commands:
-  check       test the keys against the Langfuse server
-  setup       register the local answer model with the configured price per token
-  datasets    upload the answer and retrieval suites as Langfuse datasets
-  experiment  run the answer suite through the real workflow as a Langfuse experiment
-              (needs Ollama; every item becomes a trace with scores)
+Commands (German names; the English ones remain as aliases):
+  pruefen       (check)       test the keys against the Langfuse server
+  einrichten    (setup)       register the local answer model with the configured token price
+  datensaetze   (datasets)    upload the answer and retrieval suites as Langfuse datasets
+  experiment                  run the answer suite through the real workflow as a Langfuse
+                              experiment (needs Ollama; every item becomes a scored trace)
 """
 
 from __future__ import annotations
 
-import argparse
 import asyncio
 import json
 import re
@@ -18,6 +17,7 @@ import sys
 from typing import TYPE_CHECKING, Any
 
 from secure_enterprise_ai_assistant import __version__
+from secure_enterprise_ai_assistant.core.cli import GermanArgumentParser
 from secure_enterprise_ai_assistant.core.settings import Settings, get_settings
 from secure_enterprise_ai_assistant.evaluation.answer_quality import declined, fact_hits
 from secure_enterprise_ai_assistant.observability.tracing import Tracing, build_tracing
@@ -176,20 +176,36 @@ def experiment(settings: Settings, run_name: str | None) -> None:
 
 
 def main(argv: list[str] | None = None) -> None:
-    parser = argparse.ArgumentParser(prog="novabank-langfuse", description=__doc__.splitlines()[0])
+    parser = GermanArgumentParser(
+        prog="novabank-langfuse",
+        description="Den Assistenten mit einem (selbst betriebenen) Langfuse-Projekt verbinden.",
+    )
     commands = parser.add_subparsers(dest="command", required=True)
-    commands.add_parser("check")
-    commands.add_parser("setup")
-    commands.add_parser("datasets")
-    run = commands.add_parser("experiment")
-    run.add_argument("--run-name", default=None)
+    commands.add_parser("pruefen", aliases=["check"], help="Schlüssel am Langfuse-Server prüfen")
+    commands.add_parser(
+        "einrichten", aliases=["setup"], help="lokales Modell mit Token-Preis anlegen"
+    )
+    commands.add_parser(
+        "datensaetze", aliases=["datasets"], help="Antwort- und Suchfragen hochladen"
+    )
+    run = commands.add_parser(
+        "experiment", help="Antwortfragen als Langfuse-Experiment ausführen (braucht Ollama)"
+    )
+    run.add_argument(
+        "--lauf-name",
+        "--run-name",
+        dest="run_name",
+        default=None,
+        metavar="NAME",
+        help="Name des Laufs",
+    )
     arguments = parser.parse_args(argv)
     settings = get_settings()
-    if arguments.command == "check":
+    if arguments.command in {"pruefen", "check"}:
         check(settings)
-    elif arguments.command == "setup":
+    elif arguments.command in {"einrichten", "setup"}:
         setup(settings)
-    elif arguments.command == "datasets":
+    elif arguments.command in {"datensaetze", "datasets"}:
         datasets(settings)
     else:
         experiment(settings, arguments.run_name)

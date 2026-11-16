@@ -7,12 +7,12 @@ has no Ollama. Measurements with real embedding models are produced locally by
 
 from __future__ import annotations
 
-import argparse
 import hashlib
 import json
 from pathlib import Path
 from typing import Any
 
+from secure_enterprise_ai_assistant.core.cli import GermanArgumentParser
 from secure_enterprise_ai_assistant.evaluation.retrieval_metrics import metrics, observe
 from secure_enterprise_ai_assistant.flows.router import IntentRouter
 from secure_enterprise_ai_assistant.guardrails import detect_attack_categories
@@ -186,9 +186,30 @@ def write_report(report: dict[str, Any], output_path: Path) -> None:
 
 def main() -> None:
     """Run the offline suite and optionally persist the deterministic report."""
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--suite", type=Path, default=DEFAULT_SUITE)
-    parser.add_argument("--output", type=Path)
+    parser = GermanArgumentParser(
+        prog="novabank-evaluate",
+        description=(
+            "Reproduzierbare Offline-Auswertung ohne Modell und Netz (Grundlage der CI). "
+            "Suche und Routing laufen hier mit Hashing-Embedder und Stichwortregeln; "
+            "Messungen mit echten Modellen liefern scripts/benchmark_retrieval.py und "
+            "scripts/benchmark_routing.py."
+        ),
+    )
+    parser.add_argument(
+        "--suite",
+        type=Path,
+        default=DEFAULT_SUITE,
+        metavar="DATEI",
+        help="Datei mit den Testfällen",
+    )
+    parser.add_argument(
+        "--ausgabe",
+        "--output",
+        dest="output",
+        type=Path,
+        metavar="DATEI",
+        help="Bericht als JSON speichern",
+    )
     args = parser.parse_args()
     report = run_evaluation(args.suite)
     if args.output is not None:
