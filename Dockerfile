@@ -23,9 +23,8 @@ RUN python -m pip install --no-deps --no-build-isolation . \
 
 USER novabank
 
-EXPOSE 7860
+# One image, three entry points: novabank-api (default), novabank-ui, novabank-mcp.
+# Health checks live in compose.yaml because they differ per service.
+EXPOSE 8000 7860 8001
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-    CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:7860/', timeout=3)"]
-
-CMD ["novabank-ui"]
+CMD ["novabank-api"]

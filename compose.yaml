@@ -1,0 +1,113 @@
+# NovaBank Secure Enterprise AI Assistant – API and UI in containers.
+#
+# Ollama runs natively on the host (on a Mac only there it can use the GPU):
+#   ollama pull qwen3.5:9b && ollama pull qwen3-embedding:0.6b
+#
+# Start:  JWT_SECRET must be set in .env (see .env.example), then
+#   docker compose up -d --build
+#   printf '%s\n' '<password>' | docker compose run --rm -T api \
+#       novabank-users add anna.becker --role pruefer --password-stdin
+# UI: http://localhost:7860   API: http://localhost:8000/docs
+#
+# Optional MCP over Streamable HTTP instead of stdio subprocesses:
+#   MCP_TRANSPORT=http docker compose --profile mcp-http up -d
+# Optional tracing: deploy/langfuse/docker-compose.yml (separate stack), then set
+#   LANGFUSE_ENABLED=true and the keys in .env.
+#
+# Every port is published on 127.0.0.1 only. Only the variables listed here reach the
+# containers; the local .env is used for interpolation, not copied wholesale.
+
+name: novabank
+
+x-common-env: &common-env
+  APP_ENV: ${APP_ENV:-development}
+  LOG_LEVEL: ${LOG_LEVEL:-INFO}
+  RUNTIME_DIR: /var/lib/novabank
+  JWT_SECRET: ${JWT_SECRET:?JWT_SECRET fehlt in .env (siehe .env.example)}
+  OLLAMA_BASE_URL: ${OLLAMA_BASE_URL_CONTAINER:-http://host.docker.internal:11434}
+  OLLAMA_FAST_MODEL: ${OLLAMA_FAST_MODEL:-qwen3.5:9b}
+  EMBEDDING_BACKEND: ${EMBEDDING_BACKEND:-ollama}
+  EMBEDDING_MODEL: ${EMBEDDING_MODEL:-qwen3-embedding:0.6b}
+  MCP_TRANSPORT: ${MCP_TRANSPORT:-stdio}
+  MCP_SERVER_URL: http://mcp:8001/mcp
+  API_BASE_URL: http://localhost:8000
+  LANGFUSE_ENABLED: ${LANGFUSE_ENABLED:-false}
+  LANGFUSE_BASE_URL: ${LANGFUSE_BASE_URL_CONTAINER:-http://host.docker.internal:3000}
+  LANGFUSE_PUBLIC_KEY: ${LANGFUSE_PUBLIC_KEY:-}
+  LANGFUSE_SECRET_KEY: ${LANGFUSE_SECRET_KEY:-}
+
+x-app: &app
+  image: novabank-assistant:2.0.0
+  build: .
+  restart: unless-stopped
+  extra_hosts:
+    - host.docker.internal:host-gateway # Linux; Docker Desktop provides it anyway
+  read_only: true
+  tmpfs:
+    - /tmp
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+
+services:
+  api:
+    <<: *app
+    command: ["novabank-api"]
+    environment:
+      <<: *common-env
+      API_HOST: 0.0.0.0
+      API_PORT: "8000"
+    volumes:
+      - novabank_runtime:/var/lib/novabank
+    ports:
+      - 127.0.0.1:8000:8000
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"
+      interval: 15s
+      timeout: 5s
+      start_period: 120s # the first start builds the search index with Ollama embeddings
+      retries: 5
+
+  ui:
+    <<: *app
+    command: ["novabank-ui"]
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      UI_SERVER_NAME: 0.0.0.0
+      API_BASE_URL: http://api:8000
+      HOME: /tmp # Gradio writes small caches
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - 127.0.0.1:7860:7860
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:7860/', timeout=3)"
+      interval: 15s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+
+  mcp:
+    <<: *app
+    profiles: ["mcp-http"]
+    command: ["novabank-mcp", "--transport", "http", "--host", "0.0.0.0", "--port", "8001"]
+    environment:
+      <<: *common-env
+      MCP_HOST: mcp
+    volumes:
+      - novabank_runtime:/var/lib/novabank
+    # Not published: only the API talks to the tool server, inside the compose network.
+
+volumes:
+  novabank_runtime:
