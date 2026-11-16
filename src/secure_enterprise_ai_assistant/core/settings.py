@@ -26,8 +26,6 @@ class Settings(BaseSettings):
         min_length=1,
         validation_alias=AliasChoices("OLLAMA_FAST_MODEL", "OLLAMA_MODEL"),
     )
-    ollama_complex_model: str = Field(default="mistral-small3.2:24b", min_length=1)
-    full_assessment_mode: Literal["verified_mcp", "agentic"] = "verified_mcp"
     ollama_request_timeout_seconds: int = Field(default=180, ge=15, le=900)
     # Embeddings: "ollama" for real use; "hashing" only for fast tests and offline baselines.
     embedding_backend: Literal["ollama", "sentence_transformers", "hashing"] = "ollama"
@@ -39,9 +37,12 @@ class Settings(BaseSettings):
     app_env: str = "development"
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
     llm_temperature: float = Field(default=0.1, ge=0, le=2)
-    llm_max_tokens: int = Field(default=4096, ge=512, le=32768)
+    llm_max_tokens: int = Field(default=1024, ge=128, le=32768)
+    llm_context_tokens: int = Field(default=8192, ge=2048, le=131072)
+    llm_seed: int = 7
+    # One answer plus one corrected retry before the verified fallback takes over.
+    answer_max_attempts: int = Field(default=2, ge=1, le=4)
     ollama_think: bool = False
-    agent_max_execution_seconds: int = Field(default=90, ge=15, le=600)
     mcp_request_timeout_seconds: int = Field(default=30, ge=5, le=300)
     runtime_dir: Path = Field(
         default_factory=lambda: user_state_path("secure-enterprise-ai-assistant")
@@ -69,6 +70,14 @@ class Settings(BaseSettings):
     @property
     def resolved_index_dir(self) -> Path:
         return self.index_dir or self.runtime_dir / "index"
+
+    @property
+    def graph_checkpoint_path(self) -> Path:
+        return self.runtime_dir / "graph" / "checkpoints.sqlite"
+
+    @property
+    def review_index_path(self) -> Path:
+        return self.runtime_dir / "graph" / "reviews.json"
 
     @property
     def resolved_users_file(self) -> Path:

@@ -2,8 +2,7 @@
 
 import os
 
-# Local-first is the secure default; an operator can explicitly override it before import.
-os.environ.setdefault("CREWAI_DISABLE_TELEMETRY", "true")
-os.environ.setdefault("CREWAI_TRACING_ENABLED", "false")
+# Local-first: LangChain/LangSmith tracing stays off unless an operator explicitly enables it.
+os.environ.setdefault("LANGSMITH_TRACING", "false")
 
-__version__ = "1.3.0"
+__version__ = "1.4.0"

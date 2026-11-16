@@ -1,18 +1,5 @@
-"""CrewAI Flow and deterministic routing with lazy optional-runtime imports."""
+"""Deterministic request routing (rules plus semantic intent examples)."""
 
-from typing import Any
+from secure_enterprise_ai_assistant.flows.router import IntentRouter, get_router
 
-
-def __getattr__(name: str) -> Any:
-    if name == "IntentRouter":
-        from secure_enterprise_ai_assistant.flows.router import IntentRouter
-
-        return IntentRouter
-    if name == "NovaBankAssistantFlow":
-        from secure_enterprise_ai_assistant.flows.assistant import NovaBankAssistantFlow
-
-        return NovaBankAssistantFlow
-    raise AttributeError(name)
-
-
-__all__ = ["IntentRouter", "NovaBankAssistantFlow"]
+__all__ = ["IntentRouter", "get_router"]
