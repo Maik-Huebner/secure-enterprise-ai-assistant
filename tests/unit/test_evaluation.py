@@ -19,7 +19,10 @@ def test_offline_evaluation_metrics_are_measured() -> None:
         "retrieval_recall_at_5",
         "source_attribution_rate",
         "out_of_scope_accuracy",
-        "input_guardrail_accuracy",
+        "guardrail_dev_attack_recall",
+        "guardrail_dev_false_positive_rate",
+        "guardrail_holdout_attack_recall",
+        "guardrail_holdout_false_positive_rate",
     }
     assert all(0 <= value <= 1 for value in report["metrics"].values())
     assert report["comparisons"]["llm_only"] == "not_run_requires_local_model"

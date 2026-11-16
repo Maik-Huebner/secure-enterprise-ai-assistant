@@ -9,12 +9,13 @@ from pathlib import Path
 from typing import Any
 
 from secure_enterprise_ai_assistant.flows.router import TOOLS_BY_INTENT, IntentRouter
-from secure_enterprise_ai_assistant.guardrails import UnsafeInputError, validate_user_query
+from secure_enterprise_ai_assistant.guardrails import detect_attack_categories
 from secure_enterprise_ai_assistant.mcp.tools import MCPToolService
 from secure_enterprise_ai_assistant.models.orchestration import QueryIntent
 from secure_enterprise_ai_assistant.resources import (
     CASES_PATH,
     EVALUATION_SUITE_PATH,
+    GUARDRAIL_SUITE_PATH,
     KNOWLEDGE_ROOT,
     RULES_PATH,
 )
@@ -91,14 +92,20 @@ def run_evaluation(
     out_of_scope_correct = sum(
         tools.search_internal_knowledge(question).out_of_scope for question in suite["out_of_scope"]
     )
-    guardrail_correct = 0
-    for item in suite["guardrails"]:
-        blocked = False
-        try:
-            validate_user_query(item["query"])
-        except UnsafeInputError:
-            blocked = True
-        guardrail_correct += blocked is item["blocked"]
+    guardrail_suite = json.loads(GUARDRAIL_SUITE_PATH.read_text(encoding="utf-8"))
+    guardrail_metrics: dict[str, float] = {}
+    guardrail_counts: dict[str, int] = {}
+    for split in ("dev", "holdout"):
+        attacks = guardrail_suite[split]["attacks"]
+        benign = guardrail_suite[split]["benign"]
+        blocked = sum(bool(detect_attack_categories(query)) for query in attacks)
+        false_positives = sum(bool(detect_attack_categories(query)) for query in benign)
+        guardrail_metrics[f"guardrail_{split}_attack_recall"] = _ratio(blocked, len(attacks))
+        guardrail_metrics[f"guardrail_{split}_false_positive_rate"] = _ratio(
+            false_positives, len(benign)
+        )
+        guardrail_counts[f"guardrail_{split}_attacks"] = len(attacks)
+        guardrail_counts[f"guardrail_{split}_benign"] = len(benign)
 
     counts = {
         "routing_queries": len(suite["routing"]),
@@ -106,7 +113,7 @@ def run_evaluation(
         "compliance_cases": len(suite["compliance"]),
         "retrieval_queries": len(suite["retrieval"]),
         "out_of_scope_queries": len(suite["out_of_scope"]),
-        "guardrail_queries": len(suite["guardrails"]),
+        **guardrail_counts,
     }
     return {
         "schema_version": 1,
@@ -116,6 +123,7 @@ def run_evaluation(
             "suite_sha256": _sha256(suite_path),
             "cases_sha256": _sha256(CASES_PATH),
             "rules_sha256": _sha256(RULES_PATH),
+            "guardrail_suite_sha256": _sha256(GUARDRAIL_SUITE_PATH),
             "knowledge_corpus_sha256": _corpus_sha256(KNOWLEDGE_ROOT),
         },
         "counts": counts,
@@ -129,7 +137,7 @@ def run_evaluation(
             "retrieval_recall_at_5": _ratio(retrieval_hits, counts["retrieval_queries"]),
             "source_attribution_rate": _ratio(attributed, counts["retrieval_queries"]),
             "out_of_scope_accuracy": _ratio(out_of_scope_correct, counts["out_of_scope_queries"]),
-            "input_guardrail_accuracy": _ratio(guardrail_correct, counts["guardrail_queries"]),
+            **guardrail_metrics,
         },
         "metric_notes": {
             "tool_selection_accuracy": (
@@ -141,7 +149,15 @@ def run_evaluation(
                 "ingestion always fills these fields. It does not check that a cited source "
                 "supports an answer."
             ),
-            "retrieval_recall_at_5": "Four of five suite questions are English.",
+            "retrieval_recall_at_5": "Only five questions; expanded in v1.2.",
+            "guardrail_dev_attack_recall": (
+                "The dev split was used to design the patterns and is optimistic by construction."
+            ),
+            "guardrail_holdout_attack_recall": (
+                "The holdout split was written after the patterns and measured without tuning. "
+                "Both splits were written by the pattern author, so this is no independent "
+                "benchmark."
+            ),
         },
         "comparisons": {
             "llm_only": "not_run_requires_local_model",
