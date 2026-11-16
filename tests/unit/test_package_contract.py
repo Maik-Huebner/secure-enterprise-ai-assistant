@@ -1,8 +1,5 @@
 """Contracts for version metadata and packaged runtime resources."""
 
-import os
-import subprocess
-import sys
 import tomllib
 from importlib.metadata import version
 from pathlib import Path
@@ -53,24 +50,3 @@ def test_default_tool_service_is_independent_of_current_directory(tmp_path, monk
     assert service.search_internal_knowledge(
         "Pflichtnachweise für Verbraucherkredite", principal=REVIEWER
     ).results
-
-
-def test_crewai_import_uses_configured_runtime_directory(tmp_path) -> None:
-    runtime_dir = tmp_path / "runtime-state"
-    environment = os.environ.copy()
-    environment.pop("CREWAI_STORAGE_DIR", None)
-    environment["RUNTIME_DIR"] = str(runtime_dir)
-    code = (
-        "import os; "
-        "import secure_enterprise_ai_assistant.agents.factory; "
-        f"assert os.environ['CREWAI_STORAGE_DIR'] == {str(runtime_dir)!r}"
-    )
-
-    subprocess.run(
-        [sys.executable, "-c", code],
-        cwd=tmp_path,
-        env=environment,
-        check=True,
-        capture_output=True,
-        text=True,
-    )

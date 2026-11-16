@@ -14,9 +14,7 @@ from secure_enterprise_ai_assistant.core.settings import Settings
 _EXTRA_NAMES = frozenset(
     {
         "OLLAMA_MODEL",  # legacy alias of OLLAMA_FAST_MODEL
-        "CREWAI_DISABLE_TELEMETRY",
-        "CREWAI_TRACING_ENABLED",
-        "CREWAI_STORAGE_DIR",
+        "LANGSMITH_TRACING",
     }
 )
 

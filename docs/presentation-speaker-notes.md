@@ -1,5 +1,7 @@
 # Sprechernotizen: Secure Enterprise AI Assistant
 
+> **Historischer Stand (v1.0.2, Abschlussprojekt).** Dieses Dokument beschreibt die erste Version mit CrewAI und einem 24B-Mistral-Profil. Beides wurde in v1.4 durch einen LangGraph-Workflow mit einem lokalen 9B-Modell ersetzt. Aktuell gelten [README](../README.md) und [Architektur](architecture.md).
+
 Die Texte sind für eine ruhige Sprechgeschwindigkeit geplant. Regiehinweise in eckigen Klammern werden nicht vorgelesen.
 
 ## Folie 1: Secure Enterprise AI Assistant

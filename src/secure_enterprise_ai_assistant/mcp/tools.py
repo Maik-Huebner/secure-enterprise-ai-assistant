@@ -25,6 +25,7 @@ from secure_enterprise_ai_assistant.services import (
     CustomerCaseRepository,
     FinancialAnalysisService,
 )
+from secure_enterprise_ai_assistant.services.decision import DecisionService
 from secure_enterprise_ai_assistant.services.errors import CaseNotFoundError
 
 CASE_ID_PATTERN = re.compile(r"^CASE-\d{5}$")
@@ -105,8 +106,11 @@ class MCPToolService:
     def check_compliance(self, case_id: str, *, principal: Principal) -> ComplianceCheckResult:
         """Evaluate every machine-readable NovaBank rule for a case."""
         case = self._readable_case(case_id, principal)
+        findings = list(self.compliance_service.check(case))
         return ComplianceCheckResult(
-            case_id=case.case_id, findings=list(self.compliance_service.check(case))
+            case_id=case.case_id,
+            findings=findings,
+            decision=DecisionService(self.compliance_service.rules).summarize(findings),
         )
 
     def readable_document_ids(self, principal: Principal) -> set[str]:

@@ -1,42 +1,51 @@
-# Demo scenarios
+# Demo-Szenarien (ab v1.4)
 
-## 1 — Hybrid RAG
+Alle Fälle und Richtlinien sind synthetisch. Für die Demo zwei Benutzer anlegen, zum Beispiel
+`anna.becker` und `tom.klein` mit der Rolle `pruefer`, sowie `max.muster` als `sachbearbeiter`
+in `team-nord` (siehe README, „Local setup“).
 
-Prompt: `Welche Unterlagen benötigt NovaBank für einen Konsumentenkredit?`
+## 1 – Wissensfrage mit Quellen
 
-Expected route: knowledge using `qwen3.5:9b` / `fast_local` and
-`search_internal_knowledge`. Expected top source: `NB-DOC-001` v1.6, section 3.1.
+Frage: `Welche Unterlagen benötigt NovaBank für einen Konsumentenkredit?`
 
-## 2 — Structured customer data
+Erwartet: Route `knowledge`, Werkzeug `search_internal_knowledge`, Antwort des Modells mit
+Quelle `NB-DOC-001`, Abschnitt 3.1, Ausführungsmodus `llm_grounded`.
 
-Prompt: `Zeige CASE-00001.`
+## 2 – Frage ohne Antwort in den Richtlinien
 
-Expected route: customer case. This is the clearly positive synthetic case.
+Frage: `Wie hoch ist der Dispozins für ein Girokonto?`
 
-## 3 — Deterministic financial analysis
+Erwartet: keine passende Quelle, Modus `no_answer`, **kein** Modellaufruf. Das System sagt, dass
+die Richtlinien die Frage nicht beantworten, statt etwas zu erfinden.
 
-Prompt: `Berechne die Kreditbelastung für CASE-00001.`
+## 3 – Deterministische Finanzanalyse
 
-Expected model: `qwen3.5:9b` / `fast_local`. Expected monthly payment: EUR 419.46.
-No model arithmetic is accepted.
+Frage: `Berechne die Kreditbelastung für CASE-00001.`
 
-## 4 — Compliance problem
+Erwartet: Monatsrate 419,46 EUR, DTI 4,00 % → 10,71 %. Alle Zahlen kommen aus
+`analyze_financial_case`; die Antwortprüfung lehnt jede Zahl ab, die nicht in den Nachweisen
+steht.
 
-Prompt: `Welche Compliance-Probleme hat CASE-00017?`
+## 4 – Compliance-Problem
 
-Expected failed rule: `RULE-003`, missing income statement.
+Frage: `Welche Compliance-Probleme hat CASE-00017?`
 
-## 5 — Demo-safe full assessment
+Erwartet: `RULE-003` nicht bestanden (Einkommensnachweis fehlt), Quelle `NB-DOC-001`.
 
-Prompt: `Prüfe CASE-00031 vollständig und erstelle eine Entscheidungsvorlage einschließlich
-finanzieller Kennzahlen, Policy-Abgleich, Compliance-Risiken und Quellen.`
+## 5 – Entscheidungsvorlage mit Vier-Augen-Freigabe
 
-Expected profile: `complex_agentic`, with `mistral-small3.2:24b` recorded as the configured
-complex model. With the demo default `FULL_ASSESSMENT_MODE=verified_mcp`, Mistral is not run.
-The transparent `deterministic_mcp_fallback` opens a fresh MCP-stdio session, calls all four
-tools, and produces the verified German report. Expected warning: `RULE-005`, post-loan DTI
-44.95% above the structured 40% NovaBank review threshold; recommendation `MANUAL REVIEW`.
-Set `FULL_ASSESSMENT_MODE=agentic` only to test the experimental native Mistral crew.
+Frage (als `anna.becker`): `Prüfe CASE-00031 vollständig und erstelle eine Entscheidungsvorlage.`
 
-For an unequivocally problematic comparison, use `CASE-00007` (post-loan DTI above 50%) or
-`CASE-00008` (rejected KYC and risk class E).
+Erwartet: Vorlage ohne Sprachmodell, Empfehlung „Manuelle Prüfung“ wegen `RULE-005`
+(DTI nach Kredit 44,95 % über der Prüfschwelle 40 %), Status `awaiting_approval`.
+Im Reiter „Freigaben“ kann `anna.becker` die eigene Vorlage **nicht** freigeben; `tom.klein`
+kann freigeben oder ablehnen.
+
+Zum Vergleich eindeutig problematische Fälle: `CASE-00007` (DTI über der harten Grenze von 50 %)
+oder `CASE-00008` (KYC abgelehnt, Risikoklasse E) – beide mit Empfehlung „Ablehnung“.
+
+## 6 – Rechte
+
+Als `max.muster` (Team Nord): `Zeige CASE-00031.` → „nicht gefunden“, genau wie bei einer
+unbekannten Fall-ID, weil Fall 31 zu Team Süd gehört. Eine Entscheidungsvorlage darf die Rolle
+`sachbearbeiter` nicht anfordern.

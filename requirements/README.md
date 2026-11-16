@@ -8,7 +8,7 @@ PyTorch should be installed from its official CPU wheel index before the lock on
 the container. The local-version CPU wheel satisfies the pinned public version without installing
 unused CUDA runtime packages.
 
-Release v1.3.0 officially supports Python `>=3.13,<3.14`. Python 3.13.9 plus this lock is the
+Release v1.4.0 officially supports Python `>=3.13,<3.14`. Python 3.13.9 plus this lock is the
 reproducibly validated runtime used by the release gate, CI, Fresh-Clone validation, and Docker.
 Earlier Python versions are not claimed as supported until they pass equivalent lock-level
 validation.
@@ -34,8 +34,4 @@ Do not hand-edit individual transitive versions without repeating that validatio
 
 ## Known exceptions
 
-`make deps-audit` ignores four advisory IDs for `chromadb`. The package arrives only through
-CrewAI, is not imported by this project, and has no fixed release. The exception is removed when
-CrewAI is replaced in v2 work package 4.
-
-Pydantic stays below 2.13 because CrewAI 1.15.41 requires `pydantic<2.13`.
+None. `make deps-audit` runs without ignore rules since CrewAI and chromadb were removed (v1.4).

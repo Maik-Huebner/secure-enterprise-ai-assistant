@@ -158,6 +158,8 @@ class ComplianceRule(DomainModel):
     parameters: dict[str, str | int | float | bool] = Field(default_factory=dict)
     source_document: str = Field(min_length=3, max_length=200)
     source_section: str = Field(min_length=1, max_length=200)
+    # A failed hard-decline rule cannot be remedied by additional evidence (NB-GDE-001 §4).
+    hard_decline: bool = False
 
 
 class ComplianceFinding(DomainModel):
@@ -167,6 +169,9 @@ class ComplianceFinding(DomainModel):
     passed: bool
     severity: ComplianceSeverity
     message: str = Field(min_length=3, max_length=1000)
+    # Where the rule comes from, so that the matching policy section can be retrieved exactly.
+    source_document_id: str | None = Field(default=None, pattern=r"^NB-[A-Z]{3}-\d{3}$")
+    source_section: str | None = None
 
 
 class FinancialMetrics(DomainModel):
@@ -185,6 +190,9 @@ class FinancialMetrics(DomainModel):
     )
     total_interest_eur: Decimal = Field(ge=0, max_digits=12, decimal_places=2)
     total_repayment_eur: Decimal = Field(ge=0, max_digits=12, decimal_places=2)
+    # Derived values the language model would otherwise compute itself (and must not).
+    monthly_obligations_after_eur: Decimal = Field(ge=0, max_digits=10, decimal_places=2)
+    debt_to_income_change_pct_points: Decimal = Field(max_digits=7, decimal_places=2)
 
 
 class CaseDecision(DomainModel):

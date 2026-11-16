@@ -12,7 +12,8 @@ dependency types of the endpoints defined inside :func:`create_app` at definitio
 """
 
 import re
-from collections.abc import Callable
+from collections.abc import AsyncIterator, Callable
+from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from typing import Annotated
 
@@ -38,6 +39,9 @@ from secure_enterprise_ai_assistant.api.schemas import (
     MeResponse,
     Problem,
     ReadinessResponse,
+    ReviewDecisionRequest,
+    ReviewDetail,
+    ReviewSummary,
     SearchRequest,
     TokenResponse,
 )
@@ -47,10 +51,11 @@ from secure_enterprise_ai_assistant.core.logs import (
     get_logger,
 )
 from secure_enterprise_ai_assistant.core.settings import Settings, get_settings
+from secure_enterprise_ai_assistant.graph.assistant import AssistantResult, AssistantService
+from secure_enterprise_ai_assistant.graph.reviews import ReviewRecord, ReviewStore
 from secure_enterprise_ai_assistant.guardrails import UnsafeInputError, validate_user_query
 from secure_enterprise_ai_assistant.mcp.tools import MCPToolService
 from secure_enterprise_ai_assistant.models.knowledge import KnowledgeSearchResponse
-from secure_enterprise_ai_assistant.models.orchestration import RouteDecision, TraceEvent
 from secure_enterprise_ai_assistant.models.tools import (
     ComplianceCheckResult,
     CustomerCaseResult,
@@ -68,28 +73,6 @@ logger = get_logger(__name__)
 SOURCE_PATTERN = re.compile(r"\bNB-[A-Z]+-\d{3}\b")
 
 
-@dataclass(frozen=True)
-class FlowOutcome:
-    answer: str
-    route: RouteDecision
-    trace: list[TraceEvent]
-
-
-FlowRunner = Callable[[str, Principal, str], FlowOutcome]
-
-
-def run_assistant_flow(message: str, principal: Principal, access_token: str) -> FlowOutcome:
-    """Run the agent workflow on behalf of ``principal``; the token reaches the MCP tools."""
-    from secure_enterprise_ai_assistant.flows import NovaBankAssistantFlow
-
-    flow = NovaBankAssistantFlow(principal=principal, access_token=access_token)
-    answer = str(flow.kickoff(inputs={"query": message}))
-    state = flow.typed_state
-    if state.route is None:
-        raise RuntimeError("Workflow ended without a route.")
-    return FlowOutcome(answer=answer, route=state.route, trace=list(state.trace))
-
-
 @dataclass
 class ApiContext:
     """Everything the endpoints need; replaceable in tests."""
@@ -100,7 +83,8 @@ class ApiContext:
     policy: AccessPolicy
     tools: MCPToolService
     audit: AuditLog
-    flow_runner: FlowRunner = run_assistant_flow
+    assistant: AssistantService
+    reviews: ReviewStore
     login_limiter: SlidingWindowLimiter = field(init=False)
     chat_limiter: SlidingWindowLimiter = field(init=False)
     api_limiter: SlidingWindowLimiter = field(init=False)
@@ -132,6 +116,8 @@ def build_context(settings: Settings | None = None) -> ApiContext:
         policy=tools.access_policy,
         tools=tools,
         audit=AuditLog(settings.resolved_audit_log),
+        assistant=AssistantService.with_sqlite(settings.graph_checkpoint_path, settings=settings),
+        reviews=ReviewStore(settings.review_index_path),
     )
 
 
@@ -165,7 +151,14 @@ def create_app(context: ApiContext | None = None) -> FastAPI:
     """Create the FastAPI application."""
     ctx = context or build_context()
     settings = ctx.settings
+
+    @asynccontextmanager
+    async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+        yield
+        ctx.assistant.close()  # flush and close the checkpoint database on shutdown
+
     app = FastAPI(
+        lifespan=lifespan,
         title="NovaBank Secure Enterprise AI Assistant – API",
         version=__version__,
         description=(
@@ -389,34 +382,113 @@ def create_app(context: ApiContext | None = None) -> FastAPI:
         )
         return response
 
+    def _chat_response(result: AssistantResult) -> ChatResponse:
+        return ChatResponse(
+            thread_id=result.thread_id,
+            status=result.status,
+            answer=result.answer,
+            intent=result.route.intent.value,
+            case_id=result.route.case_id,
+            routing_method=result.route.routing_method,
+            execution_mode=result.execution_mode,
+            sources=sorted(set(SOURCE_PATTERN.findall(result.answer))),
+            trace=result.trace,
+        )
+
     @app.post("/v1/chat", response_model=ChatResponse, tags=["Assistent"])
     def chat(body: ChatRequest, principal: PrincipalDep, request: Request) -> ChatResponse:
-        """Frage an den Assistenten (Wissen, Fall, Finanzen, Compliance, Entscheidungsvorlage)."""
+        """Frage an den Assistenten. Entscheidungsvorlagen warten auf eine zweite Person."""
         _enforce(ctx.chat_limiter, f"user:{principal.username}")
         # Defense in depth: the API filters input itself before the workflow sees it.
         message = validate_user_query(body.message)
         try:
-            outcome = ctx.flow_runner(message, principal, request.state.access_token)
+            result = ctx.assistant.run(message, principal, request.state.access_token)
         except AccessDeniedError:
             ctx.audit.record("chat_denied", principal, message_length=len(body.message))
             raise
-        details = {event.event: event.detail for event in outcome.trace}
-        ctx.audit.record(
-            "chat_answered",
+        if result.status == "awaiting_approval" and result.route.case_id:
+            ctx.reviews.open(result.thread_id, result.route.case_id, principal.username)
+            ctx.audit.record(
+                "decision_brief_requested",
+                principal,
+                case_id=result.route.case_id,
+                thread_id=result.thread_id,
+            )
+        else:
+            ctx.audit.record(
+                "chat_answered",
+                principal,
+                intent=result.route.intent.value,
+                case_id=result.route.case_id,
+                execution_mode=result.execution_mode,
+            )
+        return _chat_response(result)
+
+    def _require_reviewer(principal: Principal) -> None:
+        if not ctx.policy.can_request_decision_brief(principal):
+            raise AccessDeniedError("Freigaben sehen und erteilen nur Prüferinnen und Prüfer.")
+
+    @app.get("/v1/reviews", response_model=list[ReviewSummary], tags=["Freigabe"])
+    def list_reviews(principal: PrincipalDep) -> list[ReviewSummary]:
+        """Offene Entscheidungsvorlagen, die auf eine zweite Person warten."""
+        _require_reviewer(principal)
+        return [
+            ReviewSummary(
+                **record.model_dump(
+                    include={"thread_id", "case_id", "requested_by", "requested_at", "status"}
+                )
+            )
+            for record in ctx.reviews.pending()
+        ]
+
+    def _pending(thread_id: str) -> ReviewRecord:
+        record = ctx.reviews.get(thread_id)
+        if record is None or record.status != "pending":
+            raise HTTPException(404, "Keine offene Freigabe mit dieser ID.")
+        return record
+
+    @app.get("/v1/reviews/{thread_id}", response_model=ReviewDetail, tags=["Freigabe"])
+    def get_review(thread_id: str, principal: PrincipalDep) -> ReviewDetail:
+        """Entwurf einer offenen Entscheidungsvorlage."""
+        _require_reviewer(principal)
+        record = _pending(thread_id)
+        return ReviewDetail(
+            thread_id=record.thread_id,
+            case_id=record.case_id,
+            requested_by=record.requested_by,
+            requested_at=record.requested_at,
+            status=record.status,
+            draft=ctx.assistant.draft(thread_id),
+        )
+
+    @app.post("/v1/reviews/{thread_id}", response_model=ChatResponse, tags=["Freigabe"])
+    def decide_review(
+        thread_id: str, body: ReviewDecisionRequest, principal: PrincipalDep, request: Request
+    ) -> ChatResponse:
+        """Freigabe oder Ablehnung durch eine zweite Person (Vier-Augen-Prinzip)."""
+        _require_reviewer(principal)
+        record = _pending(thread_id)
+        if record.requested_by == principal.username:
+            ctx.audit.record("decision_brief_self_approval_denied", principal, thread_id=thread_id)
+            raise AccessDeniedError(
+                "Vier-Augen-Prinzip: Die anfragende Person darf nicht selbst freigeben."
+            )
+        result = ctx.assistant.resume(
+            thread_id,
+            body.decision == "approve",
+            body.comment,
             principal,
-            intent=outcome.route.intent.value,
-            case_id=outcome.route.case_id,
-            execution_mode=details.get("execution_mode"),
+            request.state.access_token,
         )
-        return ChatResponse(
-            answer=outcome.answer,
-            intent=outcome.route.intent.value,
-            case_id=outcome.route.case_id,
-            routing_method=outcome.route.routing_method,
-            execution_mode=details.get("execution_mode"),
-            sources=sorted(set(SOURCE_PATTERN.findall(outcome.answer))),
-            trace=outcome.trace,
+        ctx.reviews.close(thread_id, body.decision == "approve", principal.username)
+        ctx.audit.record(
+            "decision_brief_approved" if body.decision == "approve" else "decision_brief_rejected",
+            principal,
+            case_id=record.case_id,
+            thread_id=thread_id,
+            requested_by=record.requested_by,
         )
+        return _chat_response(result)
 
     return app
 

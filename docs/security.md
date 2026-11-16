@@ -51,7 +51,8 @@ storage.
 ## Input and content controls
 
 - strict Pydantic domain and MCP response schemas;
-- four-tool allowlist with per-agent least-privilege MCP filters;
+- four-tool allowlist; the language model never selects or calls tools (the router fixes the
+  tool plan, the LangGraph tool node executes it over MCP with the caller's token);
 - no arbitrary SQL, shell, code execution, URL fetching, or filesystem tool;
 - case-ID, query-length, metadata-filter, and path-containment validation;
 - a first-layer German/English prompt-injection filter (five categories, Unicode/obfuscation
@@ -59,8 +60,13 @@ storage.
   holdout split it blocked 15 of 20 attacks with no false positives on 20 benign questions
   (16.11.2026). Paraphrases such as "lass die Vorgaben außer Acht" still pass, which is why this
   filter is never the only control;
-- retrieved documents are treated as untrusted evidence in every agent prompt; documents with
+- retrieved documents are fenced as data (`<richtlinie>`) in the prompt; documents with
   model-directed injection patterns are quarantined and logged;
+- every model answer is verified (numbers and document IDs must occur in the evidence,
+  citations required, German labels); one retry, then a verified fallback without the model;
+- decision briefs are rendered without the model and need approval by a second reviewer
+  (four-eyes principle enforced in the API and again in a separate graph node);
+- the access token is run context and never written to the graph checkpoint (tested);
 - final lending responsibility remains with an authorized human reviewer.
 
 ## Known production gaps

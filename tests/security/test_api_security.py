@@ -256,6 +256,7 @@ def test_reviewer_can_request_a_decision_brief(api) -> None:
 
     assert response.status_code == 200
     assert response.json()["intent"] == "full_assessment"
+    assert response.json()["status"] == "awaiting_approval"
 
 
 def test_injection_is_blocked_by_the_api_before_the_workflow(api) -> None:
@@ -281,11 +282,15 @@ def test_chat_is_rate_limited(tmp_path) -> None:
     assert statuses == [200, 200, 429]
 
 
-def test_internal_errors_are_not_disclosed(tmp_path) -> None:
-    def broken(*_args: object) -> None:
+class _BrokenModel:
+    name = "broken"
+
+    def generate(self, system: str, user: str) -> str:
         raise RuntimeError("SECRET_INTERNAL_DETAIL /Users/someone/path")
 
-    client, _, _ = make_client(tmp_path, raise_server_exceptions=False, flow_runner=broken)
+
+def test_internal_errors_are_not_disclosed(tmp_path) -> None:
+    client, _, _ = make_client(tmp_path, raise_server_exceptions=False, model_factory=_BrokenModel)
     response = client.post(
         "/v1/chat", json={"message": "Zeige CASE-00001."}, headers=auth(login(client, "pruefer"))
     )

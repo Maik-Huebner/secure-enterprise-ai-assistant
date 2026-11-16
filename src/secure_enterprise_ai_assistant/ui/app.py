@@ -31,12 +31,12 @@ TRACE_EVENT_LABELS = {
     "intent_classified": "Anfragetyp erkannt",
     "routing_method": "Erkennungsmethode",
     "model_selected": "Modell ausgewählt",
-    "configured_complex_model": "Konfiguriertes komplexes Modell",
-    "model_profile": "Modellprofil",
-    "model_reason": "Routing-Grund",
-    "full_assessment_mode": "Modus für vollständige Prüfung",
-    "tools_selected": "MCP-Werkzeuge ausgewählt",
-    "fallback_reason": "Fallback-Grund",
+    "tools_selected": "MCP-Werkzeuge ausgeführt",
+    "answer_verification": "Antwortprüfung",
+    "answer_retry": "Erneuter Versuch",
+    "fallback_reason": "Grund für den Rückfallweg",
+    "approval_requested": "Freigabe angefordert",
+    "approval_decision": "Freigabeentscheidung",
     "execution_mode": "Ausführungsmodus",
     "workflow_completed": "Ablauf abgeschlossen",
 }
@@ -49,12 +49,13 @@ UI_VALUE_LABELS = {
     "financial_analysis": "Finanzanalyse",
     "compliance_check": "Compliance-Prüfung",
     "full_assessment": "Vollständige Prüfung",
-    "fast_local": "Schnell und lokal",
-    "complex_agentic": "Komplex und agentisch",
-    "crewai": "CrewAI",
-    "deterministic_mcp_fallback": "Deterministischer MCP-Rückfallweg",
-    "verified_mcp": "Verifizierter MCP-Pfad",
-    "agentic": "Experimenteller agentischer Modus",
+    "llm_grounded": "Sprachmodell mit geprüften Nachweisen",
+    "verified_fallback": "Verifizierter Rückfallweg (ohne Sprachmodell)",
+    "verified_mcp": "Verifizierter MCP-Pfad (ohne Sprachmodell)",
+    "no_answer": "Keine passende Quelle",
+    "completed": "abgeschlossen",
+    "awaiting_approval": "wartet auf Freigabe",
+    "approved": "freigegeben",
     "not recorded": "nicht erfasst",
     "rule": "Regel",
     "keyword": "Schlüsselwörter",
@@ -200,13 +201,6 @@ def _ui_value(value: Any) -> Any:
 
 def _trace_detail(event: str, detail: str) -> str:
     """Return a safe German display value for one technical trace detail."""
-    if event == "fallback_reason":
-        if detail.startswith("Demo-Safe-Modus"):
-            return detail
-        return (
-            "Die native CrewAI-Ausgabe hat die Qualitätsprüfung nicht bestanden; "
-            "der deterministische MCP-Rückfallweg wurde verwendet."
-        )
     return str(_ui_value(detail))
 
 
@@ -285,30 +279,26 @@ class AssistantController:
             for event in trace
         ]
         info: dict[str, Any] = {
+            "Status": _ui_value(result["status"]),
             "Anfragetyp": _ui_value(result["intent"]),
             "Fall-ID": result["case_id"],
             "Erkennungsmethode": _ui_value(result["routing_method"]),
-            "Modellprofil": _ui_value(details.get("model_profile", "not recorded")),
             "Ausführungsmodus": _ui_value(result["execution_mode"] or "not recorded"),
+            "Modell": details.get("model_selected", "nicht verwendet"),
+            "Antwortprüfung": details.get("answer_verification", "nicht nötig"),
         }
-        if "configured_complex_model" in details:
-            info["Konfiguriertes komplexes Modell"] = details["configured_complex_model"]
-            info["Modus für vollständige Prüfung"] = _ui_value(
-                details.get("full_assessment_mode", "not recorded")
-            )
+        if "fallback_reason" in details:
+            info["Grund für den Rückfallweg"] = details["fallback_reason"]
+        if result["status"] == "awaiting_approval":
             status = (
-                f"Abgeschlossen als `{info['Anfragetyp']}` im Modus `{info['Ausführungsmodus']}`. "
-                f"Das konfigurierte Modell `{info['Konfiguriertes komplexes Modell']}` wurde nicht "
-                f"ausgeführt; {len(trace_rows)} technische Ereignisse."
+                f"Entscheidungsvorlage für `{result['case_id']}` erstellt. Sie wartet auf die "
+                "Freigabe durch eine zweite prüfende Person (Reiter »Freigaben«)."
             )
         else:
-            info["Ausgewähltes Modell"] = details.get("model_selected", "nicht erfasst")
             status = (
-                f"Abgeschlossen als `{info['Anfragetyp']}` mit `{info['Ausgewähltes Modell']}` im "
-                f"Modus `{info['Ausführungsmodus']}`; {len(trace_rows)} technische Ereignisse."
+                f"Abgeschlossen als `{info['Anfragetyp']}` im Modus `{info['Ausführungsmodus']}`; "
+                f"{len(trace_rows)} technische Ereignisse."
             )
-        if "fallback_reason" in details:
-            info["Fallback-Grund"] = _trace_detail("fallback_reason", details["fallback_reason"])
         logger.info(
             "ui_request_completed",
             extra={
@@ -318,6 +308,47 @@ class AssistantController:
         )
         history.append({"role": "assistant", "content": result["answer"]})
         return history, sources, trace_rows, info, status
+
+    # ----- approvals ---------------------------------------------------------------------------
+    def load_reviews(self, session: Session | None) -> tuple[Any, str]:
+        """Open approvals for reviewers."""
+        token = (session or {}).get("token")
+        if not token:
+            return gr.update(choices=[], value=None), "Bitte zuerst anmelden."
+        try:
+            reviews = self.api.reviews(token)
+        except ApiError as exc:
+            return gr.update(choices=[], value=None), str(exc)
+        choices = [
+            (f"{item['case_id']} – angefordert von {item['requested_by']}", item["thread_id"])
+            for item in reviews
+        ]
+        return (
+            gr.update(choices=choices, value=choices[0][1] if choices else None),
+            f"{len(choices)} offene Freigaben." if choices else "Keine offenen Freigaben.",
+        )
+
+    def show_review(self, thread_id: str | None, session: Session | None) -> str:
+        token = (session or {}).get("token")
+        if not thread_id or not token:
+            return ""
+        try:
+            return str(self.api.review(token, thread_id)["draft"])
+        except ApiError as exc:
+            return f"**Hinweis:** {exc}"
+
+    def decide(
+        self, thread_id: str | None, comment: str, approve: bool, session: Session | None
+    ) -> tuple[str, str]:
+        token = (session or {}).get("token")
+        if not thread_id or not token:
+            return "", "Bitte zuerst eine offene Freigabe auswählen."
+        try:
+            result = self.api.decide(token, thread_id, "approve" if approve else "reject", comment)
+        except ApiError as exc:
+            return "", f"**Nicht ausgeführt:** {exc}"
+        verdict = "freigegeben" if approve else "abgelehnt"
+        return str(result["answer"]), f"Entscheidungsvorlage {verdict}."
 
     # ----- cases and diagnostics -------------------------------------------------------------
     def case_view(self, case_id: str | None, session: Session | None) -> dict[str, Any]:
@@ -344,7 +375,7 @@ class AssistantController:
             "API-Adresse": settings.api_base_url,
             "Suchindex": "bereit" if checks.get("knowledge_index") else "nicht bereit",
             "Ollama": "verfügbar" if checks.get("ollama") else "nicht verfügbar",
-            "Schnelles lokales Modell": settings.ollama_fast_model,
+            "Sprachmodell": settings.ollama_fast_model,
             "Embedding-Modell": settings.embedding_model,
             "Umgebung": _ui_value(settings.app_env),
             "Externe Cloud erforderlich": "Nein",
@@ -424,6 +455,39 @@ def build_app(controller: AssistantController | None = None) -> gr.Blocks:
                 case_json = gr.JSON(label="Falldaten")
                 case_selector.change(
                     controller.case_view, inputs=[case_selector, session], outputs=case_json
+                )
+
+            with gr.Tab("Freigaben"):
+                gr.Markdown(
+                    "Entscheidungsvorlagen werden erst nach Freigabe durch eine **zweite** "
+                    "Prüferin oder einen zweiten Prüfer wirksam (Vier-Augen-Prinzip)."
+                )
+                with gr.Row():
+                    load_button = gr.Button("Offene Freigaben laden")
+                    review_selector = gr.Dropdown([], label="Offene Freigabe", scale=3)
+                review_status = gr.Markdown("")
+                review_draft = gr.Markdown("")
+                review_comment = gr.Textbox(label="Kommentar (optional)", lines=2)
+                with gr.Row():
+                    approve_button = gr.Button("Freigeben", variant="primary")
+                    reject_button = gr.Button("Ablehnen", variant="stop")
+                load_button.click(
+                    controller.load_reviews,
+                    inputs=[session],
+                    outputs=[review_selector, review_status],
+                )
+                review_selector.change(
+                    controller.show_review, inputs=[review_selector, session], outputs=review_draft
+                )
+                approve_button.click(
+                    lambda thread, comment, state: controller.decide(thread, comment, True, state),
+                    inputs=[review_selector, review_comment, session],
+                    outputs=[review_draft, review_status],
+                )
+                reject_button.click(
+                    lambda thread, comment, state: controller.decide(thread, comment, False, state),
+                    inputs=[review_selector, review_comment, session],
+                    outputs=[review_draft, review_status],
                 )
 
             with gr.Tab("Wissensbasis & Dokumente"):

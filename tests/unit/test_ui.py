@@ -156,11 +156,15 @@ def test_requests_without_login_are_not_sent(tmp_path) -> None:
     assert status == "Bitte zuerst anmelden."
 
 
-def test_controller_does_not_expose_internal_exception(tmp_path) -> None:
-    def fail(*_args: object) -> None:
+class _BrokenModel:
+    name = "broken"
+
+    def generate(self, system: str, user: str) -> str:
         raise RuntimeError("SECRET_INTERNAL_DETAIL")
 
-    controller, _ = _controller(tmp_path, raise_server_exceptions=False, flow_runner=fail)
+
+def test_controller_does_not_expose_internal_exception(tmp_path) -> None:
+    controller, _ = _controller(tmp_path, raise_server_exceptions=False, model_factory=_BrokenModel)
     session = _logged_in(controller, "pruefer")
     history, sources, trace, tools, status = controller.submit("Zeige CASE-00001.", [], session)
 
@@ -198,13 +202,34 @@ def test_controller_exposes_model_and_execution_metadata(tmp_path) -> None:
         "Berechne die Kreditbelastung für CASE-00031.", [], session
     )
 
-    assert tools["Ausgewähltes Modell"] == "qwen3.5:9b"
-    assert tools["Modellprofil"] == "Schnell und lokal"
-    assert tools["Ausführungsmodus"] == "CrewAI"
+    assert tools["Modell"] == "test-model"
+    assert tools["Ausführungsmodus"] == "Sprachmodell mit geprüften Nachweisen"
     assert tools["Erkennungsmethode"] == "Schlüsselwörter"
-    assert trace[2][1] == "Modell ausgewählt"
-    assert "NB-DOC-001" in sources
-    assert "qwen3.5:9b" in status
+    assert tools["Antwortprüfung"] == "bestanden"
+    assert any(row[1] == "MCP-Werkzeuge ausgeführt" for row in trace)
+    assert "Abgeschlossen" in status
+
+
+def test_decision_brief_is_approved_by_a_second_reviewer_in_the_ui(tmp_path) -> None:
+    controller, context = _controller(tmp_path)
+    requester = _logged_in(controller, "pruefer")
+    _history, _sources, _trace, info, status = controller.submit(
+        "Erstelle eine Entscheidungsvorlage für CASE-00031.", [], requester
+    )
+    assert info["Status"] == "wartet auf Freigabe"
+    assert "zweite prüfende Person" in status
+
+    own_choices, _ = controller.load_reviews(requester)
+    thread_id = own_choices["choices"][0][1]
+    _, refused = controller.decide(thread_id, "", True, requester)
+    assert "Vier-Augen-Prinzip" in refused
+
+    second = _logged_in(controller, "admin")
+    assert "Entscheidungsvorlage – CASE-00031" in controller.show_review(thread_id, second)
+    answer, done = controller.decide(thread_id, "Plausibel.", True, second)
+    assert "Freigegeben** von admin" in answer
+    assert done == "Entscheidungsvorlage freigegeben."
+    assert context.reviews.pending() == []
 
 
 def test_case_view_localizes_fields_and_respects_permissions(tmp_path) -> None:

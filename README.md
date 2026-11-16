@@ -2,7 +2,7 @@
 
 Local-first agentic AI decision support for **NovaBank Financial Services AG**, a fully
 fictional financial-services organization. The project demonstrates how deterministic
-business logic, Advanced RAG, Model Context Protocol (MCP), CrewAI specialists, evaluation,
+business logic, Advanced RAG, Model Context Protocol (MCP), a LangGraph workflow, evaluation,
 and security controls fit together in one auditable application.
 
 > **Synthetic-data disclaimer:** NovaBank does not exist. Every customer, case, policy,
@@ -21,7 +21,8 @@ support for employees; it does not automate final credit approval.
 ## What is implemented
 
 - 48 reproducible synthetic credit cases across eight risk scenarios;
-- strict Pydantic domain models shared across services, MCP, agents, flows, UI, and evaluation;
+- strict Pydantic domain models shared across services, MCP, the workflow, API, UI, and
+  evaluation;
 - Decimal-based annuity, repayment, interest, and pre/post-loan DTI calculations;
 - ten versioned JSON compliance rules built from nine allowlisted predicates, with policy
   references;
@@ -30,9 +31,10 @@ support for employees; it does not automate final credit approval.
 - hybrid retrieval (multilingual embeddings via Ollama + BM25S + identifier signal) with a
   persistent FAISS index, filters before ranking, and calibrated scope rejection;
 - a real FastMCP server with four structured tools;
-- native CrewAI stdio-MCP discovery with per-agent least-privilege tool filters;
-- deterministic five-route classification, dual-model selection, and CrewAI Flow orchestration;
-- case, financial, compliance, knowledge, and evidence-review specialists using local Ollama;
+- a LangGraph workflow (router node, MCP tool node, grounded answer, verification, retry,
+  verified fallback, human approval with interrupt, SQLite checkpointer);
+- deterministic five-route classification; one local model (`qwen3.5:9b`) for every route;
+- measured answer quality (fact correctness, citations, faithfulness judge, LLM-only baseline);
 - a Gradio Blocks UI with sources, selected tools, trace, cases, documents, and diagnostics;
 - a visible deterministic all-MCP demo-safe path for reproducible local full assessments;
 - active input guardrails, sanitized errors, local runtime storage, and no arbitrary code tools;
@@ -44,30 +46,29 @@ support for employees; it does not automate final credit approval.
 
 ```mermaid
 flowchart LR
-    U[Employee] --> UI[Gradio Blocks]
-    UI --> F[CrewAI Flow]
-    F --> R{Intent router}
-    R --> MR{Model router}
-    MR -->|simple| Q[Qwen 3.5 9B]
-    MR -->|full-assessment profile| CFG[Mistral Small 3.2 24B configured]
-    Q --> A[CrewAI specialists]
-    CFG --> MODE{FULL_ASSESSMENT_MODE}
-    MODE -->|verified_mcp default| D[Verified MCP report builder]
-    MODE -->|agentic experimental| A
-    A -->|stdio discovery| M[FastMCP server]
-    D -->|fresh stdio session| M
+    U[Employee] --> UI[Gradio UI]
+    UI -->|JWT| API[FastAPI]
+    API --> G[LangGraph]
+    G --> R{Router}
+    R --> T[MCP tool node]
+    T -->|stdio + token| M[FastMCP server]
     M --> C[Case repository]
     M --> N[Decimal finance]
-    M --> P[Compliance rules]
+    M --> P[Compliance rules + decision service]
     M --> H[Hybrid RAG]
-    H --> V[FAISS]
-    H --> B[BM25S]
-    H --> K[18 synthetic policies]
+    T --> A[Answer: qwen3.5:9b]
+    A --> V{Verification}
+    V -->|ok| OUT[Answer]
+    V -->|issues| A
+    V -->|second failure| FB[Verified fallback]
+    T -->|full assessment| D[Deterministic draft]
+    D --> HR[⏸ Approval by a second reviewer]
 ```
 
-The agent never receives a direct Python business function. CrewAI discovers the four MCP
-tools from a real local server, and each specialist sees only its allowlisted subset. Details
-and trust boundaries are documented in [docs/architecture.md](docs/architecture.md).
+The language model never selects or calls tools: the router fixes the tool plan, the tool node
+executes it over MCP with the caller's token, and the model only phrases an answer from that
+evidence. Every answer is verified deterministically (numbers, citations, language) before it
+leaves the graph. Details and trust boundaries are in [docs/architecture.md](docs/architecture.md).
 
 ## MCP tools
 
@@ -80,30 +81,23 @@ and trust boundaries are documented in [docs/architecture.md](docs/architecture.
 
 The interface exposes no SQL, shell, generic URL, or arbitrary filesystem capability.
 
-## Agent and Flow design
+## LangGraph workflow (v1.4)
 
-The deterministic router selects the smallest sufficient route:
+| Request type | MCP tools (fixed by the router) | Answer |
+|---|---|---|
+| Knowledge | `search_internal_knowledge` | model from passages, or "no answer" without a model call |
+| Customer case | `get_customer_case` | model from case facts |
+| Financial | case + `analyze_financial_case` | model from deterministic metrics |
+| Compliance | case + `check_compliance` + search | model from findings and passages |
+| Full assessment | all four | deterministic draft → pause → second reviewer approves or rejects |
 
-| Request type | Model profile | MCP path | CrewAI execution |
-|---|---|---|---|
-| Knowledge | `fast_local` / Qwen | knowledge search | Knowledge specialist |
-| Customer case | `fast_local` / Qwen | case lookup | Case specialist |
-| Financial | `fast_local` / Qwen | case + calculator | Financial analyst |
-| Compliance | `fast_local` / Qwen | case + rules + policy | Compliance analyst |
-| Full assessment | `complex_agentic` / Mistral configured | all four tools | Default: verified MCP report; opt-in: agentic CrewAI |
-
-The deterministic model router performs no model call. It assigns full assessments to the
-`complex_agentic` profile and records `mistral-small3.2:24b` as the configured complex model.
-With the demo default `FULL_ASSESSMENT_MODE=verified_mcp`, the execution gate deliberately does
-not start that model: it opens a fresh real MCP-stdio session, calls all four tools, and renders
-a bounded German report as `deterministic_mcp_fallback`. The trace distinguishes a configured
-model from an executed model and states the demo-safe reason explicitly.
-
-`FULL_ASSESSMENT_MODE=agentic` retains the experimental native Mistral/CrewAI sequence for
-later testing. Its strict evidence guardrails still switch to the same verified MCP path if the
-crew fails or returns an incomplete report. Simple Qwen routes are unaffected. Neither mode
-uses a direct Python-service bypass. This hardware-dependent local demo is not presented as a
-production-ready decision system.
+If an answer contains numbers or document IDs that are not in the evidence, misses citations, or
+uses English labels, the graph retries once with the issues as feedback; a second failure
+switches to the verified fallback, which answers from structured evidence alone. Decision briefs
+are never written by the model; they pause (`interrupt`) until a *different* reviewer approves or
+rejects them (`POST /v1/reviews/{thread_id}`). A refused decision is validated in a separate
+node and sent back to a fresh pause, so it can never be applied later. Graph state is persisted in
+SQLite; the access token is passed as run context and never written to the checkpoint (tested).
 
 ## Advanced RAG
 
@@ -199,16 +193,50 @@ holdout result (15 of 20 attacks blocked) is the honest estimate, and it is why 
 filter is only the first security layer.
 
 These scores describe only a **synthetic offline benchmark** implemented as a deliberately small
-regression suite. They do not measure real credit-decision accuracy, certify regulatory
-compliance, or establish that the complete agentic pipeline is accurate. LLM-only comparison is
-not part of this benchmark; measured live-model behavior is documented separately in
-`docs/example-execution-trace.md`.
+regression suite. They do not measure real credit-decision accuracy or certify regulatory
+compliance. Answer quality of the live model is measured separately (next section). The v1.0.2
+audit probe ([docs/audit-v1.md](docs/audit-v1.md)) had measured 1 of 12 attack phrasings blocked.
 
-Two metrics carry little independent information, and the report says so in `metric_notes`:
-tool-selection accuracy is derived from the routed intent and therefore equals routing accuracy,
-and source attribution only checks that returned chunks carry metadata. The routing suite still
-consists of the demo phrasings; it is extended in v1.2. The v1.0.2 audit probe
-([docs/audit-v1.md](docs/audit-v1.md)) had measured 1 of 12 attack phrasings blocked.
+## Answer quality of the live model (v1.4)
+
+Measured with `scripts/evaluate_answers.py` on an Apple M4 Pro against the real stack
+(LangGraph, MCP stdio, `qwen3.5:9b`, `qwen3-embedding:0.6b`): 17 German questions (10 knowledge,
+2 without an answer, 2 financial, 2 compliance, 1 case). Reports:
+`reports/evaluation/answer_quality.json` (run 3) and `answer_quality_run1.json`,
+`answer_quality_run2.json`.
+
+| Metric | Run 1 | Run 2 | **Run 3 (v1.4)** |
+|---|---:|---:|---:|
+| Answers with all expected facts (15 answerable) | 14/15 | 13/15 | **13/15** |
+| Questions without an answer correctly declined | 2/2 | 2/2 | **2/2** |
+| Only retrieved documents cited | 11/12 | 12/12 | **12/12** |
+| Final answers with open verification issues | 1 | 0 | **0** |
+| Answered by the model (`llm_grounded`) | 12/15 | 13/15 | **14/15** |
+| Verified fallback without the model | 2/15 | 1/15 | **0/15** |
+| LLM judge: "fully supported" | 0.92 | 1.00 | 0.93 |
+| **Manual check: fully supported** | 8/11 | 9/13 | **11/14** |
+| Knowledge questions: with RAG / same model without RAG | 9/10 / 1/10 | 8/10 / 1/10 | **8/10 / 1/10** |
+| Median time per question | 11.6 s | 11.1 s | 9.2 s |
+
+How to read this honestly:
+
+- **The three runs are not independent.** Runs 2 and 3 come after fixes motivated by the
+  previous run on the *same* suite (failed rules' sources searched first, cross-references
+  citable, placeholder IDs rejected, derived financial values, neutral prompt example). The suite
+  was written by the project author. Run 3 is therefore optimistic.
+- **The manual check is stricter than the judge.** Every model answer was read by hand (by the
+  author of the code, not independently); a small unsupported inference counts as unsupported.
+  The judge is the same 9B model and accepted answers that call the employment duration
+  "Berufserfahrung" or invent an "existing warning". Use the manual row, not the judge row.
+- **What the deterministic verification cannot see:** wrong words without a number or an ID,
+  and a wrong but retrieved source (run 3: rules RULE-009/RULE-010 attributed to the DTI section).
+- The two "incorrect" answers of run 3: the KYC answer is substantively right but phrased so that
+  the fact matcher misses it; "Was darf in Protokollen nicht stehen?" is falsely declined because
+  retrieval does not rank `NB-DPR-001` high enough. Declining is the safer failure; a reranker is
+  the planned fix.
+- RAG vs. no RAG: without evidence the same model answered 1 of 10 policy questions correctly,
+  because the policies are fictional. This shows the value of retrieval, not general model
+  quality.
 
 ## REST API and security (v1.3)
 
@@ -249,12 +277,13 @@ reveals it. Tests cover direct, filter-based, identifier-based and MCP-level det
 - hash-chained audit log without passwords or query text (`novabank-audit verify`);
 - RFC 9457 problem responses in German without internal details or echoed input;
 - strict input and output schemas with forbidden extra fields;
-- tool and per-agent allowlists; MCP subprocesses receive only allowlisted settings;
+- a fixed tool plan per route (the model never selects tools); MCP subprocesses receive only
+  allowlisted settings;
 - a first-layer German/English prompt-injection filter with obfuscation normalization (holdout
   recall 0.75, no false positives on 50 benign questions), applied in the API and the workflow;
 - safe knowledge-root containment and supported-extension checks;
 - no secrets in the repository (`JWT_SECRET` has no default; the audit flags filled-in keys);
-- CrewAI telemetry and remote tracing disabled by default; loopback binding by default;
+- LangSmith tracing disabled by default; loopback binding by default;
 - synthetic-data boundary repeated in data artifacts, policies, prompts, and UI.
 
 See [docs/security.md](docs/security.md) for controls and known production gaps.
@@ -262,7 +291,7 @@ See [docs/security.md](docs/security.md) for controls and known production gaps.
 ## Local setup
 
 Requirements: Python 3.13 (`>=3.13,<3.14`), Ollama, and sufficient memory for the chosen
-local model. Python 3.13.9 is the reproducibly validated runtime for release v1.3.0.
+local model. Python 3.13.9 is the reproducibly validated runtime for release v1.4.0.
 
 ```bash
 python3.13 -m venv .venv
@@ -274,8 +303,6 @@ cp .env.example .env
 ollama pull qwen3.5:9b
 ollama pull qwen3-embedding:0.6b
 novabank-index rebuild
-# Only required for experimental FULL_ASSESSMENT_MODE=agentic:
-ollama pull mistral-small3.2:24b
 ```
 
 Rebuild all synthetic source artifacts:
@@ -330,7 +357,7 @@ make build
 The full test suite does not need a running model or network connection. End-to-end generation
 does require the configured Ollama server and model.
 
-Current local release gate: **275 tests passing** under Python 3.13 with warnings treated as
+Current local release gate: **286 tests passing** under Python 3.13 with warnings treated as
 errors. CI installs the package non-editably and proves that imports resolve from
 `site-packages`.
 
@@ -361,8 +388,10 @@ reports/evaluation/   measured evaluation output
 requirements/         exact Python 3.13 dependency lock and lock policy
 scripts/              thin repository wrappers for generation, evidence, and audit
 src/.../resources/    packaged synthetic cases, rules, policies, and evaluation suite
-src/.../agents/       CrewAI specialists and MCP configuration
-src/.../flows/        deterministic router and CrewAI Flow
+src/.../graph/        LangGraph workflow, verification, approvals
+src/.../flows/        deterministic router (rules + semantic examples)
+src/.../api/          FastAPI backend
+src/.../security/     users, tokens, roles, audit log, rate limits
 src/.../mcp/          FastMCP server and defensive tool boundary
 src/.../rag/          ingestion, FAISS/BM25S hybrid retrieval
 src/.../services/     deterministic repository, finance, and compliance logic
@@ -379,11 +408,10 @@ tests/                unit and integration regression suite
   a reverse proxy), and an audit log that is tamper-evident, not tamper-proof. Encrypted
   storage, malware scanning, distributed tracing, and formal regulatory validation remain
   production work.
-- A larger adversarial corpus, a cross-encoder reranker, and a measured LLM/RAG/agentic
-  baseline comparison are logical next steps after choosing final local-model hardware.
-- One dependency exception is open: `chromadb` (pulled in only by CrewAI, unused by this
-  package) has known vulnerabilities without a fixed release. It is ignored explicitly in
-  `make deps-audit` and disappears when CrewAI is replaced (planned v1.4).
+- Answer quality is measured on a small suite written by the author and checked by hand by the
+  author; an independent test set, an independent reviewer and a stronger judge are missing.
+  A cross-encoder reranker (for the falsely declined question) and a larger adversarial corpus
+  are the next steps.
 - The v2.0 roadmap with its work packages is in [docs/plan-v2.md](docs/plan-v2.md); the audit of
   v1.0.2 is in [docs/audit-v1.md](docs/audit-v1.md).
 
