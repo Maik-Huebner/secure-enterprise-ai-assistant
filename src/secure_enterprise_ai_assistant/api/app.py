@@ -61,6 +61,7 @@ from secure_enterprise_ai_assistant.models.tools import (
     CustomerCaseResult,
     FinancialAnalysisResult,
 )
+from secure_enterprise_ai_assistant.observability import build_tracing
 from secure_enterprise_ai_assistant.rag.embeddings import EmbeddingUnavailableError
 from secure_enterprise_ai_assistant.security import AccessDeniedError, AccessPolicy, Principal
 from secure_enterprise_ai_assistant.security.audit import AuditLog
@@ -120,7 +121,9 @@ def build_context(settings: Settings | None = None) -> ApiContext:
         policy=tools.access_policy,
         tools=tools,
         audit=AuditLog(settings.resolved_audit_log),
-        assistant=AssistantService.with_sqlite(settings.graph_checkpoint_path, settings=settings),
+        assistant=AssistantService.with_sqlite(
+            settings.graph_checkpoint_path, settings=settings, tracing=build_tracing(settings)
+        ),
         reviews=ReviewStore(settings.review_index_path),
     )
 

@@ -49,6 +49,7 @@ from secure_enterprise_ai_assistant.models.orchestration import (
     RouteDecision,
     TraceEvent,
 )
+from secure_enterprise_ai_assistant.observability import Tracing
 from secure_enterprise_ai_assistant.security import AccessDeniedError, AccessPolicy, Principal
 
 logger = get_logger(__name__)
@@ -340,8 +341,10 @@ class AssistantService:
         model_factory: Callable[[], AnswerModel] | None = None,
         collector: Callable[[str | None], Any] = McpEvidenceClient,
         settings: Settings | None = None,
+        tracing: Tracing | None = None,
     ) -> None:
         self.settings = settings or get_settings()
+        self.tracing = tracing or Tracing(self.settings)
         self._connection: sqlite3.Connection | None = None
         self._graph = build_graph(checkpointer or InMemorySaver())
         self._model_factory = model_factory or (lambda: OllamaAnswerModel(self.settings))
@@ -358,7 +361,8 @@ class AssistantService:
         return service
 
     def close(self) -> None:
-        """Close the checkpoint database (API shutdown, tests)."""
+        """Flush traces and close the checkpoint database (API shutdown, tests)."""
+        self.tracing.flush()
         if self._connection is not None:
             self._connection.close()
             self._connection = None
@@ -385,7 +389,7 @@ class AssistantService:
 
     def run(self, message: str, principal: Principal, access_token: str | None) -> AssistantResult:
         thread_id = uuid.uuid4().hex
-        config = {"configurable": {"thread_id": thread_id}}
+        config = self.tracing.run_config(principal.username, thread_id, "chat")
         values = self._graph.invoke(
             {"query": message}, config, context=self._context(principal, access_token)
         )
@@ -404,7 +408,7 @@ class AssistantService:
         principal: Principal,
         access_token: str | None,
     ) -> AssistantResult:
-        config = {"configurable": {"thread_id": thread_id}}
+        config = self.tracing.run_config(principal.username, thread_id, "review")
         values = self._graph.invoke(
             Command(resume={"decision": "approve" if approve else "reject", "comment": comment}),
             config,
