@@ -193,3 +193,13 @@ def test_index_cli_reports_status_and_rebuilds(tmp_path: Path, monkeypatch, caps
     output = capsys.readouterr().out
     assert "Index neu aufgebaut" in output
     assert '"aktuell": true' in output
+
+
+def test_rankings_are_deterministic_under_score_ties(chunks) -> None:
+    retriever = HybridRetriever(chunks)
+    positions = list(range(len(retriever.chunks)))
+    ranking = retriever._lexical_ranking("Gibt es eine Bearbeitungsgebühr?", positions)
+    tied = [index for index, score in ranking if score == 0.0]
+
+    assert tied == sorted(tied), "ties must be ordered by chunk position"
+    assert ranking == retriever._lexical_ranking("Gibt es eine Bearbeitungsgebühr?", positions)

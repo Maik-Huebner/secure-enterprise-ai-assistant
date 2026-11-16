@@ -1,5 +1,5 @@
 {
-  "measured_at": "2026-11-16T14:09:43+00:00",
+  "measured_at": "2026-11-16T14:42:11+00:00",
   "machine": "Darwin arm64",
   "suite": "resources/evaluation/retrieval_suite.json",
   "split_sizes": {
@@ -23,8 +23,8 @@
         "answerable_questions": 20,
         "no_answer_questions": 4,
         "recall_at_5": 0.85,
-        "mrr": 0.6892,
-        "ndcg_at_5": 0.729,
+        "mrr": 0.6667,
+        "ndcg_at_5": 0.7127,
         "no_answer_accuracy": 1.0,
         "false_rejection_rate": 0.05,
         "recall_at_5_by_type": {
@@ -37,18 +37,18 @@
       "test": {
         "answerable_questions": 20,
         "no_answer_questions": 4,
-        "recall_at_5": 0.8,
-        "mrr": 0.6183,
-        "ndcg_at_5": 0.6509,
+        "recall_at_5": 0.75,
+        "mrr": 0.6042,
+        "ndcg_at_5": 0.6281,
         "no_answer_accuracy": 1.0,
         "false_rejection_rate": 0.1,
         "recall_at_5_by_type": {
           "compound": 0.0,
           "direct": 1.0,
           "identifier": 1.0,
-          "paraphrase": 0.75
+          "paraphrase": 0.6667
         },
-        "median_latency_ms": 0.1
+        "median_latency_ms": 0.2
       },
       "test_misses_before_cutoff": [
         {
@@ -87,6 +87,17 @@
             "NB-WFL-001",
             "NB-SEC-001"
           ]
+        },
+        {
+          "question": "Wie formuliert man Entscheidungen gegenüber Kunden?",
+          "expected": [
+            "NB-RES-001"
+          ],
+          "top": [
+            "NB-GDE-001",
+            "NB-CRD-002",
+            "NB-CRD-001"
+          ]
         }
       ]
     },
@@ -94,29 +105,29 @@
       "embedder": "ollama:bge-m3",
       "dimension": 1024,
       "chunks": 76,
-      "index_build_seconds": 2.49,
-      "min_semantic_score": 0.545,
+      "index_build_seconds": 3.02,
+      "min_semantic_score": 0.5047,
       "dev": {
         "answerable_questions": 20,
         "no_answer_questions": 4,
-        "recall_at_5": 0.85,
-        "mrr": 0.7625,
-        "ndcg_at_5": 0.7745,
+        "recall_at_5": 0.9,
+        "mrr": 0.825,
+        "ndcg_at_5": 0.8345,
         "no_answer_accuracy": 1.0,
-        "false_rejection_rate": 0.15,
+        "false_rejection_rate": 0.0,
         "recall_at_5_by_type": {
           "direct": 1.0,
-          "identifier": 0.6667,
+          "identifier": 1.0,
           "paraphrase": 0.8182
         },
-        "median_latency_ms": 25.0
+        "median_latency_ms": 25.4
       },
       "test": {
         "answerable_questions": 20,
         "no_answer_questions": 4,
         "recall_at_5": 1.0,
-        "mrr": 0.9083,
-        "ndcg_at_5": 0.9219,
+        "mrr": 0.9167,
+        "ndcg_at_5": 0.9188,
         "no_answer_accuracy": 1.0,
         "false_rejection_rate": 0.0,
         "recall_at_5_by_type": {
@@ -125,7 +136,7 @@
           "identifier": 1.0,
           "paraphrase": 1.0
         },
-        "median_latency_ms": 24.9
+        "median_latency_ms": 25.0
       },
       "test_misses_before_cutoff": []
     },
@@ -133,29 +144,29 @@
       "embedder": "ollama:qwen3-embedding:0.6b",
       "dimension": 1024,
       "chunks": 76,
-      "index_build_seconds": 2.09,
-      "min_semantic_score": 0.5021,
+      "index_build_seconds": 2.63,
+      "min_semantic_score": 0.5675,
       "dev": {
         "answerable_questions": 20,
         "no_answer_questions": 4,
-        "recall_at_5": 0.9,
-        "mrr": 0.7875,
-        "ndcg_at_5": 0.7928,
+        "recall_at_5": 0.8,
+        "mrr": 0.7417,
+        "ndcg_at_5": 0.7332,
         "no_answer_accuracy": 1.0,
-        "false_rejection_rate": 0.05,
+        "false_rejection_rate": 0.2,
         "recall_at_5_by_type": {
           "direct": 1.0,
           "identifier": 1.0,
-          "paraphrase": 0.8182
+          "paraphrase": 0.6364
         },
-        "median_latency_ms": 31.9
+        "median_latency_ms": 32.3
       },
       "test": {
         "answerable_questions": 20,
         "no_answer_questions": 4,
         "recall_at_5": 1.0,
         "mrr": 0.975,
-        "ndcg_at_5": 0.9815,
+        "ndcg_at_5": 0.9622,
         "no_answer_accuracy": 1.0,
         "false_rejection_rate": 0.0,
         "recall_at_5_by_type": {
@@ -164,7 +175,7 @@
           "identifier": 1.0,
           "paraphrase": 1.0
         },
-        "median_latency_ms": 31.9
+        "median_latency_ms": 32.0
       },
       "test_misses_before_cutoff": []
     },
@@ -172,38 +183,38 @@
       "embedder": "ollama:embeddinggemma",
       "dimension": 768,
       "chunks": 76,
-      "index_build_seconds": 1.14,
-      "min_semantic_score": 0.3677,
+      "index_build_seconds": 1.66,
+      "min_semantic_score": 0.4013,
       "dev": {
         "answerable_questions": 20,
         "no_answer_questions": 4,
-        "recall_at_5": 0.95,
-        "mrr": 0.8292,
-        "ndcg_at_5": 0.8363,
+        "recall_at_5": 0.9,
+        "mrr": 0.825,
+        "ndcg_at_5": 0.8213,
         "no_answer_accuracy": 1.0,
-        "false_rejection_rate": 0.0,
+        "false_rejection_rate": 0.05,
         "recall_at_5_by_type": {
           "direct": 1.0,
           "identifier": 1.0,
-          "paraphrase": 0.9091
+          "paraphrase": 0.8182
         },
-        "median_latency_ms": 20.4
+        "median_latency_ms": 21.2
       },
       "test": {
         "answerable_questions": 20,
         "no_answer_questions": 4,
-        "recall_at_5": 0.9,
-        "mrr": 0.875,
-        "ndcg_at_5": 0.8815,
+        "recall_at_5": 0.95,
+        "mrr": 0.9,
+        "ndcg_at_5": 0.8938,
         "no_answer_accuracy": 1.0,
-        "false_rejection_rate": 0.1,
+        "false_rejection_rate": 0.05,
         "recall_at_5_by_type": {
           "compound": 1.0,
           "direct": 1.0,
           "identifier": 1.0,
-          "paraphrase": 0.8333
+          "paraphrase": 0.9167
         },
-        "median_latency_ms": 20.8
+        "median_latency_ms": 21.0
       },
       "test_misses_before_cutoff": []
     }

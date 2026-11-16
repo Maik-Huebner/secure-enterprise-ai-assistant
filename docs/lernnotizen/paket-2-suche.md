@@ -14,10 +14,10 @@ Ich habe drei lokale, mehrsprachige Modelle gemessen, alle über Ollama:
 
 | Modell | Recall@5 | MRR | Fragen ohne Antwort richtig | Latenz |
 |---|---:|---:|---:|---:|
-| Hashing (vorher) | 0,80 | 0,62 | 1,00 | 0,1 ms |
-| bge-m3 | 1,00 | 0,91 | 1,00 | 25 ms |
+| Hashing (vorher) | 0,75 | 0,60 | 1,00 | 0,2 ms |
+| bge-m3 | 1,00 | 0,92 | 1,00 | 25 ms |
 | **qwen3-embedding:0.6b** | **1,00** | **0,98** | **1,00** | 32 ms |
-| embeddinggemma | 0,90 | 0,88 | 1,00 | 21 ms |
+| embeddinggemma | 0,95 | 0,90 | 1,00 | 21 ms |
 
 **Gewählt: `qwen3-embedding:0.6b`.** Es ist am genauesten, sortiert am besten (MRR) und ist mit gut 0,6 GB klein.
 
@@ -63,12 +63,16 @@ Der Kopfbereich jeder Richtlinie (Metadaten und Hinweistext) wurde bisher als ei
 - Der Benchmark prüft sich selbst: Seine Zahlen müssen mit dem echten Retriever übereinstimmen. Dabei habe ich einen eigenen Fehler gefunden: Der Benchmark hatte nicht berücksichtigt, dass eine Dokument-ID immer als Beleg zählt.
 - Zwei Kennzahlen, die fast immer 1,0 waren, sind entfernt.
 
+### 8. Reproduzierbar auf jeder Plattform
+
+Die CI unter Linux hat andere Zahlen gemessen als mein Mac. Der Grund: Bei der Hashing-Suche teilen sich bis zu 75 Abschnitte exakt denselben Wert, und ihre Reihenfolge hing von der Plattform ab, etwa von den Rundungen der CPU-Befehle. Jetzt wird auf 6 Nachkommastellen gerundet und bei Gleichstand nach der Position des Abschnitts sortiert. In einem Linux-Container (amd64) kommen exakt dieselben Zahlen heraus wie auf dem Mac (arm64). Die vorher veröffentlichten Zahlen waren um einige Hundertstel zu günstig und sind korrigiert.
+
 ## Welche Alternativen gab es?
 
 | Entscheidung | Gewählt | Alternative | Warum so |
 |---|---|---|---|
 | Embedding-Backend | Ollama | sentence-transformers direkt | Ollama läuft ohnehin für das Sprachmodell, nutzt die Mac-GPU und braucht keine zweite Modellverwaltung. sentence-transformers bleibt als Option. |
-| Modell | qwen3-embedding:0.6b | bge-m3 | Gemessen besser (MRR 0,98 gegen 0,91) und kleiner. bge-m3 hat zusätzlich „sparse“ Vektoren, die nutzen wir aber nicht. |
+| Modell | qwen3-embedding:0.6b | bge-m3 | Gemessen besser (MRR 0,98 gegen 0,92) und kleiner. bge-m3 hat zusätzlich „sparse“ Vektoren, die nutzen wir aber nicht. |
 | Vektordatenbank | FAISS-Datei + Manifest | Qdrant, pgvector, Chroma | 76 Abschnitte brauchen keinen Server. Ein Server lohnt sich bei vielen Dokumenten, häufigen Änderungen oder mehreren Instanzen. |
 | Reranker | noch keiner | Cross-Encoder wie bge-reranker-v2-m3 | Die Messung zeigt Recall 1,0 ohne Reranker. Ein Reranker ist der nächste Schritt, wenn die Wissensbasis wächst. |
 | Router | Regeln + Beispiel-Embeddings | Sprachmodell als Router | Schneller (8 ms statt Sekunden), deterministisch und testbar. |
@@ -92,6 +96,9 @@ Mit einer Schwelle für die Ähnlichkeit. Liegt der beste Treffer darunter, sagt
 
 **„Warum filtert ihr vor dem Ranking? Nachher filtern ist doch einfacher.“**
 Weil sonst verbotene Dokumente die Ergebnisse beeinflussen. Ein Angreifer könnte durch geschickte Fragen herausfinden, ob es ein Dokument zu einem Thema gibt. Unser Test hat genau so einen Effekt bei BM25 gefunden.
+
+**„Warum hat eure CI andere Zahlen gemessen als dein Laptop?“**
+Weil die Reihenfolge bei gleichen Werten nicht festgelegt war. Gleitkommazahlen werden auf ARM und x86 minimal anders gerundet, und Bibliotheken sortieren Gleichstände unterschiedlich. Die Lösung: gerundet vergleichen und Gleichstände nach einer festen Regel auflösen. Geprüft habe ich das, indem ich die Evaluation in einem Linux-Container wiederholt habe.
 
 **„Warum ist der Index persistent und was steht im Manifest?“**
 Embeddings zu berechnen kostet Zeit, in unserem Fall 2 Sekunden, bei großen Wissensbasen Stunden. Das Manifest stellt sicher, dass Modell, Wissensbasis und Zerlegung zum Index passen. Sonst würde man Vektoren eines alten Modells mit Fragen eines neuen vergleichen, und das ergibt Unsinn ohne Fehlermeldung.

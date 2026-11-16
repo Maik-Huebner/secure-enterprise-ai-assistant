@@ -137,13 +137,16 @@ Measured on 16.11.2026 on an Apple M4 Pro with `scripts/benchmark_retrieval.py`;
 
 | Embedder | Recall@5 | MRR | nDCG@5 | No-answer correct | False rejections | Query latency |
 |---|---:|---:|---:|---:|---:|---:|
-| Hashing (v1 default) | 0.80 | 0.62 | 0.65 | 1.00 | 0.10 | 0.1 ms |
-| bge-m3 | 1.00 | 0.91 | 0.92 | 1.00 | 0.00 | 25 ms |
-| **qwen3-embedding:0.6b** (default) | **1.00** | **0.98** | **0.98** | **1.00** | **0.00** | 32 ms |
-| embeddinggemma | 0.90 | 0.88 | 0.88 | 1.00 | 0.10 | 21 ms |
+| Hashing (v1 default) | 0.75 | 0.60 | 0.63 | 1.00 | 0.10 | 0.2 ms |
+| bge-m3 | 1.00 | 0.92 | 0.92 | 1.00 | 0.00 | 25 ms |
+| **qwen3-embedding:0.6b** (default) | **1.00** | **0.98** | **0.96** | **1.00** | **0.00** | 32 ms |
+| embeddinggemma | 0.95 | 0.90 | 0.89 | 1.00 | 0.05 | 21 ms |
 
 With 20 answerable questions, a difference of 0.10 in recall equals two questions. The suite was
-written by the project author; it is a regression benchmark, not an independent one.
+written by the project author; it is a regression benchmark, not an independent one. Rankings
+break score ties by chunk position at six decimals, so the offline report is identical on
+macOS/arm64 and Linux/amd64 (verified in a container); an earlier version without this rule
+produced platform-dependent numbers.
 
 ### Routing
 
@@ -176,8 +179,8 @@ cases, rules, and knowledge corpus.
 | Routing accuracy, keyword baseline – test | 0.9167 | 24 queries |
 | Financial exact match | 1.0000 | 5 cases × 5 metrics |
 | Compliance-rule exact match | 1.0000 | 5 cases |
-| Retrieval Recall@5, hashing baseline – test | 0.8000 | 20 answerable questions |
-| Retrieval MRR, hashing baseline – test | 0.6183 | 20 answerable questions |
+| Retrieval Recall@5, hashing baseline – test | 0.7500 | 20 answerable questions |
+| Retrieval MRR, hashing baseline – test | 0.6042 | 20 answerable questions |
 | No-answer accuracy, hashing baseline – test | 1.0000 | 4 questions |
 | Guardrail attack recall – dev split | 1.0000 | 30 attacks |
 | Guardrail false-positive rate – dev split | 0.0000 | 30 benign questions |
