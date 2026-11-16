@@ -1,6 +1,6 @@
 {
   "ruleset_id": "NOVABANK-CONSUMER-CREDIT-COMPLIANCE-V1",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "effective_date": "2026-09-01",
   "rules": [
     {
@@ -9,9 +9,13 @@
       "description": "Eine abgelehnte Identitätsprüfung verhindert die Kreditgenehmigung.",
       "category": "kyc",
       "severity": "critical",
-      "parameters": {"predicate": "kyc_not_in", "statuses": "rejected"},
+      "parameters": {
+        "predicate": "kyc_not_in",
+        "statuses": "rejected"
+      },
       "source_document": "NB-KYC-001 — Richtlinie zur Kundenidentifizierung und KYC",
-      "source_section": "4.3 Abgelehnte Verifizierung"
+      "source_section": "4.3 Abgelehnte Verifizierung",
+      "hard_decline": true
     },
     {
       "rule_id": "RULE-002",
@@ -19,9 +23,13 @@
       "description": "Eine ausstehende oder unvollständige Verifizierung erfordert Nachbesserung und manuelle Prüfung.",
       "category": "kyc",
       "severity": "warning",
-      "parameters": {"predicate": "kyc_equals", "status": "verified"},
+      "parameters": {
+        "predicate": "kyc_equals",
+        "status": "verified"
+      },
       "source_document": "NB-KYC-001 — Richtlinie zur Kundenidentifizierung und KYC",
-      "source_section": "4.2 Freigabevoraussetzung Verifizierung"
+      "source_section": "4.2 Freigabevoraussetzung Verifizierung",
+      "hard_decline": false
     },
     {
       "rule_id": "RULE-003",
@@ -34,7 +42,8 @@
         "document_types": "identity_document,income_statement,bank_statements_90_days,credit_application_form"
       },
       "source_document": "NB-DOC-001 — Richtlinie zu erforderlichen Unterlagen für Verbraucherkredite",
-      "source_section": "3.1 Pflichtnachweise"
+      "source_section": "3.1 Pflichtnachweise",
+      "hard_decline": false
     },
     {
       "rule_id": "RULE-004",
@@ -42,9 +51,12 @@
       "description": "Abgelaufene oder ungültige Nachweise können keine automatisierte Kreditentscheidung stützen.",
       "category": "documents",
       "severity": "critical",
-      "parameters": {"predicate": "all_documents_valid"},
+      "parameters": {
+        "predicate": "all_documents_valid"
+      },
       "source_document": "NB-DOC-002 — Verfahren zur Prüfung von Unterlagen",
-      "source_section": "5.2 Gültigkeitskontrollen"
+      "source_section": "5.2 Gültigkeitskontrollen",
+      "hard_decline": false
     },
     {
       "rule_id": "RULE-005",
@@ -52,9 +64,13 @@
       "description": "Eine Schuldendienstquote nach Kredit über 40 Prozent erfordert eine manuelle Prüfung der Tragfähigkeit.",
       "category": "affordability",
       "severity": "warning",
-      "parameters": {"predicate": "dti_at_most", "maximum_pct": 40.0},
+      "parameters": {
+        "predicate": "dti_at_most",
+        "maximum_pct": 40.0
+      },
       "source_document": "NB-CRD-001 — Richtlinie für Verbraucherkredite",
-      "source_section": "6.2 Schwellenwerte der Schuldendienstquote"
+      "source_section": "6.2 Schwellenwerte der Schuldendienstquote",
+      "hard_decline": false
     },
     {
       "rule_id": "RULE-006",
@@ -62,9 +78,13 @@
       "description": "Eine Schuldendienstquote nach Kredit über 50 Prozent liegt außerhalb der Risikobereitschaft.",
       "category": "affordability",
       "severity": "critical",
-      "parameters": {"predicate": "dti_at_most", "maximum_pct": 50.0},
+      "parameters": {
+        "predicate": "dti_at_most",
+        "maximum_pct": 50.0
+      },
       "source_document": "NB-RSK-001 — Handbuch Kreditrisiko Privatkunden",
-      "source_section": "7.4 Harte Ablehnungsindikatoren"
+      "source_section": "7.4 Harte Ablehnungsindikatoren",
+      "hard_decline": true
     },
     {
       "rule_id": "RULE-007",
@@ -72,9 +92,13 @@
       "description": "Risikoklasse E ist von der Standardgenehmigung für Verbraucherkredite ausgeschlossen.",
       "category": "credit_risk",
       "severity": "critical",
-      "parameters": {"predicate": "risk_class_in", "classes": "A,B,C,D"},
+      "parameters": {
+        "predicate": "risk_class_in",
+        "classes": "A,B,C,D"
+      },
       "source_document": "NB-RSK-002 — Leitfaden zur Risikoklassifizierung",
-      "source_section": "4.1 Zulässige Risikoklassen"
+      "source_section": "4.1 Zulässige Risikoklassen",
+      "hard_decline": true
     },
     {
       "rule_id": "RULE-008",
@@ -82,9 +106,13 @@
       "description": "Befristet Beschäftigte benötigen mindestens zwölf Monate nachgewiesene Beschäftigungsdauer.",
       "category": "employment",
       "severity": "warning",
-      "parameters": {"predicate": "temporary_employment_months", "minimum_months": 12},
+      "parameters": {
+        "predicate": "temporary_employment_months",
+        "minimum_months": 12
+      },
       "source_document": "NB-CRD-002 — Leitlinien für die manuelle Prüfung",
-      "source_section": "5.3 Befristete Beschäftigung"
+      "source_section": "5.3 Befristete Beschäftigung",
+      "hard_decline": false
     },
     {
       "rule_id": "RULE-009",
@@ -92,9 +120,13 @@
       "description": "Standardanträge für Verbraucherkredite dürfen 75.000 EUR nicht überschreiten.",
       "category": "product",
       "severity": "critical",
-      "parameters": {"predicate": "amount_at_most", "maximum_eur": 75000.0},
+      "parameters": {
+        "predicate": "amount_at_most",
+        "maximum_eur": 75000.0
+      },
       "source_document": "NB-PRD-001 — Produktkatalog Verbraucherkredite",
-      "source_section": "2.1 Produktgrenzen"
+      "source_section": "2.1 Produktgrenzen",
+      "hard_decline": false
     },
     {
       "rule_id": "RULE-010",
@@ -102,9 +134,13 @@
       "description": "Laufzeiten über 84 Monate erfordern eine Ausnahmeprüfung.",
       "category": "product",
       "severity": "warning",
-      "parameters": {"predicate": "term_at_most", "maximum_months": 84},
+      "parameters": {
+        "predicate": "term_at_most",
+        "maximum_months": 84
+      },
       "source_document": "NB-PRD-001 — Produktkatalog Verbraucherkredite",
-      "source_section": "2.1 Produktgrenzen"
+      "source_section": "2.1 Produktgrenzen",
+      "hard_decline": false
     }
   ]
 }

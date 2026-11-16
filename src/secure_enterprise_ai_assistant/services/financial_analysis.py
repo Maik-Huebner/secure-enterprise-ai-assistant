@@ -49,10 +49,9 @@ class FinancialAnalysisService:
                 / customer.monthly_net_income_eur
                 * PERCENT_DENOMINATOR
             )
+            obligations_after = _money(customer.existing_monthly_debt_eur + monthly_payment)
             dti_after = _percentage(
-                (customer.existing_monthly_debt_eur + monthly_payment)
-                / customer.monthly_net_income_eur
-                * PERCENT_DENOMINATOR
+                obligations_after / customer.monthly_net_income_eur * PERCENT_DENOMINATOR
             )
 
         return FinancialMetrics(
@@ -61,4 +60,6 @@ class FinancialAnalysisService:
             debt_to_income_after_pct=dti_after,
             total_interest_eur=total_interest,
             total_repayment_eur=total_repayment,
+            monthly_obligations_after_eur=obligations_after,
+            debt_to_income_change_pct_points=dti_after - dti_before,
         )

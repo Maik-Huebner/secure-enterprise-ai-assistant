@@ -100,6 +100,10 @@ class ComplianceService:
             ) from exc
         return cls(rules)
 
+    @property
+    def rules(self) -> tuple[ComplianceRule, ...]:
+        return self._rules
+
     def check(self, case: CreditCase) -> tuple[ComplianceFinding, ...]:
         """Return one transparent pass/fail finding per configured rule."""
         findings = []
@@ -112,6 +116,8 @@ class ComplianceService:
                     passed=passed,
                     severity=rule.severity,
                     message=f"{rule.title}: {detail}",
+                    source_document_id=rule.source_document.split(" ", 1)[0],
+                    source_section=rule.source_section,
                 )
             )
         return tuple(findings)

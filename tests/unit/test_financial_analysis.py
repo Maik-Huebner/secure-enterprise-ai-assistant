@@ -15,6 +15,10 @@ def test_annuity_and_dti_metrics_are_deterministic() -> None:
     assert metrics.total_interest_eur == Decimal("1884.08")
     assert metrics.debt_to_income_before_pct == Decimal("4.00")
     assert metrics.debt_to_income_after_pct == Decimal("10.71")
+    assert metrics.debt_to_income_change_pct_points == Decimal("6.71")
+    assert metrics.monthly_obligations_after_eur == (
+        cases[0].customer.existing_monthly_debt_eur + metrics.monthly_payment_eur
+    )
 
 
 def test_high_debt_case_has_higher_post_loan_dti() -> None:
