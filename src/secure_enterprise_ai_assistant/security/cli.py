@@ -1,9 +1,14 @@
-"""Manage API users: ``novabank-users add|list|remove``. Passwords are prompted, never stored."""
+"""Manage API users: ``novabank-users add|list|remove``.
+
+Passwords are prompted (or read from stdin with ``--password-stdin``), never stored or accepted
+as command-line arguments.
+"""
 
 from __future__ import annotations
 
 import argparse
 import getpass
+import sys
 
 from secure_enterprise_ai_assistant.core.settings import get_settings
 from secure_enterprise_ai_assistant.security.models import Role
@@ -19,6 +24,11 @@ def main(argv: list[str] | None = None) -> int:
     add.add_argument("--role", choices=[role.value for role in Role], required=True)
     add.add_argument("--team", help="Pflicht für sachbearbeiter, z. B. team-nord")
     add.add_argument("--name", dest="display_name", help="Anzeigename")
+    add.add_argument(
+        "--password-stdin",
+        action="store_true",
+        help="Passwort aus der ersten Zeile der Standardeingabe lesen (für Skripte)",
+    )
     commands.add_parser("list", help="Benutzer anzeigen")
     remove = commands.add_parser("remove", help="Benutzer löschen")
     remove.add_argument("username")
@@ -35,10 +45,14 @@ def main(argv: list[str] | None = None) -> int:
         print("Gelöscht." if removed else "Benutzer nicht gefunden.")
         return 0 if removed else 1
 
-    password = getpass.getpass("Passwort (mind. 12 Zeichen): ")
-    if password != getpass.getpass("Passwort wiederholen: "):
-        print("Die Passwörter stimmen nicht überein.")
-        return 1
+    if args.password_stdin:
+        # Never as an argument: command lines are visible in the process list and shell history.
+        password = sys.stdin.readline().rstrip("\n")
+    else:
+        password = getpass.getpass("Passwort (mind. 12 Zeichen): ")
+        if password != getpass.getpass("Passwort wiederholen: "):
+            print("Die Passwörter stimmen nicht überein.")
+            return 1
     try:
         record = store.add(
             args.username,

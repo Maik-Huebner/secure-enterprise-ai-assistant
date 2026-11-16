@@ -1,6 +1,6 @@
 [project]
 name = "secure-enterprise-ai-assistant"
-version = "1.6.0"
+version = "2.0.0"
 description = "Security-oriented local AI portfolio reference with LangGraph, MCP, RAG, and synthetic financial workflows."
 readme = "README.md"
 requires-python = ">=3.13,<3.14"
@@ -80,6 +80,8 @@ secure_enterprise_ai_assistant = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = ["live: needs a running Ollama with the configured models (make test-live)"]
+addopts = "-m 'not live'"
 filterwarnings = [
 ]
 

@@ -274,6 +274,7 @@ def render_decision_brief(case_id: str, evidence: Evidence) -> str:
             f"- Gesamtrückzahlung: **{format_eur(metrics['total_repayment_eur'])}**",
             "- Monatliche Verpflichtungen nach Kredit: "
             f"**{format_eur(metrics['monthly_obligations_after_eur'])}**",
+            "",
             "Die Zahlen stammen unverändert aus `analyze_financial_case`; es wurde keine "
             "Arithmetik eines Sprachmodells verwendet.",
             "",
@@ -285,6 +286,7 @@ def render_decision_brief(case_id: str, evidence: Evidence) -> str:
             "",
             "## Verwendete MCP-Werkzeuge",
             *[f"- `{name}`" for name in EVIDENCE_KEYS],
+            "",
             "Alle Nachweise wurden in einer echten lokalen MCP-stdio-Sitzung abgerufen.",
             "",
             "## Hinweise für die prüfende Person",

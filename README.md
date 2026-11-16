@@ -1,342 +1,324 @@
 # Secure Enterprise AI Assistant
 
-Local-first agentic AI decision support for **NovaBank Financial Services AG**, a fully
-fictional financial-services organization. The project demonstrates how deterministic
-business logic, Advanced RAG, Model Context Protocol (MCP), a LangGraph workflow, evaluation,
-and security controls fit together in one auditable application.
+Lokale, KI-gestützte Entscheidungsunterstützung für Kreditfälle der **NovaBank Financial
+Services AG**, einer vollständig erfundenen Bank. Das Projekt zeigt, wie man ein LLM-System so
+baut, dass Fakten nachprüfbar bleiben: deterministische Fachlogik, Advanced RAG, das Model
+Context Protocol (MCP), ein LangGraph-Workflow mit Freigabe durch einen Menschen, Messung der
+Antwortqualität, Tracing und Sicherheitskontrollen – alles lokal auf einem MacBook mit einem
+9B-Modell.
 
-> **Synthetic-data disclaimer:** NovaBank does not exist. Every customer, case, policy,
-> compliance rule, amount, label, and document in this repository was created solely for
-> demonstration, testing, and portfolio use. This software is not financial or legal advice.
+> **Hinweis zu den Daten:** NovaBank gibt es nicht. Alle Kunden, Fälle, Richtlinien, Regeln,
+> Beträge und Dokumente in diesem Repository sind synthetisch und nur für Demonstration, Tests
+> und Portfolio erstellt. Die Software ist keine Finanz- oder Rechtsberatung.
 
-## Business context
+![Assistent mit geprüfter Finanzantwort](docs/assets/ui-v2-assistant.jpg)
 
-Enterprise assistants must do more than generate plausible prose. A credit workflow needs
-validated data, exact arithmetic, explicit policy evidence, constrained tool use, measurable
-quality, and a reviewable execution path. This implementation keeps those concerns separate:
-the language model explains and synthesizes, while MCP tools own facts, calculations,
-compliance results, and retrieval. The fictional NovaBank scenario demonstrates decision
-support for employees; it does not automate final credit approval.
+## Worum es geht
 
-## What is implemented
+Ein Assistent für Kreditsachbearbeitung muss mehr können als gut klingende Texte. Er braucht
+geprüfte Daten, exakte Rechnungen, belegte Richtlinienaussagen, kontrollierten Werkzeugeinsatz,
+messbare Qualität und einen Ablauf, den man nachvollziehen kann. Deshalb sind die Aufgaben hier
+streng getrennt:
 
-- 48 reproducible synthetic credit cases across eight risk scenarios;
-- strict Pydantic domain models shared across services, MCP, the workflow, API, UI, and
-  evaluation;
-- Decimal-based annuity, repayment, interest, and pre/post-loan DTI calculations;
-- ten versioned JSON compliance rules built from nine allowlisted predicates, with policy
-  references;
-- 18 internally consistent synthetic NovaBank policies with document-control metadata;
-- Markdown, text, and PDF ingestion with section/page provenance and safe path handling;
-- hybrid retrieval (multilingual embeddings via Ollama + BM25S + identifier signal) with a
-  persistent FAISS index, filters before ranking, and calibrated scope rejection;
-- a real MCP server (official SDK 2.x) with four structured tools over stdio or Streamable
-  HTTP; over HTTP it is an OAuth 2.1 resource server that verifies its own short-lived tokens;
-- a LangGraph workflow (router node, MCP tool node, grounded answer, verification, retry,
-  verified fallback, human approval with interrupt, SQLite checkpointer);
-- deterministic five-route classification; one local model (`qwen3.5:9b`) for every route;
-- measured answer quality (fact correctness, citations, faithfulness judge, LLM-only baseline);
-- a Gradio Blocks UI with sources, selected tools, trace, cases, documents, and diagnostics;
-- a visible deterministic all-MCP demo-safe path for reproducible local full assessments;
-- active input guardrails, sanitized errors, local runtime storage, and no arbitrary code tools;
-- measured offline evaluation, unit/integration tests, CI, and a Docker entry point.
+- **Fakten kommen aus Code:** Fallakten, Raten, Schuldendienstquote (DTI), Regelprüfung und
+  Empfehlung liefern deterministische Services hinter MCP.
+- **Sprache kommt aus dem Modell:** `qwen3.5:9b` formuliert nur aus diesen Nachweisen.
+- **Jede Antwort wird geprüft:** Zahlen und Dokument-IDs müssen in den Nachweisen stehen.
+- **Entscheidungen trifft ein Mensch:** Eine Entscheidungsvorlage wird erst gültig, wenn eine
+  *zweite* prüfende Person sie freigibt.
 
-## Architecture
+## Was gebaut ist (v2.0)
 
-![Secure Enterprise AI Assistant UI](docs/assets/ui-overview.png)
+- 48 reproduzierbare synthetische Kreditfälle in acht Risikoszenarien
+- Decimal-genaue Annuität, Zinsen, Rückzahlung, DTI vor und nach Kredit
+- zehn versionierte Regeln (JSON) mit Quellenangabe; Empfehlung aus dem Regelwerk
+- 18 synthetische Richtlinien, Klassifizierung `intern` / `vertraulich`
+- hybride Suche: Embeddings (`qwen3-embedding:0.6b` über Ollama) + BM25 + Dokument-/Abschnitts-
+  kennungen, persistenter FAISS-Index, Filter vor dem Ranking, kalibrierte „keine Antwort“
+- hybrider Router (Regeln + Beispielsätze per Embedding), kein Modellaufruf fürs Routing
+- **LangGraph-Workflow:** Router legt den Werkzeugplan fest, MCP-Werkzeugknoten, Antwort aus
+  Nachweisen, Antwortprüfung, zweiter Versuch, verifizierter Rückfallweg, Freigabe mit
+  `interrupt` und Vier-Augen-Prinzip, SQLite-Checkpointer
+- **MCP-Server** (offizielles SDK 2.3) über stdio oder Streamable HTTP; über HTTP ein
+  OAuth-2.1-Resource-Server mit eigenen, kurzlebigen Tokens
+- **FastAPI** mit JWT, Argon2id, Rollen, Team-Rechten, Rate Limits, Audit-Log mit Hash-Kette
+- **Gradio-Oberfläche** als reiner API-Client (Anmeldung, Assistent, Fälle, Freigaben)
+- **Langfuse** (optional, selbst gehostet): Traces, Token, Kosten, Datensätze, Experimente
+- gemessene Antwortqualität mit Handprüfung, Offline-Evaluation in der CI
+- 306 automatisierte Tests + 4 Live-Tests, strenge Typprüfung, Docker Compose
+
+## Architektur
 
 ```mermaid
 flowchart LR
-    U[Employee] --> UI[Gradio UI]
+    U[Mitarbeitende] --> UI[Gradio-UI]
     UI -->|JWT| API[FastAPI]
     API --> G[LangGraph]
     G --> R{Router}
-    R --> T[MCP tool node]
-    T -->|stdio or HTTP + MCP token| M[MCP server]
-    M --> C[Case repository]
-    M --> N[Decimal finance]
-    M --> P[Compliance rules + decision service]
-    M --> H[Hybrid RAG]
-    T --> A[Answer: qwen3.5:9b]
-    A --> V{Verification}
-    V -->|ok| OUT[Answer]
-    V -->|issues| A
-    V -->|second failure| FB[Verified fallback]
-    T -->|full assessment| D[Deterministic draft]
-    D --> HR[⏸ Approval by a second reviewer]
+    R --> T[MCP-Werkzeugknoten]
+    T -->|stdio oder HTTP + MCP-Token| M[MCP-Server]
+    M --> C[Fall-Repository]
+    M --> N[Decimal-Finanzrechner]
+    M --> P[Regelwerk + Entscheidungsservice]
+    M --> H[Hybride Suche]
+    T --> A[Antwort: qwen3.5:9b]
+    A --> V{Antwortprüfung}
+    V -->|ok| OUT[Antwort]
+    V -->|Mängel| A
+    V -->|zweimal Mängel| FB[verifizierter Rückfallweg]
+    T -->|vollständige Prüfung| D[Vorlage ohne Modell]
+    D --> HR[⏸ Freigabe durch zweite Person]
+    G -.-> LF[(Langfuse, optional)]
 ```
 
-The language model never selects or calls tools: the router fixes the tool plan, the tool node
-executes it over MCP with the caller's token, and the model only phrases an answer from that
-evidence. Every answer is verified deterministically (numbers, citations, language) before it
-leaves the graph. Details and trust boundaries are in [docs/architecture.md](docs/architecture.md).
+Das Sprachmodell wählt und ruft **keine** Werkzeuge auf („Least Agency“). Der Router legt den
+Werkzeugplan fest, der Werkzeugknoten führt ihn über MCP mit dem Token der angemeldeten Person
+aus, und das Modell formuliert nur. Details, Vertrauensgrenzen und Zustandsspeicher stehen in
+[docs/architecture.md](docs/architecture.md).
 
-## MCP tools
+## MCP-Werkzeuge
 
-| Tool | Input | Structured output |
+| Werkzeug | Eingabe | Strukturierte Ausgabe |
 |---|---|---|
-| `get_customer_case` | `case_id` | validated `CreditCase` |
-| `analyze_financial_case` | `case_id` | deterministic `FinancialMetrics` |
-| `check_compliance` | `case_id` | complete `ComplianceFinding` list |
-| `search_internal_knowledge` | question + safe filters | ranked chunks with source metadata |
+| `get_customer_case` | `case_id` | geprüfter `CreditCase` |
+| `analyze_financial_case` | `case_id` | `FinancialMetrics` (Rate, DTI, Zins, Rückzahlung, Verpflichtungen nach Kredit) |
+| `check_compliance` | `case_id` | alle Regelbefunde mit Quelle + Empfehlung |
+| `search_internal_knowledge` | Frage + sichere Filter | Textstellen mit Dokument, Abschnitt, Version |
 
-The interface exposes no SQL, shell, generic URL, or arbitrary filesystem capability.
+Es gibt kein SQL-, Shell-, URL- oder Dateisystem-Werkzeug.
 
-### Transports and authentication (v1.5)
-
-| Transport | Start | Identity of the caller |
+| Transport | Start | Wer ruft auf? |
 |---|---|---|
-| stdio (default) | one subprocess per request | MCP token in `NOVABANK_ACCESS_TOKEN`, verified at start |
-| Streamable HTTP (stateless) | `novabank-mcp --transport http`, `MCP_TRANSPORT=http` | `Authorization: Bearer`, verified per request |
+| stdio (Standard) | ein Unterprozess pro Anfrage | MCP-Token in `NOVABANK_ACCESS_TOKEN`, beim Start geprüft |
+| Streamable HTTP, zustandslos | `novabank-mcp --transport http`, `MCP_TRANSPORT=http` | `Authorization: Bearer`, Prüfung bei jeder Anfrage |
 
-The API never forwards its own bearer token to the tool layer ("token passthrough" is forbidden by
-the MCP authorization specification). For every workflow run it issues a separate token with
-audience `novabank-mcp` and a lifetime of five minutes. Over HTTP the server answers missing,
-forged, expired or wrongly addressed tokens with 401 and a pointer to its protected-resource
-metadata (RFC 9728, `/.well-known/oauth-protected-resource/mcp`). Expected tool failures return
-their German message; any other exception reaches the client only as "Error executing tool", so
-paths or internals never leak. `tests/security/test_mcp_http.py` starts a real HTTP server and
-tests all of this, including that HTTP and in-process evidence are identical.
+Die API reicht ihr eigenes Token **nie** an die Werkzeugschicht weiter („Token Passthrough“
+verbietet die MCP-Spezifikation). Für jeden Lauf stellt sie ein eigenes Token mit Audience
+`novabank-mcp` und fünf Minuten Laufzeit aus. Über HTTP antwortet der Server bei fehlendem,
+gefälschtem, abgelaufenem oder falsch adressiertem Token mit 401 und verweist auf seine
+Protected-Resource-Metadata (RFC 9728). Erwartete Werkzeugfehler kommen mit deutscher Meldung,
+alles andere nur als „Error executing tool“, damit keine internen Details nach außen gelangen.
 
-## LangGraph workflow (v1.4)
+## LangGraph-Workflow
 
-| Request type | MCP tools (fixed by the router) | Answer |
+| Anfrage | MCP-Werkzeuge (vom Router festgelegt) | Antwort |
 |---|---|---|
-| Knowledge | `search_internal_knowledge` | model from passages, or "no answer" without a model call |
-| Customer case | `get_customer_case` | model from case facts |
-| Financial | case + `analyze_financial_case` | model from deterministic metrics |
-| Compliance | case + `check_compliance` + search | model from findings and passages |
-| Full assessment | all four | deterministic draft → pause → second reviewer approves or rejects |
+| Wissensfrage | `search_internal_knowledge` | Modell aus Textstellen, oder „keine Antwort“ ohne Modellaufruf |
+| Kundenfall | `get_customer_case` | Modell aus Falldaten |
+| Finanzanalyse | Fall + `analyze_financial_case` | Modell aus deterministischen Kennzahlen |
+| Compliance | Fall + `check_compliance` + Suche | Modell aus Befunden und Quellen der verletzten Regeln |
+| Vollständige Prüfung | alle vier | Vorlage ohne Modell → Pause → zweite Person gibt frei oder lehnt ab |
 
-If an answer contains numbers or document IDs that are not in the evidence, misses citations, or
-uses English labels, the graph retries once with the issues as feedback; a second failure
-switches to the verified fallback, which answers from structured evidence alone. Decision briefs
-are never written by the model; they pause (`interrupt`) until a *different* reviewer approves or
-rejects them (`POST /v1/reviews/{thread_id}`). A refused decision is validated in a separate
-node and sent back to a fresh pause, so it can never be applied later. Graph state is persisted in
-SQLite; the access token is passed as run context and never written to the checkpoint (tested).
+Enthält eine Antwort Zahlen oder Dokument-IDs, die nicht in den Nachweisen stehen, fehlt eine
+Quelle oder stehen englische Beschriftungen darin, bekommt das Modell einen zweiten Versuch mit
+der Mängelliste. Fällt auch der durch, baut der Code die Antwort aus den strukturierten Daten.
+Eine Entscheidungsvorlage pausiert mit `interrupt`, bis eine **andere** prüfende Person über
+`POST /v1/reviews/{thread_id}` entscheidet. Eine abgewiesene Selbstfreigabe wird in einem
+eigenen Knoten geprüft und führt zurück in eine neue Pause, kann also nie später „nachrutschen“.
+Der Graph-Zustand liegt in SQLite; das Token ist Laufzeit-Kontext und landet nicht im
+Checkpoint (getestet).
 
-## Advanced RAG
+![Freigabe einer Entscheidungsvorlage durch eine zweite Person](docs/assets/ui-v2-approval.jpg)
 
-The corpus is chunked by document section while preserving document ID, title, version,
-effective date, owner, section, and page where available. Three signals are fused:
+## Suche (Advanced RAG)
 
-- **vector ranking** in FAISS with a local multilingual embedding model via Ollama (default
-  `qwen3-embedding:0.6b`, chosen by measurement below);
-- **lexical ranking** with BM25S and German stopwords;
-- **identifier signal**: an explicitly named document ID (`NB-RSK-001`) and section number
-  (`Abschnitt 7.4`) always rank first.
+Der Korpus wird nach Abschnitten zerlegt; Dokument-ID, Titel, Version, Gültigkeit,
+Verantwortliche, Abschnitt und Seite bleiben erhalten. Drei Signale werden kombiniert:
 
-**Filters run before ranking.** Only permitted chunks are scored; BM25 term statistics are
-computed on the permitted subset, so hidden documents cannot shift rank positions or the
-"no answer" decision. A unit test compares the filtered ranking with a ranking built from the
-permitted documents alone.
+- **Vektorsuche** in FAISS mit einem lokalen, mehrsprachigen Embedding-Modell über Ollama
+  (Standard `qwen3-embedding:0.6b`, per Messung gewählt);
+- **lexikalische Suche** mit BM25S und deutschen Stoppwörtern;
+- **Kennungen:** Eine genannte Dokument-ID (`NB-RSK-001`) oder Abschnittsnummer
+  (`Abschnitt 7.4`) steht immer vorn.
 
-**Persistent index.** Vectors are stored in `<RUNTIME_DIR>/index/<embedder>/` with a manifest
-(embedder, dimension, corpus hash, chunker version). A mismatch triggers a rebuild, never the
-silent reuse of a stale index. `novabank-index rebuild` and `novabank-index status` manage it.
-Building takes about 2 s for 76 chunks on an M4 Pro; loading takes about 0.02 s.
+**Filter vor dem Ranking.** Nur erlaubte Textstellen werden bewertet, und auch die BM25-Statistik
+wird nur auf der erlaubten Teilmenge berechnet. So können verborgene Dokumente weder die
+Reihenfolge noch die Entscheidung „keine Antwort“ verschieben. Ein Test vergleicht das
+gefilterte Ranking mit einem Ranking nur aus den erlaubten Dokumenten.
 
-**No answer instead of a weak answer.** For semantic models, the out-of-scope threshold is
-calibrated per model on the dev split only (`resources/retrieval/thresholds.json`).
+**Persistenter Index** unter `<RUNTIME_DIR>/index/<embedder>/` mit Manifest (Embedder,
+Dimension, Korpus-Hash, Chunker-Version). Passt etwas nicht, wird neu gebaut, nie ein alter
+Index still weiterverwendet. Aufbau ca. 2 s für 76 Abschnitte auf einem M4 Pro, Laden ca. 0,02 s.
 
-### Before/after: hashing vs. real embedding models
+**Lieber keine Antwort als eine schwache:** Die Schwelle ist pro Modell nur auf dem Dev-Split
+kalibriert (`resources/retrieval/thresholds.json`).
 
-Measured on 16.11.2026 on an Apple M4 Pro with `scripts/benchmark_retrieval.py`; full report in
-`reports/evaluation/retrieval_comparison.json`. Test split: 20 answerable German questions
-(paraphrases, compounds, document and section numbers) and 4 questions without an answer.
+### Vorher/nachher: Hashing gegen echte Embedding-Modelle
 
-| Embedder | Recall@5 | MRR | nDCG@5 | No-answer correct | False rejections | Query latency |
+Gemessen am 16.11.2026 auf einem Apple M4 Pro mit `scripts/benchmark_retrieval.py`
+(`reports/evaluation/retrieval_comparison.json`). Test-Split: 20 beantwortbare deutsche Fragen
+(Umschreibungen, zusammengesetzte Wörter, Dokument- und Abschnittsnummern) und 4 ohne Antwort.
+
+| Embedder | Recall@5 | MRR | nDCG@5 | „Keine Antwort“ richtig | Falsch abgelehnt | Latenz |
 |---|---:|---:|---:|---:|---:|---:|
-| Hashing (v1 default) | 0.75 | 0.60 | 0.63 | 1.00 | 0.10 | 0.2 ms |
-| bge-m3 | 1.00 | 0.92 | 0.92 | 1.00 | 0.00 | 25 ms |
-| **qwen3-embedding:0.6b** (default) | **1.00** | **0.98** | **0.96** | **1.00** | **0.00** | 32 ms |
-| embeddinggemma | 0.95 | 0.90 | 0.89 | 1.00 | 0.05 | 21 ms |
+| Hashing (v1-Standard) | 0,75 | 0,60 | 0,63 | 1,00 | 0,10 | 0,2 ms |
+| bge-m3 | 1,00 | 0,92 | 0,92 | 1,00 | 0,00 | 25 ms |
+| **qwen3-embedding:0.6b** (Standard) | **1,00** | **0,98** | **0,96** | **1,00** | **0,00** | 32 ms |
+| embeddinggemma | 0,95 | 0,90 | 0,89 | 1,00 | 0,05 | 21 ms |
 
-With 20 answerable questions, a difference of 0.10 in recall equals two questions. The suite was
-written by the project author; it is a regression benchmark, not an independent one. Rankings
-break score ties by chunk position at six decimals, so the offline report is identical on
-macOS/arm64 and Linux/amd64 (verified in a container); an earlier version without this rule
-produced platform-dependent numbers.
+Bei 20 Fragen sind 0,10 Recall genau zwei Fragen. Die Fragen stammen vom Projektautor; es ist ein
+Regressions-, kein unabhängiger Benchmark. Gleichstände werden nach Position auf sechs
+Nachkommastellen aufgelöst, deshalb ist der Offline-Bericht auf macOS/arm64 und Linux/amd64
+identisch (im Container geprüft).
 
 ### Routing
 
-Case-ID extraction is a rule (`CASE-00031`, `case-00031`, `Fall 31`). For case requests the
-intent is chosen by a hybrid router: explicit keywords decide when present, otherwise the
-request is compared with labelled example requests via embeddings (no language model call).
-Measured with `scripts/benchmark_routing.py` (`reports/evaluation/routing_comparison.json`):
+Fall-IDs erkennt eine Regel (`CASE-00031`, `case-00031`, `Fall 31`). Bei Fallanfragen wählt ein
+hybrider Router die Absicht: Eindeutige Schlüsselwörter entscheiden, sonst wird die Anfrage per
+Embedding mit Beispielsätzen verglichen. Gemessen mit `scripts/benchmark_routing.py`:
 
-| Router | Dev | Test | Mean latency |
+| Router | Dev | Test | Latenz (Mittel) |
 |---|---:|---:|---:|
-| Keyword rules only (v1 approach, extended) | 25/25 | 22/24 | < 0.1 ms |
-| Semantic only | 25/25 | 24/24 | 25 ms |
-| **Hybrid** (default) | 25/25 | **24/24** | 8 ms |
+| nur Schlüsselwörter (v1-Ansatz, erweitert) | 25/25 | 22/24 | < 0,1 ms |
+| nur semantisch | 25/25 | 24/24 | 25 ms |
+| **hybrid** (Standard) | 25/25 | **24/24** | 8 ms |
 
-The two keyword misses ("freigegeben", "umfassend") are words that occur only in the test split
-and were deliberately not added to the rules. CI has no Ollama, so the offline evaluation below
-reports the hashing and keyword baselines.
+Die zwei Fehler der Schlüsselwörter („freigegeben“, „umfassend“) kommen nur im Test-Split vor
+und wurden bewusst nicht in die Regeln übernommen.
 
-Retrieved content is explicitly treated as untrusted evidence, not instructions.
+## Gemessene Offline-Evaluation (CI)
 
-## Measured evaluation
+`reports/evaluation/latest.json` entsteht aus der versionierten Suite im Paket
+(`resources/evaluation/`). Keine Zahl ist von Hand geschrieben; die Prüfung vergleicht auch
+Hashes von Suite, Fällen, Regeln und Korpus. Die CI hat kein Ollama, deshalb nutzt dieser
+Bericht die Hashing- und Schlüsselwort-Baselines (echte Modelle: Tabellen oben).
 
-The generated report at `reports/evaluation/latest.json` comes from the versioned suite shipped
-inside the package at `src/secure_enterprise_ai_assistant/resources/evaluation/`. No benchmark
-number is hand-written or inferred. The evidence check also verifies exact hashes for the suite,
-cases, rules, and knowledge corpus.
-
-| Metric | Result | Evaluation set |
+| Kennzahl | Ergebnis | Umfang |
 |---|---:|---:|
-| Routing accuracy, keyword baseline – test | 0.9167 | 24 queries |
-| Financial exact match | 1.0000 | 5 cases × 5 metrics |
-| Compliance-rule exact match | 1.0000 | 5 cases |
-| Retrieval Recall@5, hashing baseline – test | 0.7500 | 20 answerable questions |
-| Retrieval MRR, hashing baseline – test | 0.6042 | 20 answerable questions |
-| No-answer accuracy, hashing baseline – test | 1.0000 | 4 questions |
-| Guardrail attack recall – dev split | 1.0000 | 30 attacks |
-| Guardrail false-positive rate – dev split | 0.0000 | 30 benign questions |
-| Guardrail attack recall – **holdout split** | **0.7500** | 20 attacks |
-| Guardrail false-positive rate – holdout split | 0.0000 | 20 benign questions |
+| Routing, Schlüsselwort-Baseline – Test | 0,9167 | 24 Anfragen |
+| Finanzkennzahlen exakt | 1,0000 | 5 Fälle × 5 Kennzahlen |
+| Regelbefunde exakt | 1,0000 | 5 Fälle |
+| Recall@5, Hashing – Test | 0,7500 | 20 Fragen |
+| MRR, Hashing – Test | 0,6042 | 20 Fragen |
+| „Keine Antwort“ richtig, Hashing – Test | 1,0000 | 4 Fragen |
+| Eingabefilter: Angriffe erkannt – Dev | 1,0000 | 30 Angriffe |
+| Eingabefilter: Fehlalarme – Dev | 0,0000 | 30 harmlose Fragen |
+| Eingabefilter: Angriffe erkannt – **Holdout** | **0,7500** | 20 Angriffe |
+| Eingabefilter: Fehlalarme – Holdout | 0,0000 | 20 harmlose Fragen |
 
-This offline report runs in CI without Ollama, so retrieval and routing use the deterministic
-hashing and keyword baselines; real-model results are in the tables above. The former
-"tool-selection accuracy" and "source-attribution rate" were removed in v1.2 because they were
-true by construction.
+Der Dev-Split des Eingabefilters wurde zum Bau der Muster genutzt und ist deshalb optimistisch.
+Der Holdout-Split entstand danach und wurde ohne Anpassung gemessen: 15 von 20 Angriffen
+blockiert. Das ist die ehrliche Schätzung und der Grund, warum der Filter nur die erste
+Schutzschicht ist. Im Audit von v1.0.2 ([docs/audit-v1.md](docs/audit-v1.md)) wurde 1 von 12
+Angriffen blockiert.
 
-Measured on 16.11.2026 for v1.2.0. The guardrail dev split was used to design the patterns and
-is optimistic by construction; the holdout split was written afterwards and measured without
-tuning. Both splits come from the pattern author, so neither is an independent benchmark. The
-holdout result (15 of 20 attacks blocked) is the honest estimate, and it is why the pattern
-filter is only the first security layer.
+## Antwortqualität des echten Modells
 
-These scores describe only a **synthetic offline benchmark** implemented as a deliberately small
-regression suite. They do not measure real credit-decision accuracy or certify regulatory
-compliance. Answer quality of the live model is measured separately (next section). The v1.0.2
-audit probe ([docs/audit-v1.md](docs/audit-v1.md)) had measured 1 of 12 attack phrasings blocked.
+Gemessen mit `scripts/evaluate_answers.py` auf einem Apple M4 Pro gegen den echten Ablauf
+(LangGraph, MCP, `qwen3.5:9b`, `qwen3-embedding:0.6b`): 17 deutsche Fragen (10 Wissen, 2 ohne
+Antwort, 2 Finanzen, 2 Compliance, 1 Fall). Berichte: `reports/evaluation/answer_quality.json`
+(Lauf 3) sowie `answer_quality_run1.json` und `answer_quality_run2.json`.
 
-## Answer quality of the live model (v1.4)
-
-Measured with `scripts/evaluate_answers.py` on an Apple M4 Pro against the real stack
-(LangGraph, MCP stdio in v1.4, `qwen3.5:9b`, `qwen3-embedding:0.6b`): 17 German questions (10 knowledge,
-2 without an answer, 2 financial, 2 compliance, 1 case). Reports:
-`reports/evaluation/answer_quality.json` (run 3) and `answer_quality_run1.json`,
-`answer_quality_run2.json`.
-
-| Metric | Run 1 | Run 2 | **Run 3 (v1.4)** |
+| Kennzahl | Lauf 1 | Lauf 2 | **Lauf 3 (v1.4)** |
 |---|---:|---:|---:|
-| Answers with all expected facts (15 answerable) | 14/15 | 13/15 | **13/15** |
-| Questions without an answer correctly declined | 2/2 | 2/2 | **2/2** |
-| Only retrieved documents cited | 11/12 | 12/12 | **12/12** |
-| Final answers with open verification issues | 1 | 0 | **0** |
-| Answered by the model (`llm_grounded`) | 12/15 | 13/15 | **14/15** |
-| Verified fallback without the model | 2/15 | 1/15 | **0/15** |
-| LLM judge: "fully supported" | 0.92 | 1.00 | 0.93 |
-| **Manual check: fully supported** | 8/11 | 9/13 | **11/14** |
-| Knowledge questions: with RAG / same model without RAG | 9/10 / 1/10 | 8/10 / 1/10 | **8/10 / 1/10** |
-| Median time per question | 11.6 s | 11.1 s | 9.2 s |
+| alle erwarteten Fakten (15 beantwortbar) | 14/15 | 13/15 | **13/15** |
+| Fragen ohne Antwort richtig abgelehnt | 2/2 | 2/2 | **2/2** |
+| nur gefundene Dokumente zitiert | 11/12 | 12/12 | **12/12** |
+| Endantworten mit offenen Prüfmängeln | 1 | 0 | **0** |
+| vom Modell beantwortet (`llm_grounded`) | 12/15 | 13/15 | **14/15** |
+| Rückfallweg ohne Modell | 2/15 | 1/15 | **0/15** |
+| LLM-Richter: „vollständig belegt“ | 0,92 | 1,00 | 0,93 |
+| **Handprüfung: vollständig belegt** | 8/11 | 9/13 | **11/14** |
+| Wissensfragen mit RAG / gleiches Modell ohne RAG | 9/10 / 1/10 | 8/10 / 1/10 | **8/10 / 1/10** |
+| Median pro Frage | 11,6 s | 11,1 s | 9,2 s |
 
-How to read this honestly:
+So liest man das ehrlich:
 
-- **The three runs are not independent.** Runs 2 and 3 come after fixes motivated by the
-  previous run on the *same* suite (failed rules' sources searched first, cross-references
-  citable, placeholder IDs rejected, derived financial values, neutral prompt example). The suite
-  was written by the project author. Run 3 is therefore optimistic.
-- **The manual check is stricter than the judge.** Every model answer was read by hand (by the
-  author of the code, not independently); a small unsupported inference counts as unsupported.
-  The judge is the same 9B model and accepted answers that call the employment duration
-  "Berufserfahrung" or invent an "existing warning". Use the manual row, not the judge row.
-- **What the deterministic verification cannot see:** wrong words without a number or an ID,
-  and a wrong but retrieved source (run 3: rules RULE-009/RULE-010 attributed to the DTI section).
-- The two "incorrect" answers of run 3: the KYC answer is substantively right but phrased so that
-  the fact matcher misses it; "Was darf in Protokollen nicht stehen?" is falsely declined because
-  retrieval does not rank `NB-DPR-001` high enough. Declining is the safer failure; a reranker is
-  the planned fix.
-- RAG vs. no RAG: without evidence the same model answered 1 of 10 policy questions correctly,
-  because the policies are fictional. This shows the value of retrieval, not general model
-  quality.
+- **Die Läufe sind nicht unabhängig.** Lauf 2 und 3 kommen nach Korrekturen, die der vorige Lauf
+  auf *derselben* Suite gezeigt hat. Die Fragen stammen vom Autor. Lauf 3 ist daher optimistisch.
+- **Die Handprüfung ist strenger als der Richter.** Jede Modellantwort wurde von Hand gelesen
+  (vom Autor des Codes, nicht unabhängig); schon eine kleine unbelegte Schlussfolgerung zählt als
+  unbelegt. Der Richter ist dasselbe 9B-Modell und hat Antworten akzeptiert, die die
+  Beschäftigungsdauer „Berufserfahrung“ nennen oder eine „bestehende Warnung“ erfinden. Maßgeblich
+  ist die Zeile der Handprüfung.
+- **Was die Antwortprüfung nicht sieht:** falsche Wörter ohne Zahl oder ID und eine falsche, aber
+  gefundene Quelle (Lauf 3: RULE-009/RULE-010 dem DTI-Abschnitt zugeschrieben).
+- Die zwei „falschen“ Antworten in Lauf 3: Die KYC-Antwort ist inhaltlich richtig, aber so
+  formuliert, dass der Wortvergleich sie nicht erkennt. „Was darf in Protokollen nicht stehen?“
+  wird fälschlich abgelehnt, weil die Suche `NB-DPR-001` nicht weit genug oben findet. Ablehnen
+  ist der sicherere Fehler; ein Reranker ist der geplante nächste Schritt.
+- Ohne Nachweise beantwortet dasselbe Modell 1 von 10 Richtlinienfragen richtig, weil die
+  Richtlinien erfunden sind. Das zeigt den Wert der Suche, nicht die Qualität des Modells.
 
-## Observability with Langfuse (v1.6, optional)
+Beispielabläufe mit echtem Modell: [docs/example-execution-trace.md](docs/example-execution-trace.md).
 
-Tracing is off by default. With a self-hosted Langfuse every workflow run becomes one trace: each
-graph node as a span, the model call as a generation with prompt, answer, tokens and latency, a
-pseudonymous user and the thread as session.
+## Beobachtbarkeit mit Langfuse (optional)
 
-![Langfuse trace of a financial question](docs/assets/langfuse-trace.jpg)
+Tracing ist standardmäßig aus. Mit einem selbst gehosteten Langfuse wird jeder Lauf ein Trace:
+jeder Graph-Knoten als Span, der Modellaufruf als Generation mit Prompt, Antwort, Token und
+Dauer, die Person als Pseudonym, der Thread als Sitzung.
+
+![Langfuse-Trace einer Finanzfrage](docs/assets/langfuse-trace.jpg)
 
 ```bash
-python scripts/langfuse_env.py --port 3000   # random secrets into deploy/langfuse/.env (git-ignored)
+python scripts/langfuse_env.py --port 3000   # zufällige Geheimnisse in deploy/langfuse/.env (git-ignoriert)
 make langfuse-up                             # Langfuse 4.80 + Postgres, ClickHouse, Redis, MinIO
-# copy LANGFUSE_ENABLED/BASE_URL/PUBLIC_KEY/SECRET_KEY into .env, then:
-novabank-langfuse check                      # keys work?
-novabank-langfuse setup                      # model definition with the configured token price
-novabank-langfuse datasets                   # answer suite (17) and retrieval test split (24)
-novabank-langfuse experiment                 # all 17 questions through the real workflow, scored
+# LANGFUSE_ENABLED/BASE_URL/PUBLIC_KEY/SECRET_KEY in .env übernehmen, dann:
+novabank-langfuse check                      # Schlüssel in Ordnung?
+novabank-langfuse setup                      # Modelldefinition mit eingestelltem Token-Preis
+novabank-langfuse datasets                   # Antwortsuite (17) und Such-Testsplit (24)
+novabank-langfuse experiment                 # alle 17 Fragen durch den echten Ablauf, bewertet
 ```
 
-Live check on 16.11.2026 (M4 Pro, one run): 17 experiment items, mean `facts_correct` 0.882
-(15/17); 14 generations with 12,124 input and 2,192 output tokens; no JWT in any stored
-observation (checked through the Langfuse API). Local models have no API cost: the default price
-is 0, and any price set for the cost view is an assumption, shown by Langfuse in USD.
+Live-Prüfung am 16.11.2026 (M4 Pro, ein Lauf): 17 Experiment-Einträge, `facts_correct` im
+Mittel 0,882 (15/17); 14 Generationen mit 12.124 Eingabe- und 2.192 Ausgabe-Token; kein JWT in
+einer gespeicherten Beobachtung (über die Langfuse-API geprüft). Lokale Modelle haben keine
+API-Kosten: Der Standardpreis ist 0, jeder eingetragene Preis ist eine Annahme (Langfuse zeigt
+USD an).
 
-Privacy: the user field is an HMAC pseudonym, but trace contents (graph state, the approval note
-of a decision brief, synthetic case data) contain names, so Langfuse access must be restricted
-like access to case files. The Compose profile binds all ports to localhost, disables telemetry
-and has no default passwords. Tests capture real traces in memory, without a server.
+Datenschutz: Das Nutzerfeld ist ein HMAC-Pseudonym, der *Inhalt* der Traces (Graph-Zustand,
+Freigabevermerk, synthetische Falldaten) enthält aber Namen. Der Zugang zu Langfuse muss deshalb
+so streng sein wie der zu den Fallakten. Das Compose-Profil bindet alle Ports an localhost,
+schaltet Telemetrie ab und hat keine Standardpasswörter.
 
-## REST API and security (v1.3)
+## REST-API und Sicherheit
 
-The FastAPI backend is the single entry point for the Gradio UI and for other systems (for
-example PHP or Java applications). OpenAPI documentation is served at `/docs`.
+Die FastAPI ist der einzige Zugang für die Oberfläche und für andere Systeme (zum Beispiel PHP-
+oder Java-Anwendungen). Die OpenAPI-Dokumentation liegt unter `/docs`.
 
-| Endpoint | Purpose |
+| Endpunkt | Zweck |
 |---|---|
-| `POST /v1/auth/token` | log in, returns a JWT (HS256, 15 minutes) |
-| `GET /v1/me` | own role and rights |
-| `GET /v1/cases`, `GET /v1/cases/{id}` | permitted cases |
-| `GET /v1/cases/{id}/financials`, `/compliance` | deterministic metrics and rule results |
-| `POST /v1/search` | knowledge search, filtered before ranking |
-| `POST /v1/chat` | the assistant workflow |
-| `GET /health`, `GET /ready` | liveness and readiness |
+| `POST /v1/auth/token` | Anmeldung, liefert ein JWT (HS256, 15 Minuten) |
+| `GET /v1/me` | eigene Rolle und Rechte |
+| `GET /v1/cases`, `GET /v1/cases/{id}` | erlaubte Fälle |
+| `GET /v1/cases/{id}/financials`, `/compliance` | Kennzahlen und Regelbefunde |
+| `POST /v1/search` | Wissenssuche, gefiltert vor dem Ranking |
+| `POST /v1/chat` | der Assistent |
+| `GET /v1/reviews`, `GET/POST /v1/reviews/{id}` | offene Freigaben, Entscheidung (Vier-Augen-Prinzip) |
+| `GET /health`, `GET /ready` | Lebenszeichen und Bereitschaft |
 
-| Role | Cases | Documents | Decision brief |
+| Rolle | Fälle | Dokumente | Entscheidungsvorlage |
 |---|---|---|---|
-| `sachbearbeiter` | own team only | `intern` | no (four-eyes principle) |
-| `pruefer` | all | `intern`, `vertraulich` | yes |
-| `admin` | all | `intern`, `vertraulich` | yes |
+| `sachbearbeiter` | nur eigenes Team | `intern` | nein (Vier-Augen-Prinzip) |
+| `pruefer` | alle | `intern`, `vertraulich` | ja |
+| `admin` | alle | `intern`, `vertraulich` | ja |
 
-Authorization is enforced in code and inside every MCP tool, never in a prompt. The API issues
-a short-lived MCP token for the caller; the workflow hands it to the MCP server (stdio or HTTP),
-which verifies it and scopes every tool call. A foreign case returns the same 404 as an unknown case; a
-confidential document is excluded before ranking, so neither its rank nor a changed "no answer"
-reveals it. Tests cover direct, filter-based, identifier-based and MCP-level detours
+Rechte werden im Code und in jedem MCP-Werkzeug geprüft, nie im Prompt. Ein fremder Fall liefert
+dieselbe 404 wie ein unbekannter; ein vertrauliches Dokument wird vor dem Ranking entfernt. Tests
+decken direkte Zugriffe, Filter, Kennungen in der Frage und Umwege über MCP ab
 (`tests/security/`).
 
-## Security controls
+Weitere Kontrollen:
 
-- JWT bearer authentication (fixed algorithm, issuer/audience/expiry required), Argon2id
-  password hashes, users stored outside the repository with owner-only file permissions;
-- role- and team-based authorization in code and in the MCP tools;
-- knowledge filters before ranking, including BM25 statistics on the permitted subset;
-- rate limits for login, chat and API calls; restrictive CORS (none by default);
-- security headers (CSP, `nosniff`, `DENY` framing, `no-referrer`, `no-store`, optional HSTS);
-- hash-chained audit log without passwords or query text (`novabank-audit verify`);
-- RFC 9457 problem responses in German without internal details or echoed input;
-- strict input and output schemas with forbidden extra fields;
-- a fixed tool plan per route (the model never selects tools); MCP subprocesses receive only
-  allowlisted settings;
-- a first-layer German/English prompt-injection filter with obfuscation normalization (holdout
-  recall 0.75, no false positives on 50 benign questions), applied in the API and the workflow;
-- safe knowledge-root containment and supported-extension checks;
-- no secrets in the repository (`JWT_SECRET` has no default; the audit flags filled-in keys);
-- Langfuse and LangSmith tracing disabled by default; loopback binding by default;
-- synthetic-data boundary repeated in data artifacts, policies, prompts, and UI.
+- JWT mit festem Algorithmus, Pflichtfeldern und Ablauf; Argon2id-Passwörter; Benutzerdatei nur
+  für den Besitzer lesbar; gelöschte Benutzer verlieren sofort den Zugang
+- getrennte Tokens für API und MCP (Audience), kein Token Passthrough
+- Rate Limits für Anmeldung, Chat und API; CORS geschlossen; Sicherheitsheader (CSP, `nosniff`,
+  `DENY`, `no-referrer`, `no-store`, optional HSTS)
+- Audit-Log mit SHA-256-Hash-Kette ohne Passwörter und Fragetexte (`novabank-audit verify`)
+- Fehlerantworten nach RFC 9457 auf Deutsch, ohne interne Details und ohne Echo der Eingabe
+- Eingabefilter Deutsch/Englisch mit Normalisierung (Holdout 15/20, keine Fehlalarme)
+- Dokumenttext im Prompt als markierte Daten, Quarantäne bei Injektionsmustern
+- MCP-Unterprozesse bekommen nur freigegebene Einstellungen (keine Langfuse-Schlüssel)
+- keine Geheimnisse im Repository (`JWT_SECRET` ohne Standardwert, Audit sucht nach Schlüsseln)
+- Container: nur `127.0.0.1`-Ports, schreibgeschütztes Dateisystem, keine Linux-Capabilities
 
-See [docs/security.md](docs/security.md) for controls and known production gaps.
+Mehr in [docs/security.md](docs/security.md), inklusive der bekannten Lücken für den Betrieb.
 
-## Local setup
+## Lokal starten
 
-Requirements: Python 3.13 (`>=3.13,<3.14`), Ollama, and sufficient memory for the chosen
-local model. Python 3.13.9 is the reproducibly validated runtime for release v1.6.0.
+Voraussetzungen: Python 3.13 und [Ollama](https://ollama.com). Entwickelt und gemessen auf einem
+MacBook Pro M4 Pro mit 24 GB Arbeitsspeicher. Validiert mit Python 3.13.9 für Release v2.0.0.
 
 ```bash
 python3.13 -m venv .venv
@@ -344,136 +326,130 @@ source .venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install --no-deps -r requirements/lock-py313.txt
 python -m pip install --no-deps --no-build-isolation .
-cp .env.example .env
+cp .env.example .env            # JWT_SECRET eintragen (Befehl steht in der Datei)
 ollama pull qwen3.5:9b
 ollama pull qwen3-embedding:0.6b
 novabank-index rebuild
 ```
 
-Rebuild all synthetic source artifacts:
+Benutzer anlegen (das Passwort wird verdeckt abgefragt) und API und Oberfläche starten:
 
 ```bash
-python scripts/generate_synthetic_data.py
-python scripts/generate_knowledge_base.py
-```
-
-Create users (the password is prompted, never stored in plain text) and start API and UI:
-
-```bash
-export JWT_SECRET=$(python -c 'import secrets; print(secrets.token_urlsafe(48))')
 novabank-users add anna.becker --role pruefer --name "Anna Becker"
-novabank-users add max.muster --role sachbearbeiter --team team-nord
-novabank-api      # http://127.0.0.1:8000, OpenAPI at /docs
-novabank-ui       # http://127.0.0.1:7860, logs in at the API
+novabank-users add tom.klein --role pruefer --name "Tom Klein"
+novabank-users add max.muster --role sachbearbeiter --team team-nord --name "Max Muster"
+novabank-api      # http://127.0.0.1:8000, OpenAPI unter /docs
+novabank-ui       # http://127.0.0.1:7860, meldet sich an der API an
 ```
 
-By default the MCP server is launched per request over stdio. To run it as its own service:
+Der MCP-Server startet standardmäßig pro Anfrage über stdio. Als eigener Dienst:
 
 ```bash
-novabank-mcp --transport http          # http://127.0.0.1:8001/mcp, needs JWT_SECRET
+novabank-mcp --transport http          # http://127.0.0.1:8001/mcp, braucht JWT_SECRET
 MCP_TRANSPORT=http novabank-api
 ```
 
-Without a valid MCP token every tool call is denied, on both transports.
+## Mit Docker Compose
 
-## Container usage
-
-The application image contains the Python service, synthetic data, and MCP implementation. It
-does not bundle Ollama or either model. Build the image and point it to an Ollama daemon running
-on the host. The Linux image installs the official CPU-only PyTorch wheel so it does not pull
-unused CUDA runtime packages:
+API und Oberfläche laufen in Containern, Ollama läuft nativ auf dem Mac (nur dort nutzt es die
+GPU). `JWT_SECRET` muss in `.env` stehen.
 
 ```bash
-docker build -t novabank-assistant .
-docker run --rm -p 7860:7860 \
-  -e OLLAMA_BASE_URL=http://host.docker.internal:11434 \
-  novabank-assistant
+docker compose up -d --build
+printf '%s\n' '<Passwort>' | docker compose run --rm -T api \
+    novabank-users add anna.becker --role pruefer --password-stdin
 ```
 
-On Linux, configure an equivalent reachable Ollama host address for the container.
+Oberfläche: http://localhost:7860, API: http://localhost:8000/docs. Mit
+`MCP_TRANSPORT=http docker compose --profile mcp-http up -d` läuft der MCP-Server als eigener
+Container (nur im internen Netz erreichbar). Geprüft am 16.11.2026: Wissensfrage über die API im
+Container in 5,1 s beantwortet (`llm_grounded`), fremder Fall für die Sachbearbeitung 404,
+Entscheidungsvorlage in 1,0 s mit Status `awaiting_approval`.
 
-## Quality checks
+## Qualitätssicherung
 
 ```bash
-make quality        # strict mypy, Ruff lint and format check
-make test           # pytest with warnings as errors and a coverage floor
-make evidence-check
-make audit
-make deps-audit     # pip-audit against the exact lock (needs pipx; or PIP_AUDIT="uvx pip-audit==2.10.1")
-python -m pip check
-make reproduce-evidence
+make quality        # mypy --strict, Ruff (Lint und Format)
+make test           # Tests, Warnungen als Fehler, Mindestabdeckung 80 %
+make test-live      # Live-Tests gegen Ollama (nur lokal)
+make evidence-check # Offline-Evaluation gegen den eingecheckten Bericht
+make audit          # Geheimnisse, Versionsstand, verbotene Dateien
+make deps-audit     # pip-audit gegen das exakte Lock (pipx oder PIP_AUDIT="uvx pip-audit==2.10.1")
 make build
 ```
 
-The full test suite does not need a running model or network connection. End-to-end generation
-does require the configured Ollama server and model.
+| Ebene | Ordner | Tests | Läuft in der CI |
+|---|---|---:|---|
+| Unit | `tests/unit` | 238 | ja |
+| Integration | `tests/integration` | 5 | ja |
+| End-to-End (echter MCP-Unterprozess, API) | `tests/e2e` | 5 | ja |
+| Sicherheit | `tests/security` | 58 | ja |
+| Live (echtes Modell) | `tests/live` | 4 | nein, `make test-live` |
 
-Current local release gate: **304 tests passing** under Python 3.13 with warnings treated as
-errors. CI installs the package non-editably and proves that imports resolve from
-`site-packages`.
+Aktueller Stand: **306 Tests bestanden** unter Python 3.13 mit Warnungen als Fehler, Abdeckung
+88 %, plus 4 Live-Tests. GitHub-Runner können ein 9B-Modell nicht sinnvoll ausführen; die
+Live-Tests und die Antwortmessung laufen deshalb lokal. Die CI installiert das Paket ohne
+Editiermodus, prüft das Lock mit `pip-audit` und baut das Container-Image.
 
-## Demo path
+## Demo-Ablauf
 
-1. Ask: `Welche Unterlagen benötigt NovaBank für einen Konsumentenkredit?`
-2. Load the positive `CASE-00001` and calculate its EUR 419.46 monthly payment.
-3. Inspect `CASE-00017`, where the income statement is missing.
-4. Fully assess borderline `CASE-00031`; post-loan DTI triggers manual review.
-5. Contrast `CASE-00007` (DTI hard limit) or `CASE-00008` (rejected KYC / class E).
+1. Wissensfrage: `Welche Unterlagen benötigt NovaBank für einen Konsumentenkredit?`
+2. `CASE-00001` berechnen: Rate 419,46 EUR.
+3. `Welche Compliance-Probleme hat CASE-00017?` – Einkommensnachweis fehlt.
+4. `CASE-00031` vollständig prüfen lassen und als zweite Person freigeben.
+5. Als Sachbearbeitung Team Nord `CASE-00031` anfragen: „nicht gefunden“.
 
-Expected routes and evidence are listed in [docs/demo-scenarios.md](docs/demo-scenarios.md).
-An actual local run, including transparent fail-safe behavior, is recorded in
-[docs/example-execution-trace.md](docs/example-execution-trace.md).
+Alle Szenarien mit erwarteten Ergebnissen: [docs/demo-scenarios.md](docs/demo-scenarios.md).
 
-## UI evidence
-
-The screenshots use synthetic data and show only technical execution metadata—never private
-chain-of-thought.
-
-![Verified full-assessment execution trace](docs/assets/ui-execution-trace.png)
-
-## Repository map
+## Aufbau des Repositorys
 
 ```text
-deploy/langfuse/      optional self-hosted Langfuse (Docker Compose)
-docs/                 architecture, security, demo guidance, audit, v2 plan, learning notes
-reports/evaluation/   measured evaluation output
-requirements/         exact Python 3.13 dependency lock and lock policy
-scripts/              thin repository wrappers for generation, evidence, and audit
-src/.../resources/    packaged synthetic cases, rules, policies, and evaluation suite
-src/.../graph/        LangGraph workflow, verification, approvals
-src/.../flows/        deterministic router (rules + semantic examples)
-src/.../api/          FastAPI backend
-src/.../security/     users, tokens, roles, audit log, rate limits
-src/.../mcp/          MCP server (stdio + Streamable HTTP), client, tool boundary
-src/.../observability/ Langfuse tracing and the novabank-langfuse CLI
-src/.../rag/          ingestion, FAISS/BM25S hybrid retrieval
-src/.../services/     deterministic repository, finance, and compliance logic
-src/.../ui/           Gradio Blocks application
-tests/                unit and integration regression suite
+compose.yaml          API und Oberfläche als Container
+deploy/langfuse/      optional: Langfuse selbst gehostet (Docker Compose)
+docs/                 Architektur, Sicherheit, Demo, Audit, Plan v2, Lernnotizen
+reports/evaluation/   gemessene Evaluation
+requirements/         exaktes Lock für Python 3.13
+scripts/              Generatoren, Benchmarks, Antwortmessung, Langfuse-Geheimnisse
+src/.../api/          FastAPI
+src/.../graph/        LangGraph-Workflow, Antwortprüfung, Freigaben
+src/.../flows/        Router (Regeln + Beispielsätze)
+src/.../mcp/          MCP-Server (stdio + HTTP), Client, Werkzeuggrenze
+src/.../observability/ Langfuse-Tracing und novabank-langfuse
+src/.../rag/          Aufnahme, FAISS/BM25S-Hybridsuche
+src/.../security/     Benutzer, Tokens, Rollen, Audit-Log, Rate Limits
+src/.../services/     Fälle, Finanzrechner, Regelwerk, Entscheidungsservice
+src/.../ui/           Gradio-Oberfläche
+tests/                Unit, Integration, E2E, Sicherheit, Live
 ```
 
-## Limitations and roadmap
+## Grenzen (ehrlich)
 
-- The committed regression suite is intentionally compact and synthetic.
-- End-to-end answer quality and latency depend on the locally selected Ollama model.
-- Security limits: one shared HS256 key instead of an identity provider (OAuth 2.1/OIDC,
-  SSO); the API issues the MCP tokens but is not a full OAuth 2.1 authorization server (no
-  client registration, no scopes, no token exchange endpoint); the MCP HTTP server checks
-  signature, audience and expiry, but not whether the user was deactivated in the last five
-  minutes; users in a JSON file, in-memory rate limits per process, no TLS termination (belongs to
-  a reverse proxy), and an audit log that is tamper-evident, not tamper-proof. Encrypted
-  storage, malware scanning, distributed tracing, and formal regulatory validation remain
-  production work.
-- Answer quality is measured on a small suite written by the author and checked by hand by the
-  author; an independent test set, an independent reviewer and a stronger judge are missing.
-  A cross-encoder reranker (for the falsely declined question) and a larger adversarial corpus
-  are the next steps.
-- The v2.0 roadmap with its work packages is in [docs/plan-v2.md](docs/plan-v2.md); the audit of
-  v1.0.2 is in [docs/audit-v1.md](docs/audit-v1.md).
+- **Keine produktive Bankanwendung.** Daten, Richtlinien und Regeln sind erfunden. Es gibt keine
+  regulatorische Prüfung, und die Empfehlung ersetzt keine Kreditentscheidung.
+- **Anmeldung:** ein gemeinsamer HS256-Schlüssel statt eines Identitätsdienstes (OAuth 2.1 /
+  OpenID Connect, SSO, MFA). Die API stellt MCP-Tokens aus, ist aber kein vollständiger
+  OAuth-2.1-Autorisierungsserver. Der MCP-HTTP-Server prüft Signatur, Audience und Ablauf, aber
+  nicht, ob ein Benutzer in den letzten fünf Minuten gesperrt wurde.
+- **Betrieb:** Benutzer in einer JSON-Datei, Rate Limits nur im Speicher eines Prozesses, kein TLS
+  in der Anwendung (gehört an einen Reverse Proxy), Audit-Log manipulationserkennend, nicht
+  manipulationssicher.
+- **Qualität:** Die Antwortsuite ist klein, vom Autor geschrieben und vom Autor geprüft. Ein
+  unabhängiger Testsatz, eine unabhängige Prüfung und ein stärkerer Richter fehlen. Die
+  Antwortprüfung erkennt falsche Wörter ohne Zahl oder ID nicht.
+- **Eingabefilter:** blockiert im Holdout 15 von 20 Angriffen. Er ist eine Schicht, kein Schutz
+  für sich allein.
+- **Tracing:** Traces enthalten Prompts und damit Falldaten und Namen; für echte Daten fehlen
+  eine Maskierung personenbezogener Daten und eine Löschfrist.
+- **Nächste Schritte:** Reranker (für die fälschlich abgelehnte Frage), größere Angriffs- und
+  Antwortsuiten mit unabhängiger Prüfung, Identitätsdienst, PII-Maskierung im Tracing.
 
-## License and responsible use
+Plan und Entscheidungen: [docs/plan-v2.md](docs/plan-v2.md). Audit der Ausgangsversion v1.0.2:
+[docs/audit-v1.md](docs/audit-v1.md). Was in jedem Paket gebaut wurde und warum:
+[docs/lernnotizen/](docs/lernnotizen/).
 
-No real bank policies or customer data are included. Original repository code and documentation
-are available under the [MIT License](LICENSE); model, model-server, dependency, and externally
-supplied document licenses remain separate. See [RESPONSIBLE_USE.md](RESPONSIBLE_USE.md) and
-[SECURITY.md](SECURITY.md).
+## Lizenz und verantwortungsvolle Nutzung
+
+Es sind keine echten Bankrichtlinien oder Kundendaten enthalten. Eigener Code und eigene
+Dokumentation stehen unter der [MIT-Lizenz](LICENSE); Lizenzen von Modellen, Modellserver,
+Abhängigkeiten und externen Dokumenten gelten getrennt. Siehe
+[RESPONSIBLE_USE.md](RESPONSIBLE_USE.md) und [SECURITY.md](SECURITY.md).

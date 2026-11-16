@@ -91,3 +91,12 @@ jobs:
           persist-credentials: false
       - name: Build application image
         run: docker build --tag novabank-assistant:ci .
+      - name: Validate compose files
+        env:
+          JWT_SECRET: ci-dummy # interpolation only; nothing is started
+        run: |
+          docker compose config --quiet
+          docker compose -f deploy/langfuse/docker-compose.yml config --quiet 2>/dev/null \
+            && { echo "Langfuse compose must refuse to start without generated secrets"; exit 1; } \
+            || echo "Langfuse compose correctly requires deploy/langfuse/.env"
+

@@ -71,3 +71,17 @@ def test_users_cli_prompts_for_the_password(tmp_path, monkeypatch, capsys) -> No
     output = capsys.readouterr().out
     assert "max.muster" in output and "team-nord" in output
     assert PASSWORD not in output
+
+
+def test_users_cli_reads_the_password_from_stdin(tmp_path, monkeypatch, capsys) -> None:
+    import io
+
+    from secure_enterprise_ai_assistant.core.settings import Settings
+
+    settings = Settings.model_validate({"users_file": tmp_path / "users.json"})
+    monkeypatch.setattr(cli, "get_settings", lambda: settings)
+    monkeypatch.setattr("sys.stdin", io.StringIO(PASSWORD + "\n"))
+
+    assert cli.main(["add", "anna.becker", "--role", "pruefer", "--password-stdin"]) == 0
+    assert PASSWORD not in capsys.readouterr().out
+    assert PASSWORD not in (tmp_path / "users.json").read_text()

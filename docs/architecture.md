@@ -58,6 +58,10 @@ flowchart TD
 
 Mit `LANGFUSE_ENABLED=true` wird jeder Lauf ein Trace in einem selbst gehosteten Langfuse: jeder Graph-Knoten als Span, der Modellaufruf als Generation mit Prompt, Antwort und Token, Nutzer pseudonymisiert, Thread als Sitzung. Kosten rechnet Langfuse aus einer Modelldefinition mit einstellbarem Preis (`novabank-langfuse setup`). Ohne Schalter und Schlüssel wird kein Client erzeugt.
 
+## Auslieferung
+
+`compose.yaml` startet API und Oberfläche aus einem Image (Befehle `novabank-api`, `novabank-ui`, optional `novabank-mcp --transport http` im Profil `mcp-http`). Ollama läuft nativ auf dem Host; nur dort nutzt es auf dem Mac die GPU. Alle Ports sind nur an `127.0.0.1` gebunden, die Container laufen schreibgeschützt und ohne Linux-Capabilities.
+
 ## Modelle
 
 | Aufgabe | Modell | Warum |

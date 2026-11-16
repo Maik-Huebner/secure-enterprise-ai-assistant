@@ -2,7 +2,7 @@ PYTHON ?= python
 PIP_AUDIT ?= pipx run pip-audit==2.10.1
 
 
-.PHONY: install-lock quality typecheck test evidence-check reproduce-evidence audit deps-audit build langfuse-up langfuse-down
+.PHONY: install-lock quality typecheck test test-live evidence-check reproduce-evidence audit deps-audit build langfuse-up langfuse-down
 
 install-lock:
 	$(PYTHON) -m pip install --no-deps -r requirements/lock-py313.txt
@@ -17,6 +17,12 @@ typecheck:
 
 test:
 	$(PYTHON) -m pytest -q -W error --cov --cov-report=term
+
+# Live tests need Ollama. langchain-ollama leaves its HTTP socket to the garbage collector,
+# so resource warnings are not turned into errors here (third-party, not our code).
+test-live:
+	$(PYTHON) -m pytest -q -W error -W ignore::ResourceWarning \
+		-W ignore::pytest.PytestUnraisableExceptionWarning -m live tests/live
 
 evidence-check:
 	$(PYTHON) scripts/check_evidence.py
