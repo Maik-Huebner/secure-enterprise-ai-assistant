@@ -16,6 +16,8 @@ from secure_enterprise_ai_assistant.mcp.environment import server_environment
 from secure_enterprise_ai_assistant.models.orchestration import RouteDecision
 
 MCP_MODULE = "secure_enterprise_ai_assistant.mcp.server"
+# Kept in sync with mcp.server.ACCESS_TOKEN_VARIABLE (imported there lazily to avoid a cycle).
+ACCESS_TOKEN_VARIABLE = "NOVABANK_ACCESS_TOKEN"
 HARD_DECLINE_RULES = {"RULE-001", "RULE-006", "RULE-007"}
 
 MCP_TOOL_NAMES = (
@@ -42,8 +44,9 @@ def knowledge_query_for(failed_messages: list[str]) -> str:
 class VerifiedMCPReportBuilder:
     """Build a complete report only from structured results fetched over MCP."""
 
-    def __init__(self, timeout_seconds: int | None = None) -> None:
+    def __init__(self, timeout_seconds: int | None = None, access_token: str | None = None) -> None:
         self.timeout_seconds = timeout_seconds or get_settings().mcp_request_timeout_seconds
+        self._access_token = access_token
 
     def build(self, query: str, route: RouteDecision) -> str:
         """Fetch all evidence in one stdio session and render a bounded report."""
@@ -64,7 +67,11 @@ class VerifiedMCPReportBuilder:
 
     async def _fetch(self, case_id: str) -> dict[str, dict[str, Any]]:
         parameters = StdioServerParameters(
-            command=sys.executable, args=["-m", MCP_MODULE], env=server_environment()
+            command=sys.executable,
+            args=["-m", MCP_MODULE],
+            env=server_environment(
+                {ACCESS_TOKEN_VARIABLE: self._access_token} if self._access_token else None
+            ),
         )
         async with stdio_client(parameters) as (read_stream, write_stream):
             async with ClientSession(read_stream, write_stream) as session:

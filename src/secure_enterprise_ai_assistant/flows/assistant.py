@@ -14,7 +14,7 @@ with warnings.catch_warnings():
     from crewai.flow.flow import Flow, listen, router, start
 from pydantic import BaseModel, Field
 
-from secure_enterprise_ai_assistant.agents.factory import CrewOrchestrator
+from secure_enterprise_ai_assistant.agents.factory import AgentFactory, CrewOrchestrator
 from secure_enterprise_ai_assistant.flows.router import get_router
 from secure_enterprise_ai_assistant.guardrails import validate_user_query
 from secure_enterprise_ai_assistant.models.orchestration import (
@@ -22,6 +22,7 @@ from secure_enterprise_ai_assistant.models.orchestration import (
     RouteDecision,
     TraceEvent,
 )
+from secure_enterprise_ai_assistant.security import AccessPolicy, Principal
 
 
 class AssistantFlowState(BaseModel):
@@ -36,10 +37,19 @@ class AssistantFlowState(BaseModel):
 class NovaBankAssistantFlow(Flow[AssistantFlowState]):
     """Route requests to the smallest CrewAI/MCP workflow."""
 
-    def __init__(self, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        principal: Principal | None = None,
+        access_token: str | None = None,
+        **kwargs: Any,
+    ) -> None:
         kwargs.setdefault("tracing", False)
         kwargs.setdefault("suppress_flow_events", True)
         super().__init__(**kwargs)
+        # Kept off the (persistable) flow state on purpose: the token is a credential.
+        self._principal = principal or Principal.anonymous()
+        self._access_token = access_token
+        self._policy = AccessPolicy.from_json()
 
     @property
     def typed_state(self) -> AssistantFlowState:
@@ -73,7 +83,9 @@ class NovaBankAssistantFlow(Flow[AssistantFlowState]):
         state = self.typed_state
         if state.route is None:
             raise RuntimeError("Flow route has not been selected.")
-        orchestrator = CrewOrchestrator()
+        if state.route.intent == QueryIntent.FULL_ASSESSMENT:
+            self._policy.require_decision_brief(self._principal)
+        orchestrator = CrewOrchestrator(AgentFactory(access_token=self._access_token))
         selection = orchestrator.select_model(state.route)
         demo_safe_mode = (
             state.route.intent == QueryIntent.FULL_ASSESSMENT

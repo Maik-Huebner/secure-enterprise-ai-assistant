@@ -3,7 +3,7 @@ Titel: Leitfaden zur Risikoklassifizierung
 Version: 1.8
 Gültig ab: 2026-09-01
 Verantwortlich: Kreditrisikomanagement
-Klassifizierung: Intern – synthetische Demo
+Klassifizierung: intern
 
 # Leitfaden zur Risikoklassifizierung
 

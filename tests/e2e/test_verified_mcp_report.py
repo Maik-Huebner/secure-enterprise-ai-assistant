@@ -2,13 +2,14 @@
 
 from secure_enterprise_ai_assistant.flows.router import IntentRouter
 from secure_enterprise_ai_assistant.mcp.client import VerifiedMCPReportBuilder
+from tests.conftest import REVIEWER, token_for
 
 
 def test_verified_report_uses_all_structured_evidence() -> None:
     query = "Prüfe CASE-00031 vollständig und erstelle eine Entscheidungsvorlage."
     route = IntentRouter().classify(query)
 
-    report = VerifiedMCPReportBuilder().build(query, route)
+    report = VerifiedMCPReportBuilder(access_token=token_for(REVIEWER)).build(query, route)
 
     assert "Sofia Kern" in report
     assert "570,64 EUR" in report

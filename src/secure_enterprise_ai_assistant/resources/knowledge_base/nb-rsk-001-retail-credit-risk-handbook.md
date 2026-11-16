@@ -3,7 +3,7 @@ Titel: Handbuch Kreditrisiko Privatkunden
 Version: 2.2
 Gültig ab: 2026-09-01
 Verantwortlich: Kreditrisikomanagement
-Klassifizierung: Intern – synthetische Demo
+Klassifizierung: intern
 
 # Handbuch Kreditrisiko Privatkunden
 

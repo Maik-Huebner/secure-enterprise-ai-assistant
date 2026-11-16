@@ -3,7 +3,7 @@ Titel: Leitfaden für Kreditentscheidungen
 Version: 2.4
 Gültig ab: 2026-09-01
 Verantwortlich: Kreditbetrieb
-Klassifizierung: Intern – synthetische Demo
+Klassifizierung: intern
 
 # Leitfaden für Kreditentscheidungen
 

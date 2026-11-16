@@ -3,7 +3,7 @@ Titel: Datenschutzrichtlinie
 Version: 2.6
 Gültig ab: 2026-09-01
 Verantwortlich: Datenschutzbeauftragte
-Klassifizierung: Intern – synthetische Demo
+Klassifizierung: intern
 
 # Datenschutzrichtlinie
 

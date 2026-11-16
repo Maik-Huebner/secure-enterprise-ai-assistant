@@ -3,7 +3,7 @@ Titel: Richtlinie zur Eskalation von Kredit- und Compliance-Fällen
 Version: 1.6
 Gültig ab: 2026-09-01
 Verantwortlich: Unternehmens-Compliance
-Klassifizierung: Intern – synthetische Demo
+Klassifizierung: intern
 
 # Richtlinie zur Eskalation von Kredit- und Compliance-Fällen
 

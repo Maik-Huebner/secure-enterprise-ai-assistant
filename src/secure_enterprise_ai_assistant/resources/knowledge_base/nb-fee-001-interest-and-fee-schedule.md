@@ -3,7 +3,7 @@ Titel: Zins- und Gebührenverzeichnis
 Version: 2.0
 Gültig ab: 2026-09-01
 Verantwortlich: Privatkundenprodukte
-Klassifizierung: Intern – synthetische Demo
+Klassifizierung: intern
 
 # Zins- und Gebührenverzeichnis
 

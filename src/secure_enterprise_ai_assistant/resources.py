@@ -13,6 +13,7 @@ RETRIEVAL_SUITE_PATH = RESOURCE_ROOT / "evaluation" / "retrieval_suite.json"
 ROUTING_SUITE_PATH = RESOURCE_ROOT / "evaluation" / "routing_suite.json"
 RETRIEVAL_THRESHOLDS_PATH = RESOURCE_ROOT / "retrieval" / "thresholds.json"
 INTENT_EXAMPLES_PATH = RESOURCE_ROOT / "routing" / "intent_examples.json"
+CASE_ASSIGNMENTS_PATH = RESOURCE_ROOT / "security" / "case_assignments.json"
 
 
 def require_resource(path: Path, description: str) -> Path:

@@ -17,6 +17,7 @@ METADATA_FIELDS = {
     "Version": "version",
     "Gültig ab": "effective_date",
     "Verantwortlich": "owner",
+    "Klassifizierung": "classification",
 }
 
 
@@ -87,6 +88,8 @@ class KnowledgeIngestor:
         values.setdefault("version", "unbekannt")
         values.setdefault("effective_date", "unbekannt")
         values.setdefault("owner", "unbekannt")
+        # Unknown documents default to the stricter class.
+        values["classification"] = values.get("classification", "vertraulich").casefold()
         return values
 
     @staticmethod
@@ -144,6 +147,7 @@ class KnowledgeIngestor:
             version=metadata["version"],
             effective_date=metadata["effective_date"],
             owner=metadata["owner"],
+            classification="intern" if metadata["classification"] == "intern" else "vertraulich",
             section=section,
             page=page,
             content=content,

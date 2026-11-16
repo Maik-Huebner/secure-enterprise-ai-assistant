@@ -3,7 +3,7 @@ Titel: Produktkatalog Verbraucherkredite
 Version: 2.3
 Gültig ab: 2026-09-01
 Verantwortlich: Privatkundenprodukte
-Klassifizierung: Intern – synthetische Demo
+Klassifizierung: intern
 
 # Produktkatalog Verbraucherkredite
 

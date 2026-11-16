@@ -3,7 +3,7 @@ Titel: Richtlinie zur verantwortungsvollen Kreditvergabe
 Version: 1.3
 Gültig ab: 2026-09-01
 Verantwortlich: Kundenschutz
-Klassifizierung: Intern – synthetische Demo
+Klassifizierung: intern
 
 # Richtlinie zur verantwortungsvollen Kreditvergabe
 

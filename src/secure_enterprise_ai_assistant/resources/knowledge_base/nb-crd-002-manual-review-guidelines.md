@@ -3,7 +3,7 @@ Titel: Leitlinien für die manuelle Prüfung
 Version: 1.9
 Gültig ab: 2026-09-01
 Verantwortlich: Kreditbetrieb
-Klassifizierung: Intern – synthetische Demo
+Klassifizierung: intern
 
 # Leitlinien für die manuelle Prüfung
 

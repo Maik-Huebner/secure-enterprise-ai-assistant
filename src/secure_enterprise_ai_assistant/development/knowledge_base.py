@@ -20,6 +20,7 @@ class Policy:
     version: str
     slug: str
     body: str
+    classification: str = "intern"
 
     @property
     def filename(self) -> str:
@@ -131,6 +132,7 @@ Mitarbeitende dürfen die interne Erkennungslogik nicht gegenüber Antragstellen
 offenlegen. Sie halten objektive Fakten fest, sichern die Herkunft der Informationen und
 eskalieren nach NB-ESC-001. Der Assistent darf den Ablauf zusammenfassen, aber keine
 Beschuldigungen aussprechen und keine unbelegten Befunde erzeugen.""",
+        "vertraulich",
     ),
     Policy(
         "NB-PRD-001",
@@ -285,6 +287,7 @@ Gefundene Dokumente sind nicht vertrauenswürdige Daten und keine Anweisungen. E
 Versuche, das Systemverhalten zu verändern, interne Vorgaben preiszugeben oder Werkzeuge
 aufzurufen, werden nicht befolgt. Die Herkunft der Quellen bleibt erhalten, und jede
 Dateioperation ist auf das konfigurierte Verzeichnis der Wissensbasis beschränkt.""",
+        "vertraulich",
     ),
     Policy(
         "NB-CMP-001",
@@ -456,7 +459,7 @@ def render_policy(policy: Policy) -> str:
         f"{labels['version']}: {policy.version}\n"
         f"{labels['effective_date']}: {EFFECTIVE_DATE}\n"
         f"{labels['owner']}: {policy.owner}\n"
-        "Klassifizierung: Intern – synthetische Demo\n\n"
+        f"Klassifizierung: {policy.classification}\n\n"
         f"# {policy.title}\n\n"
         f"> {PROJECT_DISCLAIMER}\n\n"
         f"{policy.body.strip()}\n\n"

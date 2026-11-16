@@ -113,6 +113,10 @@ class KnowledgeService:
         """Return the IDs of all documents currently in the search index."""
         return self._retriever.document_ids()
 
+    def document_classes(self) -> dict[str, str]:
+        """Return the classification ('intern' or 'vertraulich') of every indexed document."""
+        return self._retriever.document_classes()
+
     def search(
         self,
         query: str,

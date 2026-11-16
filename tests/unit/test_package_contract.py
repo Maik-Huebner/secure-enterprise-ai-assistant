@@ -15,6 +15,7 @@ from secure_enterprise_ai_assistant.resources import (
     KNOWLEDGE_ROOT,
     RULES_PATH,
 )
+from tests.conftest import REVIEWER
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 
@@ -48,8 +49,10 @@ def test_default_tool_service_is_independent_of_current_directory(tmp_path, monk
 
     service = MCPToolService.build_default()
 
-    assert service.get_customer_case("CASE-00001").case.case_id == "CASE-00001"
-    assert service.search_internal_knowledge("Pflichtnachweise für Verbraucherkredite").results
+    assert service.get_customer_case("CASE-00001", principal=REVIEWER).case.case_id == "CASE-00001"
+    assert service.search_internal_knowledge(
+        "Pflichtnachweise für Verbraucherkredite", principal=REVIEWER
+    ).results
 
 
 def test_crewai_import_uses_configured_runtime_directory(tmp_path) -> None:

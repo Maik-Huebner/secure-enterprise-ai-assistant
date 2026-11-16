@@ -3,6 +3,7 @@
 from secure_enterprise_ai_assistant.agents.factory import CrewOrchestrator
 from secure_enterprise_ai_assistant.flows import NovaBankAssistantFlow
 from secure_enterprise_ai_assistant.models.orchestration import QueryIntent
+from tests.conftest import REVIEWER
 
 
 def test_flow_dispatches_router_result_to_workflow(monkeypatch) -> None:
@@ -52,7 +53,7 @@ def test_full_assessment_trace_exposes_demo_safe_mode_without_claiming_model_run
         return "verified fallback output"
 
     monkeypatch.setattr(CrewOrchestrator, "run", fallback)
-    flow = NovaBankAssistantFlow()
+    flow = NovaBankAssistantFlow(principal=REVIEWER)
 
     result = flow.kickoff(
         inputs={
