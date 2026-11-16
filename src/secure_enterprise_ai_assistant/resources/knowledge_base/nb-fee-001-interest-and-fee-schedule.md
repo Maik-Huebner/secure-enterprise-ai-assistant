@@ -1,25 +1,28 @@
-Document-ID: NB-FEE-001
-Title: Interest and Fee Schedule
-Version: 1.9
-Effective-Date: 2026-09-01
-Owner: Retail Products
-Classification: Internal — Synthetic Demo
+Dokument-ID: NB-FEE-001
+Titel: Zins- und Gebührenverzeichnis
+Version: 2.0
+Gültig ab: 2026-09-01
+Verantwortlich: Privatkundenprodukte
+Klassifizierung: Intern – synthetische Demo
 
-# Interest and Fee Schedule
+# Zins- und Gebührenverzeichnis
 
-> NovaBank Financial Services AG is a fictional organization. All customers, applications, policies, rules, and financial data included in this project are synthetic and created solely for demonstration, testing, and portfolio purposes.
+> NovaBank Financial Services AG ist eine fiktive Organisation. Alle Kunden, Anträge, Richtlinien, Regeln und Finanzdaten in diesem Projekt sind synthetisch und wurden ausschließlich für Demonstrations-, Test- und Portfoliozwecke erstellt.
 
-## 2 Pricing presentation
-The annual nominal interest rate is stored on each synthetic application and may vary by
-risk class. The calculator converts it to a monthly rate by dividing by 12 and 100.
+## 2 Darstellung der Preise
+Der jährliche Nominalzinssatz ist in jedem synthetischen Antrag gespeichert und kann je
+nach Risikoklasse unterschiedlich sein. Der Rechner ermittelt daraus den Monatszins,
+indem er durch 12 und durch 100 teilt.
 
-## 3 Standard fees
-The current synthetic Standard Personal Loan has no origination fee and no monthly
-account fee. No unlisted charge may be invented by the assistant.
+## 3 Standardgebühren
+Der aktuelle synthetische Standard-Ratenkredit hat keine Bearbeitungsgebühr und keine
+monatliche Kontoführungsgebühr. Der Assistent darf keine nicht aufgeführten Kosten
+erfinden.
 
-## 5 Disclosure
-Present monthly payment, total repayment, and total interest to two decimal places.
-Pricing examples are illustrative and never replace the case-specific calculator output.
+## 5 Offenlegung
+Monatliche Rate, Gesamtrückzahlung und Gesamtzins werden mit zwei Nachkommastellen
+angegeben. Preisbeispiele dienen nur der Veranschaulichung und ersetzen niemals die
+fallbezogene Ausgabe des Rechners.
 
-## Document control
-Owner: Retail Products. Review cycle: annual. This document is synthetic.
+## Dokumentenlenkung
+Verantwortlich: Privatkundenprodukte. Überprüfung: jährlich. Dieses Dokument ist synthetisch.

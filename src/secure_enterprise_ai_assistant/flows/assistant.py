@@ -53,7 +53,7 @@ class NovaBankAssistantFlow(Flow[AssistantFlowState]):
     def receive_request(self) -> str:
         state = self.typed_state
         state.query = validate_user_query(state.query)
-        state.trace.append(TraceEvent(event="request_received", detail="Request received"))
+        state.trace.append(TraceEvent(event="request_received", detail="Anfrage empfangen"))
         return state.query
 
     @router(receive_request)
@@ -106,7 +106,7 @@ class NovaBankAssistantFlow(Flow[AssistantFlowState]):
         state.trace.extend(
             [
                 TraceEvent(event="execution_mode", detail=orchestrator.execution_mode),
-                TraceEvent(event="workflow_completed", detail="Workflow completed"),
+                TraceEvent(event="workflow_completed", detail="Ablauf abgeschlossen"),
             ]
         )
         return answer

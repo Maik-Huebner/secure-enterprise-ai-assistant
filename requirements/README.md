@@ -8,7 +8,7 @@ PyTorch should be installed from its official CPU wheel index before the lock on
 the container. The local-version CPU wheel satisfies the pinned public version without installing
 unused CUDA runtime packages.
 
-Release v1.0.3 officially supports Python `>=3.13,<3.14`. Python 3.13.9 plus this lock is the
+Release v1.1.0 officially supports Python `>=3.13,<3.14`. Python 3.13.9 plus this lock is the
 reproducibly validated runtime used by the release gate, CI, Fresh-Clone validation, and Docker.
 Earlier Python versions are not claimed as supported until they pass equivalent lock-level
 validation.

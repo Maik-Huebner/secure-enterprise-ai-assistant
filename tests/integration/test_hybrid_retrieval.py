@@ -7,7 +7,7 @@ from secure_enterprise_ai_assistant.rag.service import KnowledgeService
 def test_required_documents_query_returns_policy_source(tmp_path) -> None:
     write_knowledge_base(tmp_path)
     response = KnowledgeService.from_directory(tmp_path).search(
-        "Which mandatory documents are required for a consumer credit?",
+        "Welche Pflichtnachweise braucht eine Verbraucherkreditakte?",
         top_k=5,
     )
 
@@ -19,7 +19,7 @@ def test_required_documents_query_returns_policy_source(tmp_path) -> None:
 def test_metadata_filter_is_enforced(tmp_path) -> None:
     write_knowledge_base(tmp_path)
     response = KnowledgeService.from_directory(tmp_path).search(
-        "What is the DTI hard limit?",
+        "Wo liegt die harte Grenze der Schuldendienstquote?",
         metadata_filter={"document_id": "NB-RSK-001"},
     )
 
@@ -30,7 +30,7 @@ def test_metadata_filter_is_enforced(tmp_path) -> None:
 def test_unrelated_query_is_out_of_scope(tmp_path) -> None:
     write_knowledge_base(tmp_path)
     response = KnowledgeService.from_directory(tmp_path).search(
-        "volcanic petrology zeolite mantle convection",
+        "Vulkanische Petrologie, Zeolithe und Mantelkonvektion",
     )
 
     assert response.out_of_scope is True

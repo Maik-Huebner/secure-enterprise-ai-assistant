@@ -25,7 +25,7 @@ def test_missing_income_document_is_reported() -> None:
 
     required_documents = next(item for item in findings if item.rule_id == "RULE-003")
     assert required_documents.passed is False
-    assert "income_statement" in required_documents.message
+    assert "Einkommensnachweis" in required_documents.message
 
 
 def test_high_debt_load_breaks_hard_dti_limit() -> None:
@@ -33,7 +33,7 @@ def test_high_debt_load_breaks_hard_dti_limit() -> None:
 
     hard_dti = next(item for item in findings if item.rule_id == "RULE-006")
     assert hard_dti.passed is False
-    assert "Post-loan DTI" in hard_dti.message
+    assert "DTI nach Kredit beträgt 66,03 %" in hard_dti.message
 
 
 def test_rejected_kyc_and_risk_class_are_critical() -> None:

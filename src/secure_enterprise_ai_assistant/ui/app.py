@@ -11,9 +11,11 @@ from typing import Any
 import gradio as gr
 import httpx
 
-from secure_enterprise_ai_assistant.core.company import COMPANY_NAME
+from secure_enterprise_ai_assistant.core.company import COMPANY_NAME, PROJECT_DISCLAIMER
+from secure_enterprise_ai_assistant.core.labels import CODE_LABELS
 from secure_enterprise_ai_assistant.core.logs import configure_logging, get_logger, request_context
 from secure_enterprise_ai_assistant.core.settings import get_settings
+from secure_enterprise_ai_assistant.guardrails import UnsafeInputError
 from secure_enterprise_ai_assistant.mcp import create_mcp_server
 from secure_enterprise_ai_assistant.mcp.tools import MCPToolService
 
@@ -21,11 +23,7 @@ SOURCE_PATTERN = re.compile(r"\bNB-[A-Z]+-\d{3}\b")
 logger = get_logger(__name__)
 
 UI_TITLE = "Sicherer Enterprise-KI-Assistent"
-UI_DISCLAIMER = (
-    "NovaBank Financial Services AG ist eine fiktive Organisation. Alle Kunden, Anträge, "
-    "Richtlinien, Regeln und Finanzdaten in diesem Projekt sind synthetisch und wurden "
-    "ausschließlich für Demonstrations-, Test- und Portfoliozwecke erstellt."
-)
+UI_DISCLAIMER = PROJECT_DISCLAIMER
 
 TRACE_EVENT_LABELS = {
     "request_received": "Anfrage empfangen",
@@ -38,10 +36,12 @@ TRACE_EVENT_LABELS = {
     "tools_selected": "MCP-Werkzeuge ausgewählt",
     "fallback_reason": "Fallback-Grund",
     "execution_mode": "Ausführungsmodus",
-    "workflow_completed": "Workflow abgeschlossen",
+    "workflow_completed": "Ablauf abgeschlossen",
 }
 
+# Technical codes specific to routing and runtime; domain codes come from core.labels.
 UI_VALUE_LABELS = {
+    **CODE_LABELS,
     "knowledge": "Wissensabfrage",
     "customer_case": "Fallabfrage",
     "financial_analysis": "Finanzanalyse",
@@ -49,47 +49,14 @@ UI_VALUE_LABELS = {
     "full_assessment": "Vollständige Prüfung",
     "fast_local": "Schnell und lokal",
     "complex_agentic": "Komplex und agentisch",
-    "simple knowledge workflow": "Einfacher Wissensworkflow",
-    "simple customer-case workflow": "Einfacher Fallworkflow",
-    "simple financial-analysis workflow": "Einfacher Finanzanalyse-Workflow",
-    "simple compliance workflow": "Einfacher Compliance-Workflow",
-    "full multi-agent assessment requires robust tool calling": (
-        "Die vollständige Multi-Agenten-Prüfung erfordert robusten Werkzeugaufruf"
-    ),
     "crewai": "CrewAI",
-    "deterministic_mcp_fallback": "Deterministischer MCP-Fallback",
+    "deterministic_mcp_fallback": "Deterministischer MCP-Rückfallweg",
     "verified_mcp": "Verifizierter MCP-Pfad",
-    "agentic": "Experimenteller Agentic-Modus",
-    "Request received": "Anfrage empfangen",
-    "Workflow completed": "Workflow abgeschlossen",
+    "agentic": "Experimenteller agentischer Modus",
     "not recorded": "nicht erfasst",
-    "available": "verfügbar",
-    "unavailable": "nicht verfügbar",
-    "ready": "bereit",
     "development": "Entwicklung",
     "production": "Produktion",
     "test": "Test",
-    "permanent": "unbefristet beschäftigt",
-    "temporary": "befristet beschäftigt",
-    "self_employed": "selbstständig",
-    "retired": "im Ruhestand",
-    "student": "in Ausbildung",
-    "unemployed": "arbeitslos",
-    "verified": "verifiziert",
-    "pending": "ausstehend",
-    "incomplete": "unvollständig",
-    "rejected": "abgelehnt",
-    "under_review": "in Prüfung",
-    "present": "vorhanden",
-    "missing": "fehlend",
-    "expired": "abgelaufen",
-    "invalid": "ungültig",
-    "identity_document": "Identitätsnachweis",
-    "income_statement": "Einkommensnachweis",
-    "bank_statements_90_days": "Kontoauszüge der letzten 90 Tage",
-    "credit_application_form": "Kreditantragsformular",
-    "Energy-efficient home improvement": "Energieeffiziente Wohnungsmodernisierung",
-    "Vehicle purchase": "Fahrzeugkauf",
 }
 
 CASE_FIELD_LABELS = {
@@ -334,6 +301,17 @@ class AssistantController:
                     "duration_ms": round((time.perf_counter() - started) * 1000, 1),
                 },
             )
+        except UnsafeInputError as exc:
+            logger.info("request_blocked", extra={"query_length": len(query)})
+            answer = (
+                "Diese Anfrage wurde aus Sicherheitsgründen nicht ausgeführt. "
+                f"{exc} Bitte formuliere eine fachliche Frage zu Richtlinien oder "
+                "einem synthetischen Fall."
+            )
+            sources = "### Quellen\nKeine Quellen – die Anfrage wurde blockiert."
+            trace_rows = []
+            tools = {}
+            status = "Anfrage blockiert."
         except Exception:
             logger.exception(
                 "request_failed",
@@ -343,13 +321,13 @@ class AssistantController:
                 },
             )
             answer = (
-                "Der lokale Workflow konnte nicht abgeschlossen werden. Prüfe, ob Ollama läuft "
+                "Der lokale Ablauf konnte nicht abgeschlossen werden. Prüfe, ob Ollama läuft "
                 "und das konfigurierte Modell installiert ist, und versuche es erneut."
             )
-            sources = "### Quellen\nKeine Quellen — der Workflow wurde nicht abgeschlossen."
+            sources = "### Quellen\nKeine Quellen – der Ablauf wurde nicht abgeschlossen."
             trace_rows = []
             tools = {}
-            status = "Workflow nicht verfügbar; vertrauliche Fehlerdetails wurden nicht ausgegeben."
+            status = "Ablauf nicht verfügbar; vertrauliche Fehlerdetails wurden nicht ausgegeben."
         history.append({"role": "assistant", "content": answer})
         return history, sources, trace_rows, tools, status
 
@@ -384,7 +362,7 @@ class AssistantController:
             "MCP-Status": "bereit" if len(mcp_tools) == 4 else "nicht verfügbar",
             "MCP-Werkzeuge": mcp_tools,
             "Synthetische Fälle": len(self.tools.repository.list_cases()),
-            "Dokumente in der Wissensbasis": 18,
+            "Dokumente in der Wissensbasis": len(self.tools.knowledge_service.document_ids()),
             "Externe Cloud erforderlich": "Nein",
         }
 
@@ -393,6 +371,7 @@ def build_app(controller: AssistantController | None = None) -> gr.Blocks:
     """Build the enterprise-oriented Blocks application without launching it."""
     controller = controller or AssistantController()
     case_ids = [case.case_id for case in controller.tools.repository.list_cases()]
+    document_count = len(controller.tools.knowledge_service.document_ids())
 
     app = gr.Blocks(title=UI_TITLE)
     with app:
@@ -469,7 +448,8 @@ def build_app(controller: AssistantController | None = None) -> gr.Blocks:
 
             with gr.Tab("Wissensbasis & Dokumente"):
                 gr.Markdown(
-                    "Das Repository enthält 18 synthetische, versionierte interne Richtlinien. "
+                    f"Das Repository enthält {document_count} synthetische, versionierte "
+                    "interne Richtlinien. "
                     "Suchergebnisse bewahren Metadaten zu Dokument, Abschnitt, Version, "
                     "Verantwortlichen und Seite."
                 )

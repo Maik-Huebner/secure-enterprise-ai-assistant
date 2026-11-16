@@ -27,9 +27,9 @@ class CustomerCaseRepository:
         self._by_case_id = {case.case_id: case for case in validated_cases}
         self._by_customer_id = {case.customer.customer_id: case for case in validated_cases}
         if len(self._by_case_id) != len(validated_cases):
-            raise DatasetError("Synthetic dataset contains duplicate case IDs.")
+            raise DatasetError("Der synthetische Datensatz enthält doppelte Fall-IDs.")
         if len(self._by_customer_id) != len(validated_cases):
-            raise DatasetError("Synthetic dataset contains duplicate customer IDs.")
+            raise DatasetError("Der synthetische Datensatz enthält doppelte Kunden-IDs.")
 
     @classmethod
     def from_json(cls, path: Path = DEFAULT_CASES_PATH) -> CustomerCaseRepository:
@@ -37,16 +37,20 @@ class CustomerCaseRepository:
         try:
             payload = json.loads(path.read_text(encoding="utf-8"))
         except FileNotFoundError as exc:
-            raise DatasetError("Synthetic case dataset is missing from the installation.") from exc
+            raise DatasetError("Der synthetische Falldatensatz fehlt in der Installation.") from exc
         except json.JSONDecodeError as exc:
-            raise DatasetError(f"Synthetic case dataset is not valid JSON: {path}") from exc
+            raise DatasetError(
+                f"Der synthetische Falldatensatz ist kein gültiges JSON: {path}"
+            ) from exc
 
         if not isinstance(payload, dict) or not isinstance(payload.get("cases"), list):
-            raise DatasetError("Synthetic case dataset must contain a 'cases' list.")
+            raise DatasetError("Der synthetische Falldatensatz muss eine Liste 'cases' enthalten.")
         try:
             cases = TypeAdapter(list[CreditCase]).validate_python(payload["cases"])
         except ValidationError as exc:
-            raise DatasetError("Synthetic case dataset failed domain validation.") from exc
+            raise DatasetError(
+                "Der synthetische Falldatensatz entspricht nicht dem Fachmodell."
+            ) from exc
         return cls(cases)
 
     def get_case(self, case_id: str) -> CreditCase:
@@ -54,14 +58,16 @@ class CustomerCaseRepository:
         try:
             return self._by_case_id[case_id]
         except KeyError as exc:
-            raise CaseNotFoundError(f"Unknown synthetic case ID: {case_id}") from exc
+            raise CaseNotFoundError(f"Unbekannte synthetische Fall-ID: {case_id}") from exc
 
     def get_by_customer_id(self, customer_id: str) -> CreditCase:
         """Return the case associated with one synthetic customer."""
         try:
             return self._by_customer_id[customer_id]
         except KeyError as exc:
-            raise CustomerNotFoundError(f"Unknown synthetic customer ID: {customer_id}") from exc
+            raise CustomerNotFoundError(
+                f"Unbekannte synthetische Kunden-ID: {customer_id}"
+            ) from exc
 
     def list_cases(self) -> tuple[CreditCase, ...]:
         """Return cases in stable case-ID order."""

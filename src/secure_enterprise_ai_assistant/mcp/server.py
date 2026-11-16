@@ -54,14 +54,15 @@ def create_mcp_server(tool_service: MCPToolService | None = None) -> FastMCP:
     server = FastMCP(
         "NovaBank Secure Enterprise Tools",
         instructions=(
-            "Use only these tools for synthetic NovaBank cases, deterministic financial "
-            "analysis, compliance checks, and attributable internal knowledge retrieval."
+            "Nutze nur diese Werkzeuge für synthetische NovaBank-Fälle, deterministische "
+            "Finanzanalyse, Compliance-Prüfung und die Suche in internen Richtlinien mit "
+            "Quellenangabe."
         ),
     )
 
     @server.tool(
         name="get_customer_case",
-        description="Load one fully synthetic NovaBank credit case by CASE-00000 identifier.",
+        description="Lädt einen synthetischen NovaBank-Kreditfall über die ID CASE-00000.",
         structured_output=True,
     )
     def get_customer_case(case_id: str) -> CustomerCaseResult:
@@ -71,8 +72,8 @@ def create_mcp_server(tool_service: MCPToolService | None = None) -> FastMCP:
     @server.tool(
         name="analyze_financial_case",
         description=(
-            "Calculate monthly payment, repayment, interest, and DTI metrics "
-            "deterministically for a synthetic case."
+            "Berechnet monatliche Rate, Gesamtrückzahlung, Gesamtzins und DTI für einen "
+            "synthetischen Fall deterministisch."
         ),
         structured_output=True,
     )
@@ -83,8 +84,8 @@ def create_mcp_server(tool_service: MCPToolService | None = None) -> FastMCP:
     @server.tool(
         name="check_compliance",
         description=(
-            "Evaluate a synthetic case against versioned NovaBank compliance "
-            "and lending-policy rules."
+            "Prüft einen synthetischen Fall gegen das versionierte Compliance- und "
+            "Kreditregelwerk der NovaBank."
         ),
         structured_output=True,
     )
@@ -95,8 +96,8 @@ def create_mcp_server(tool_service: MCPToolService | None = None) -> FastMCP:
     @server.tool(
         name="search_internal_knowledge",
         description=(
-            "Search synthetic NovaBank policy documents with hybrid retrieval "
-            "and return exact source metadata."
+            "Durchsucht die synthetischen Richtlinien der NovaBank und liefert Textstellen "
+            "mit genauer Quellenangabe."
         ),
         structured_output=True,
     )

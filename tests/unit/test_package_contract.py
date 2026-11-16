@@ -49,7 +49,7 @@ def test_default_tool_service_is_independent_of_current_directory(tmp_path, monk
     service = MCPToolService.build_default()
 
     assert service.get_customer_case("CASE-00001").case.case_id == "CASE-00001"
-    assert service.search_internal_knowledge("mandatory credit documents").results
+    assert service.search_internal_knowledge("Pflichtnachweise für Verbraucherkredite").results
 
 
 def test_crewai_import_uses_configured_runtime_directory(tmp_path) -> None:

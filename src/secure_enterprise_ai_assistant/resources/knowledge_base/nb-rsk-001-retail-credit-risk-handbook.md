@@ -1,30 +1,34 @@
-Document-ID: NB-RSK-001
-Title: Retail Credit Risk Handbook
-Version: 2.1
-Effective-Date: 2026-09-01
-Owner: Credit Risk Management
-Classification: Internal — Synthetic Demo
+Dokument-ID: NB-RSK-001
+Titel: Handbuch Kreditrisiko Privatkunden
+Version: 2.2
+Gültig ab: 2026-09-01
+Verantwortlich: Kreditrisikomanagement
+Klassifizierung: Intern – synthetische Demo
 
-# Retail Credit Risk Handbook
+# Handbuch Kreditrisiko Privatkunden
 
-> NovaBank Financial Services AG is a fictional organization. All customers, applications, policies, rules, and financial data included in this project are synthetic and created solely for demonstration, testing, and portfolio purposes.
+> NovaBank Financial Services AG ist eine fiktive Organisation. Alle Kunden, Anträge, Richtlinien, Regeln und Finanzdaten in diesem Projekt sind synthetisch und wurden ausschließlich für Demonstrations-, Test- und Portfoliozwecke erstellt.
 
-## 3 Risk appetite
-NovaBank accepts standard consumer-credit applications in risk classes A through C.
-Class D always requires senior manual review. Class E is ineligible.
+## 3 Risikobereitschaft
+Die NovaBank akzeptiert Standard-Verbraucherkreditanträge in den Risikoklassen A bis C.
+Klasse D erfordert immer eine manuelle Prüfung durch eine erfahrene prüfende Person.
+Klasse E ist nicht zulässig.
 
-## 7 Affordability controls
-Debt-to-income is the ratio of monthly debt obligations to verified monthly net income.
-The calculation after the proposed loan must include the exact contractual payment.
+## 7 Kontrollen der Tragfähigkeit
+Die Schuldendienstquote (DTI) ist das Verhältnis der monatlichen Zahlungsverpflichtungen
+zum verifizierten monatlichen Nettoeinkommen. Die Berechnung nach dem geplanten Kredit
+muss die exakte vertragliche Rate enthalten.
 
-## 7.4 Hard decline indicators
-A post-loan DTI above 50%, rejected KYC, unverifiable identity, or confirmed document
-fraud is a hard decline indicator. Multiple independent warnings may be escalated under
-NB-ESC-001 even when no individual hard limit is crossed.
+## 7.4 Harte Ablehnungsindikatoren
+Eine Schuldendienstquote nach Kredit über 50 %, eine abgelehnte KYC-Prüfung, eine nicht
+überprüfbare Identität oder ein bestätigter Dokumentenbetrug sind harte
+Ablehnungsindikatoren. Mehrere unabhängige Warnungen können nach NB-ESC-001 eskaliert
+werden, auch wenn keine einzelne harte Grenze überschritten ist.
 
-## 9 Evidence
-The decision record must preserve calculator output, applied rule IDs, and cited policy
-sections. Synthetic evaluation labels are never valid decision evidence.
+## 9 Nachweise
+Die Entscheidungsakte enthält die Ausgabe des Rechners, die angewendeten Regel-IDs und die
+zitierten Richtlinienabschnitte. Synthetische Evaluationslabels sind niemals ein gültiger
+Entscheidungsnachweis.
 
-## Document control
-Owner: Credit Risk Management. Review cycle: annual. This document is synthetic.
+## Dokumentenlenkung
+Verantwortlich: Kreditrisikomanagement. Überprüfung: jährlich. Dieses Dokument ist synthetisch.

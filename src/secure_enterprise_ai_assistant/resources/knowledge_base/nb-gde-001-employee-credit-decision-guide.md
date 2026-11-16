@@ -1,26 +1,29 @@
-Document-ID: NB-GDE-001
-Title: Employee Credit Decision Guide
-Version: 2.3
-Effective-Date: 2026-09-01
-Owner: Credit Operations
-Classification: Internal — Synthetic Demo
+Dokument-ID: NB-GDE-001
+Titel: Leitfaden für Kreditentscheidungen
+Version: 2.4
+Gültig ab: 2026-09-01
+Verantwortlich: Kreditbetrieb
+Klassifizierung: Intern – synthetische Demo
 
-# Employee Credit Decision Guide
+# Leitfaden für Kreditentscheidungen
 
-> NovaBank Financial Services AG is a fictional organization. All customers, applications, policies, rules, and financial data included in this project are synthetic and created solely for demonstration, testing, and portfolio purposes.
+> NovaBank Financial Services AG ist eine fiktive Organisation. Alle Kunden, Anträge, Richtlinien, Regeln und Finanzdaten in diesem Projekt sind synthetisch und wurden ausschließlich für Demonstrations-, Test- und Portfoliozwecke erstellt.
 
-## 3 Reading the decision pack
-Begin with verified case facts. Then review calculator metrics, failed compliance rules,
-and policy excerpts. A generated narrative must not override structured tool output.
+## 3 Lesen der Entscheidungsunterlagen
+Am Anfang stehen die verifizierten Falldaten. Danach folgen die Kennzahlen des Rechners,
+die nicht bestandenen Compliance-Regeln und die Auszüge aus den Richtlinien. Ein
+generierter Text darf die strukturierte Werkzeugausgabe nicht überschreiben.
 
-## 4 Recommendations
-Approve is available only when no critical failure exists and warnings are resolved.
-Manual review applies to unresolved warnings or incomplete evidence. Decline applies to
-hard limits such as rejected KYC, risk class E, or post-loan DTI above 50%.
+## 4 Empfehlungen
+Eine Genehmigung kommt nur infrage, wenn kein kritischer Befund vorliegt und alle
+Warnungen geklärt sind. Eine manuelle Prüfung gilt bei offenen Warnungen oder
+unvollständigen Nachweisen. Eine Ablehnung gilt bei harten Grenzen wie abgelehnter
+KYC-Prüfung, Risikoklasse E oder einer Schuldendienstquote nach Kredit über 50 %.
 
-## 7 Four-eyes check
-Adverse decisions and exceptions require a second authorized reviewer. Record reviewer
-identity outside the public demo dataset and retain only synthetic examples here.
+## 7 Vier-Augen-Prinzip
+Nachteilige Entscheidungen und Ausnahmen erfordern eine zweite befugte prüfende Person.
+Die Identität der prüfenden Personen wird außerhalb des öffentlichen Demodatensatzes
+erfasst; hier stehen nur synthetische Beispiele.
 
-## Document control
-Owner: Credit Operations. Review cycle: annual. This document is synthetic.
+## Dokumentenlenkung
+Verantwortlich: Kreditbetrieb. Überprüfung: jährlich. Dieses Dokument ist synthetisch.

@@ -86,7 +86,7 @@ def test_case_rejects_mismatched_customer() -> None:
 
     with pytest.raises(
         ValueError,
-        match="customer_id must match",
+        match="customer_id des Kreditantrags",
     ):
         CreditCase(
             case_id="CASE-00001",

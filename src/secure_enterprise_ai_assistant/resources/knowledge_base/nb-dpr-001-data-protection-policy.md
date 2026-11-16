@@ -1,25 +1,28 @@
-Document-ID: NB-DPR-001
-Title: Data Protection Policy
-Version: 2.5
-Effective-Date: 2026-09-01
-Owner: Data Protection Office
-Classification: Internal — Synthetic Demo
+Dokument-ID: NB-DPR-001
+Titel: Datenschutzrichtlinie
+Version: 2.6
+Gültig ab: 2026-09-01
+Verantwortlich: Datenschutzbeauftragte
+Klassifizierung: Intern – synthetische Demo
 
-# Data Protection Policy
+# Datenschutzrichtlinie
 
-> NovaBank Financial Services AG is a fictional organization. All customers, applications, policies, rules, and financial data included in this project are synthetic and created solely for demonstration, testing, and portfolio purposes.
+> NovaBank Financial Services AG ist eine fiktive Organisation. Alle Kunden, Anträge, Richtlinien, Regeln und Finanzdaten in diesem Projekt sind synthetisch und wurden ausschließlich für Demonstrations-, Test- und Portfoliozwecke erstellt.
 
-## 3 Data minimization
-Process only attributes required for the declared credit workflow. Demo environments use
-synthetic records and must not accept production exports or real customer identifiers.
+## 3 Datenminimierung
+Verarbeitet werden nur die Merkmale, die der angegebene Kreditprozess benötigt.
+Demo-Umgebungen nutzen synthetische Datensätze und nehmen keine Produktivexporte und
+keine echten Kundenkennungen an.
 
-## 5 Access and retention
-Role-based access applies to case data, retrieved documents, and execution traces. Logs
-must avoid full document contents and secrets. Retention follows the purpose of the demo.
+## 5 Zugriff und Speicherdauer
+Rollenbasierte Zugriffsrechte gelten für Falldaten, gefundene Dokumente und
+Ausführungsprotokolle. Protokolle enthalten keine vollständigen Dokumentinhalte und keine
+Geheimnisse. Die Speicherdauer richtet sich nach dem Zweck der Demo.
 
-## 7 User rights and review
-Automated output is decision support. Material adverse recommendations require human
-review, traceable evidence, and a channel for correction of inaccurate input data.
+## 7 Betroffenenrechte und Prüfung
+Automatisierte Ausgaben sind Entscheidungsunterstützung. Wesentliche nachteilige
+Empfehlungen erfordern eine Prüfung durch einen Menschen, nachvollziehbare Nachweise und
+einen Weg zur Korrektur fehlerhafter Eingabedaten.
 
-## Document control
-Owner: Data Protection Office. Review cycle: annual. This document is synthetic.
+## Dokumentenlenkung
+Verantwortlich: Datenschutzbeauftragte. Überprüfung: jährlich. Dieses Dokument ist synthetisch.

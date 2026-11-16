@@ -1,110 +1,110 @@
 {
   "ruleset_id": "NOVABANK-CONSUMER-CREDIT-COMPLIANCE-V1",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "effective_date": "2026-09-01",
   "rules": [
     {
       "rule_id": "RULE-001",
-      "title": "KYC must not be rejected",
-      "description": "A rejected customer identity verification blocks credit approval.",
+      "title": "KYC darf nicht abgelehnt sein",
+      "description": "Eine abgelehnte Identitätsprüfung verhindert die Kreditgenehmigung.",
       "category": "kyc",
       "severity": "critical",
       "parameters": {"predicate": "kyc_not_in", "statuses": "rejected"},
-      "source_document": "NB-KYC-001 — Customer Identification and KYC Policy",
-      "source_section": "4.3 Rejected verification"
+      "source_document": "NB-KYC-001 — Richtlinie zur Kundenidentifizierung und KYC",
+      "source_section": "4.3 Abgelehnte Verifizierung"
     },
     {
       "rule_id": "RULE-002",
-      "title": "KYC must be verified before approval",
-      "description": "Pending or incomplete verification requires manual review and remediation.",
+      "title": "KYC muss vor der Genehmigung verifiziert sein",
+      "description": "Eine ausstehende oder unvollständige Verifizierung erfordert Nachbesserung und manuelle Prüfung.",
       "category": "kyc",
       "severity": "warning",
       "parameters": {"predicate": "kyc_equals", "status": "verified"},
-      "source_document": "NB-KYC-001 — Customer Identification and KYC Policy",
-      "source_section": "4.2 Verification gate"
+      "source_document": "NB-KYC-001 — Richtlinie zur Kundenidentifizierung und KYC",
+      "source_section": "4.2 Freigabevoraussetzung Verifizierung"
     },
     {
       "rule_id": "RULE-003",
-      "title": "Required application documents must be present",
-      "description": "Identity, income, bank-statement, and signed application evidence is mandatory.",
+      "title": "Pflichtunterlagen müssen vorliegen",
+      "description": "Ausweis, Einkommensnachweis, Kontoauszüge und unterschriebener Kreditantrag sind Pflicht.",
       "category": "documents",
       "severity": "critical",
       "parameters": {
         "predicate": "required_documents_present",
         "document_types": "identity_document,income_statement,bank_statements_90_days,credit_application_form"
       },
-      "source_document": "NB-DOC-001 — Consumer Credit Required Documents Policy",
-      "source_section": "3.1 Mandatory evidence"
+      "source_document": "NB-DOC-001 — Richtlinie zu erforderlichen Unterlagen für Verbraucherkredite",
+      "source_section": "3.1 Pflichtnachweise"
     },
     {
       "rule_id": "RULE-004",
-      "title": "Submitted documents must be valid",
-      "description": "Expired or invalid evidence cannot support an automated credit decision.",
+      "title": "Eingereichte Unterlagen müssen gültig sein",
+      "description": "Abgelaufene oder ungültige Nachweise können keine automatisierte Kreditentscheidung stützen.",
       "category": "documents",
       "severity": "critical",
       "parameters": {"predicate": "all_documents_valid"},
-      "source_document": "NB-DOC-002 — Document Verification Procedure",
-      "source_section": "5.2 Validity controls"
+      "source_document": "NB-DOC-002 — Verfahren zur Prüfung von Unterlagen",
+      "source_section": "5.2 Gültigkeitskontrollen"
     },
     {
       "rule_id": "RULE-005",
-      "title": "Post-loan DTI review threshold",
-      "description": "Post-loan debt-to-income above 40 percent requires manual affordability review.",
+      "title": "Prüfschwelle der Schuldendienstquote nach Kredit",
+      "description": "Eine Schuldendienstquote nach Kredit über 40 Prozent erfordert eine manuelle Prüfung der Tragfähigkeit.",
       "category": "affordability",
       "severity": "warning",
       "parameters": {"predicate": "dti_at_most", "maximum_pct": 40.0},
-      "source_document": "NB-CRD-001 — Consumer Lending Policy",
-      "source_section": "6.2 Affordability thresholds"
+      "source_document": "NB-CRD-001 — Richtlinie für Verbraucherkredite",
+      "source_section": "6.2 Schwellenwerte der Schuldendienstquote"
     },
     {
       "rule_id": "RULE-006",
-      "title": "Post-loan DTI hard limit",
-      "description": "Post-loan debt-to-income above 50 percent is outside lending appetite.",
+      "title": "Harte Grenze der Schuldendienstquote nach Kredit",
+      "description": "Eine Schuldendienstquote nach Kredit über 50 Prozent liegt außerhalb der Risikobereitschaft.",
       "category": "affordability",
       "severity": "critical",
       "parameters": {"predicate": "dti_at_most", "maximum_pct": 50.0},
-      "source_document": "NB-RSK-001 — Retail Credit Risk Handbook",
-      "source_section": "7.4 Hard decline indicators"
+      "source_document": "NB-RSK-001 — Handbuch Kreditrisiko Privatkunden",
+      "source_section": "7.4 Harte Ablehnungsindikatoren"
     },
     {
       "rule_id": "RULE-007",
-      "title": "Risk class must remain inside credit appetite",
-      "description": "Risk class E is excluded from standard consumer-credit approval.",
+      "title": "Risikoklasse muss innerhalb der Risikobereitschaft liegen",
+      "description": "Risikoklasse E ist von der Standardgenehmigung für Verbraucherkredite ausgeschlossen.",
       "category": "credit_risk",
       "severity": "critical",
       "parameters": {"predicate": "risk_class_in", "classes": "A,B,C,D"},
-      "source_document": "NB-RSK-002 — Risk Classification Guide",
-      "source_section": "4.1 Eligible risk classes"
+      "source_document": "NB-RSK-002 — Leitfaden zur Risikoklassifizierung",
+      "source_section": "4.1 Zulässige Risikoklassen"
     },
     {
       "rule_id": "RULE-008",
-      "title": "Temporary employment stability",
-      "description": "Temporary employees require at least twelve months of documented continuity.",
+      "title": "Stabilität bei befristeter Beschäftigung",
+      "description": "Befristet Beschäftigte benötigen mindestens zwölf Monate nachgewiesene Beschäftigungsdauer.",
       "category": "employment",
       "severity": "warning",
       "parameters": {"predicate": "temporary_employment_months", "minimum_months": 12},
-      "source_document": "NB-CRD-002 — Manual Review Guidelines",
-      "source_section": "5.3 Temporary employment"
+      "source_document": "NB-CRD-002 — Leitlinien für die manuelle Prüfung",
+      "source_section": "5.3 Befristete Beschäftigung"
     },
     {
       "rule_id": "RULE-009",
-      "title": "Consumer-credit amount limit",
-      "description": "Standard consumer-credit applications may not exceed EUR 75000.",
+      "title": "Betragsgrenze für Verbraucherkredite",
+      "description": "Standardanträge für Verbraucherkredite dürfen 75.000 EUR nicht überschreiten.",
       "category": "product",
       "severity": "critical",
       "parameters": {"predicate": "amount_at_most", "maximum_eur": 75000.0},
-      "source_document": "NB-PRD-001 — Consumer Credit Product Catalogue",
-      "source_section": "2.1 Product limits"
+      "source_document": "NB-PRD-001 — Produktkatalog Verbraucherkredite",
+      "source_section": "2.1 Produktgrenzen"
     },
     {
       "rule_id": "RULE-010",
-      "title": "Standard term limit",
-      "description": "Terms above 84 months require an exception review.",
+      "title": "Grenze der Standardlaufzeit",
+      "description": "Laufzeiten über 84 Monate erfordern eine Ausnahmeprüfung.",
       "category": "product",
       "severity": "warning",
       "parameters": {"predicate": "term_at_most", "maximum_months": 84},
-      "source_document": "NB-PRD-001 — Consumer Credit Product Catalogue",
-      "source_section": "2.1 Product limits"
+      "source_document": "NB-PRD-001 — Produktkatalog Verbraucherkredite",
+      "source_section": "2.1 Produktgrenzen"
     }
   ]
 }

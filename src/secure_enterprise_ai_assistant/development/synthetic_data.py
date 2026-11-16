@@ -196,7 +196,7 @@ class GroundTruth(TypedDict):
 def build_dataset(case_count: int = 48) -> tuple[list[CreditCase], GroundTruth]:
     """Build deterministic cases and a separate evaluation-only ground-truth file."""
     if case_count < 40:
-        raise ValueError("The NovaBank portfolio dataset must contain at least 40 cases.")
+        raise ValueError("Der NovaBank-Datensatz muss mindestens 40 Fälle enthalten.")
 
     cases: list[CreditCase] = []
     labels: dict[str, str] = {}
@@ -228,7 +228,7 @@ def build_dataset(case_count: int = 48) -> tuple[list[CreditCase], GroundTruth]:
             requested_amount_eur=scenario.amount + amount_variation,
             term_months=scenario.term,
             annual_interest_rate_pct=scenario.interest_rate,
-            purpose=("Energy-efficient home improvement" if number % 2 else "Vehicle purchase"),
+            purpose=("Energieeffiziente Wohnungsmodernisierung" if number % 2 else "Fahrzeugkauf"),
             status=ApplicationStatus.UNDER_REVIEW,
         )
         documents = [

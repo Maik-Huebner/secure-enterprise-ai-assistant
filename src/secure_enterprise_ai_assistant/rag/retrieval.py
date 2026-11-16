@@ -10,6 +10,7 @@ from typing import Protocol
 import bm25s
 import faiss
 import numpy as np
+from bm25s.stopwords import STOPWORDS_GERMAN
 
 from secure_enterprise_ai_assistant.core.logs import get_logger
 from secure_enterprise_ai_assistant.models.knowledge import (
@@ -21,37 +22,8 @@ from secure_enterprise_ai_assistant.models.knowledge import (
 logger = get_logger(__name__)
 
 TOKEN_PATTERN = re.compile(r"(?u)\b\w\w+\b")
-QUERY_EXPANSIONS = {
-    "unterlagen": "documents mandatory evidence",
-    "dokumente": "documents evidence",
-    "konsumentenkredit": "consumer credit",
-    "kredit": "credit loan",
-    "einkommensnachweis": "income statement",
-    "schuldendienstquote": "debt to income DTI",
-    "belastung": "affordability debt payment",
-    "geldwäsche": "anti money laundering AML",
-}
-SEARCH_STOPWORDS = [
-    "a",
-    "an",
-    "and",
-    "are",
-    "do",
-    "does",
-    "for",
-    "how",
-    "i",
-    "is",
-    "me",
-    "my",
-    "of",
-    "or",
-    "the",
-    "to",
-    "what",
-    "which",
-    "write",
-]
+# German stopwords: knowledge base and questions are both German.
+SEARCH_STOPWORDS = list(STOPWORDS_GERMAN)
 
 
 class Embedder(Protocol):
@@ -107,7 +79,7 @@ class HybridRetriever:
     ) -> None:
         chunk_ids = [chunk.chunk_id for chunk in chunks]
         if len(chunk_ids) != len(set(chunk_ids)):
-            raise ValueError("Knowledge chunks must have unique chunk IDs.")
+            raise ValueError("Die Textabschnitte der Wissensbasis brauchen eindeutige IDs.")
         flagged_documents = {chunk.document_id for chunk in chunks if chunk.security_flags}
         if flagged_documents:
             logger.warning(
@@ -119,7 +91,7 @@ class HybridRetriever:
             )
         safe_chunks = [chunk for chunk in chunks if chunk.document_id not in flagged_documents]
         if not safe_chunks:
-            raise ValueError("At least one knowledge chunk is required.")
+            raise ValueError("Es wird mindestens ein Textabschnitt der Wissensbasis benötigt.")
         self._chunks = safe_chunks
         self._embedder = embedder or HashingEmbedder()
         self._require_lexical_evidence = isinstance(self._embedder, HashingEmbedder)
@@ -134,6 +106,10 @@ class HybridRetriever:
             show_progress=False,
         )
 
+    def document_ids(self) -> list[str]:
+        """Return the sorted IDs of all indexed (non-quarantined) documents."""
+        return sorted({chunk.document_id for chunk in self._chunks})
+
     @staticmethod
     def _searchable_text(chunk: KnowledgeChunk) -> str:
         return f"{chunk.title} {chunk.section} {chunk.content}"
@@ -147,16 +123,15 @@ class HybridRetriever:
         """Return ranked, attributable results and reject weak out-of-scope matches."""
         normalized_query = query.strip()
         if type(top_k) is not int or not 1 <= top_k <= 100:
-            raise ValueError("top_k must be an integer between 1 and 100.")
+            raise ValueError("top_k muss eine ganze Zahl zwischen 1 und 100 sein.")
         if len(normalized_query) < 3:
             return KnowledgeSearchResponse(query=query, results=[], out_of_scope=True)
-        expanded_query = self._expand_query(normalized_query)
         candidate_count = len(self._chunks)
         semantic_scores, semantic_indices = self._faiss.search(
-            self._embedder.encode([expanded_query]), candidate_count
+            self._embedder.encode([normalized_query]), candidate_count
         )
         lexical_indices, lexical_scores = self._bm25.retrieve(
-            bm25s.tokenize([expanded_query], stopwords=SEARCH_STOPWORDS, show_progress=False),
+            bm25s.tokenize([normalized_query], stopwords=SEARCH_STOPWORDS, show_progress=False),
             k=candidate_count,
             show_progress=False,
         )
@@ -201,10 +176,3 @@ class HybridRetriever:
             results=selected if in_scope else [],
             out_of_scope=not in_scope,
         )
-
-    @staticmethod
-    def _expand_query(query: str) -> str:
-        additions = [
-            expansion for term, expansion in QUERY_EXPANSIONS.items() if term in query.casefold()
-        ]
-        return " ".join([query, *additions])

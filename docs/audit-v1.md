@@ -220,7 +220,17 @@ Der `embeddinggemma`-Lauf nutzte die **unveränderten** Schwellen und das 8-Begr
 
 **Stand nach Paket 0:** 0 offene Lücken außer 5 Meldungen zu `chromadb`. Dafür gibt es noch keine reparierte Version, das Paket kommt nur über CrewAI herein und wird von diesem Projekt nicht benutzt. Die Ausnahme ist in `make deps-audit` begründet und fällt mit CrewAI in Paket 4 weg.
 
-## 10. Quellen
+## 10. Nachtrag: Falsche Quellenverweise im Regelwerk
+
+*Gefunden am 16.11.2026 bei der Arbeit an Paket 1, betrifft bereits v1.0.2.*
+
+| Schwere | Befund | Wo |
+|---|---|---|
+| Hoch | Drei von zehn Regeln zitieren Abschnitte, die es nicht gibt. RULE-005 verweist auf `NB-CRD-001` „6.2 Affordability thresholds“, die Richtlinie hat aber nur Abschnitt 6. RULE-009 und RULE-010 verweisen auf `NB-PRD-001` „2.1 Product limits“, der Abschnitt heißt „2.1 Standard Personal Loan“. Für ein System, das „exakte Quellenangaben“ verspricht, ist das ein inhaltlicher Fehler. | `resources/compliance/rules.json` |
+
+**Stand nach Paket 1:** behoben. Ein neuer Test (`tests/unit/test_source_references.py`) prüft für jede Regel, dass Dokument, Titel und Abschnitt in der Wissensbasis existieren, und dass jeder Querverweis `NB-…` in den Richtlinien auf ein echtes Dokument zeigt.
+
+## 11. Quellen
 
 - [MCP Python SDK: Migration Guide v1 → v2](https://py.sdk.modelcontextprotocol.io/migration/)
 - [MCP-Spezifikation 2026-07-28: Authorization](https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization)

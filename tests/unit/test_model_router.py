@@ -89,8 +89,8 @@ def test_model_selection_contains_auditable_reason(model_router: ModelRouter) ->
         )
     )
 
-    assert simple.reason == "simple financial-analysis workflow"
-    assert "multi-agent assessment" in complex_selection.reason
+    assert simple.reason == "einfacher Ablauf der Finanzanalyse"
+    assert "mehreren Agenten" in complex_selection.reason
 
 
 def test_legacy_ollama_model_environment_variable_remains_supported(

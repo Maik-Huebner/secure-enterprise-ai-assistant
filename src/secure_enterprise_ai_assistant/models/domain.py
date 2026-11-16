@@ -143,7 +143,7 @@ class CreditCase(DomainModel):
         """Ensure application and customer belong to the same case."""
         if self.customer.customer_id != self.application.customer_id:
             raise ValueError(
-                "Credit application customer_id must match customer profile customer_id."
+                "Die customer_id des Kreditantrags muss zur customer_id des Kundenprofils passen."
             )
 
 

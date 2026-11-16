@@ -15,10 +15,10 @@ def test_verified_report_uses_all_structured_evidence() -> None:
     assert "28,41 %" in report
     assert "44,95 %" in report
     assert "5.488,40 EUR" in report
-    assert "RULE-005" in report and "FAIL (nicht bestanden)" in report
-    assert "MANUAL REVIEW" in report
+    assert "RULE-005" in report and "nicht bestanden" in report
+    assert "**Empfehlung: Manuelle Prüfung.**" in report
     assert "NB-CRD-001" in report or "NB-RSK-001" in report
-    assert report.endswith("END OF VERIFIED REPORT")
+    assert report.endswith("ENDE DES GEPRÜFTEN BERICHTS")
     assert "## Empfehlung" in report
     assert "Monatliche Rate" in report
     assert "Executive Recommendation" not in report
@@ -33,7 +33,7 @@ def test_verified_report_uses_all_structured_evidence() -> None:
             "search_internal_knowledge",
         )
     )
-    assert "echten lokalen MCP-stdio-Session" in report
+    assert "echten lokalen MCP-stdio-Sitzung" in report
     assert "Maximum" not in report
-    assert "Höchstwert 40,0%" in report
+    assert "Höchstwert 40,00 %" in report
     assert "28.750,00 EUR" in report

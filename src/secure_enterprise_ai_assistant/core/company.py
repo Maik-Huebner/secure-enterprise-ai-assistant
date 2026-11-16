@@ -2,12 +2,11 @@
 
 COMPANY_NAME = "NovaBank Financial Services AG"
 COMPANY_SHORT_NAME = "NovaBank"
-COMPANY_SECTOR = "Retail Banking and Financial Services"
-COMPANY_COUNTRY = "Germany"
+COMPANY_SECTOR = "Privatkundengeschäft und Finanzdienstleistungen"
+COMPANY_COUNTRY = "Deutschland"
 
 PROJECT_DISCLAIMER = (
-    "NovaBank Financial Services AG is a fictional organization. "
-    "All customers, applications, policies, rules, and financial data "
-    "included in this project are synthetic and created solely for "
-    "demonstration, testing, and portfolio purposes."
+    "NovaBank Financial Services AG ist eine fiktive Organisation. Alle Kunden, Anträge, "
+    "Richtlinien, Regeln und Finanzdaten in diesem Projekt sind synthetisch und wurden "
+    "ausschließlich für Demonstrations-, Test- und Portfoliozwecke erstellt."
 )

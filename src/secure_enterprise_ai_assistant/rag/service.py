@@ -27,6 +27,10 @@ class KnowledgeService:
         chunks = KnowledgeIngestor(knowledge_root).ingest_directory()
         return cls(HybridRetriever(chunks, embedder=embedder))
 
+    def document_ids(self) -> list[str]:
+        """Return the IDs of all documents currently in the search index."""
+        return self._retriever.document_ids()
+
     def search(
         self,
         query: str,

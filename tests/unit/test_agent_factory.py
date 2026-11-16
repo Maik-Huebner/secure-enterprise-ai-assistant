@@ -49,16 +49,16 @@ def test_reviewer_guardrail_rejects_truncated_output() -> None:
     valid, feedback = validate_decision_brief(output)
 
     assert valid is False
-    assert "1000 characters" in feedback
+    assert "mindestens 1000 Zeichen" in feedback
 
 
 def test_reviewer_guardrail_accepts_substantive_sourced_output() -> None:
     body = " ".join(
         [
-            "Decision recommendation for CASE-00031 references NB-CRD-001 and RULE-005.",
-            "The monthly payment is EUR 570.64 and post-loan DTI is 44.95%.",
-            "Evidence remains structured and reviewer-checked. " * 20,
-            "END OF VERIFIED REPORT",
+            "Empfehlung für CASE-00031 mit Bezug auf NB-CRD-001 und RULE-005.",
+            "Die monatliche Rate beträgt 570,64 EUR, die DTI nach Kredit 44,95 %.",
+            "Die Nachweise bleiben strukturiert und geprüft. " * 25,
+            "ENDE DES GEPRÜFTEN BERICHTS",
         ]
     )
     output = TaskOutput(description="review", expected_output="brief", raw=body, agent="reviewer")
@@ -85,7 +85,8 @@ def test_full_assessment_crew_builds_with_reviewer_guardrail(tmp_path) -> None:
     assert all(getattr(agent.llm, "provider", None) == "ollama" for agent in crew.agents)
     assert len({id(agent.llm) for agent in crew.agents}) == 1
     assert all(
-        "Never introduce a general financial or regulatory threshold" in task.description
+        "Nenne keine allgemeinen finanziellen oder aufsichtsrechtlichen Schwellenwerte"
+        in task.description
         for task in crew.tasks
     )
 
@@ -102,12 +103,12 @@ def test_german_financial_task_enforces_german_user_facing_output(tmp_path) -> N
     crew = CrewOrchestrator(AgentFactory(settings)).build(query, route)
     task = crew.tasks[0]
 
-    assert "Ausgabesprache für diese Anfrage: Deutsch" in task.description
+    assert "Antworte vollständig auf Deutsch" in task.description
     assert "Finanzielle Kennzahlen" in task.expected_output
     assert "Gesamtrückzahlung" in task.expected_output
     assert "Monthly Payment" not in task.expected_output
-    assert all("For German requests" in agent.backstory for agent in crew.agents)
-    assert all("For German requests" in agent.goal for agent in crew.agents)
+    assert all("Antworte vollständig auf Deutsch" in agent.backstory for agent in crew.agents)
+    assert all("Antworte vollständig auf Deutsch" in agent.goal for agent in crew.agents)
 
 
 def test_german_language_guardrail_rejects_english_response_labels() -> None:
@@ -117,21 +118,18 @@ def test_german_language_guardrail_rejects_english_response_labels() -> None:
         raw=(
             "# NovaBank Case Metrics\n"
             "CASE-00031\n"
-            "Monthly Payment: EUR 570.64\n"
-            "DTI vorher 28.41%, DTI danach 44.95%.\n"
-            "Gesamtzins EUR 5,488.40; Gesamtrückzahlung EUR 34,238.40.\n"
+            "Monthly Payment / Monatliche Rate: 570,64 EUR\n"
+            "DTI vorher 28,41 %, DTI danach 44,95 %.\n"
+            "Gesamtzins 5.488,40 EUR; Gesamtrückzahlung 34.238,40 EUR.\n"
             "Die Werte stammen aus dem MCP-Werkzeug analyze_financial_case. " * 5
         ),
         agent="analyst",
     )
 
-    valid, feedback = language_guardrail(
-        "Berechne die finanzielle Belastung für CASE-00031.",
-        validate_financial_output,
-    )(output)
+    valid, feedback = language_guardrail(validate_financial_output)(output)
 
     assert valid is False
-    assert "NovaBank Case Metrics" in feedback
+    assert "Case Metrics" in feedback
     assert "Monthly Payment" in feedback
     assert "vollständige Antwort auf Deutsch" in feedback
 
@@ -153,11 +151,11 @@ def test_financial_guardrail_rejects_unqueried_evidence_categories() -> None:
         description="analysis",
         expected_output="result",
         raw=(
-            "CASE-00031 monthly payment EUR 570.64; DTI before 28.41%; DTI after 44.95%; "
-            "total interest EUR 5,488.40; total repayment EUR 34,238.40. "
-            "Deterministic metrics are repeated here without calculation. "
+            "CASE-00031 monatliche Rate 570,64 EUR; DTI vor Kredit 28,41 %; DTI nach Kredit "
+            "44,95 %; Gesamtzins 5.488,40 EUR; Gesamtrückzahlung 34.238,40 EUR. "
+            "Die deterministischen Kennzahlen werden ohne Rechnung wiederholt. "
             * 3
-            + "RAG Policy Evidence: no threshold was available."
+            + "Richtliniennachweis: kein Schwellenwert verfügbar."
         ),
         agent="analyst",
     )
@@ -165,14 +163,14 @@ def test_financial_guardrail_rejects_unqueried_evidence_categories() -> None:
     valid, feedback = validate_financial_output(output)
 
     assert valid is False
-    assert "did not query" in feedback
+    assert "nicht abgefragt" in feedback
 
 
 def test_financial_guardrail_rejects_unsupported_domain_claims() -> None:
     metrics = (
-        "CASE-00031 monthly payment EUR 570.64; DTI before 28.41%; DTI after 44.95%; "
-        "total interest EUR 5,488.40; total repayment EUR 34,238.40. "
-        "Deterministic MCP metrics are repeated without model calculation. " * 3
+        "CASE-00031 monatliche Rate 570,64 EUR; DTI vor Kredit 28,41 %; DTI nach Kredit "
+        "44,95 %; Gesamtzins 5.488,40 EUR; Gesamtrückzahlung 34.238,40 EUR. "
+        "Die deterministischen MCP-Kennzahlen werden ohne Modellrechnung wiederholt. " * 3
     )
     forbidden_claims = (
         "Therefore, compliance conclusions can be drawn from these metrics.",
@@ -190,7 +188,7 @@ def test_financial_guardrail_rejects_unsupported_domain_claims() -> None:
         valid, feedback = validate_financial_output(output)
 
         assert valid is False
-        assert "outside the financial agent's MCP evidence" in feedback
+        assert "außerhalb der MCP-Nachweise der Finanzanalyse" in feedback
 
 
 def test_model_output_sanitizes_host_paths_and_path_derived_mcp_aliases() -> None:
@@ -201,7 +199,7 @@ def test_model_output_sanitizes_host_paths_and_path_derived_mcp_aliases() -> Non
 
     sanitized = sanitize_model_output(raw)
 
-    assert sanitized == "Called NovaBank_MCP_tool and read [local path redacted]"
+    assert sanitized == "Called NovaBank_MCP_tool and read [lokaler Pfad entfernt]"
 
 
 def test_full_assessment_retains_transparent_mcp_fallback(monkeypatch) -> None:

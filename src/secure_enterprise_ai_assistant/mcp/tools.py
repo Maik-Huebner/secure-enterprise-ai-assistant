@@ -59,10 +59,10 @@ class MCPToolService:
     @staticmethod
     def _case_id(case_id: str) -> str:
         if not isinstance(case_id, str):
-            raise ValueError("case_id must be a string.")
+            raise ValueError("case_id muss eine Zeichenkette sein.")
         normalized = case_id.strip().upper()
         if not CASE_ID_PATTERN.fullmatch(normalized):
-            raise ValueError("case_id must match CASE- followed by five digits.")
+            raise ValueError("case_id muss das Format CASE- mit fünf Ziffern haben.")
         return normalized
 
     def get_customer_case(self, case_id: str) -> CustomerCaseResult:
@@ -97,12 +97,12 @@ class MCPToolService:
     ) -> KnowledgeSearchResponse:
         """Search synthetic internal policies and return attributable chunks."""
         if not isinstance(question, str):
-            raise ValueError("question must be a string.")
+            raise ValueError("question muss eine Zeichenkette sein.")
         normalized_question = validate_user_query(question)
         if len(normalized_question) > 1000:
-            raise ValueError("question must contain at most 1000 characters.")
+            raise ValueError("question darf höchstens 1000 Zeichen enthalten.")
         if type(top_k) is not int or not 1 <= top_k <= 10:
-            raise ValueError("top_k must be between 1 and 10.")
+            raise ValueError("top_k muss zwischen 1 und 10 liegen.")
         supplied_filters = {
             "document_id": document_id,
             "owner": owner,
@@ -113,19 +113,19 @@ class MCPToolService:
             if value is None:
                 continue
             if not isinstance(value, str):
-                raise ValueError(f"{key} filter must be a string.")
+                raise ValueError(f"Der Filter {key} muss eine Zeichenkette sein.")
             normalized = value.strip()
             if not normalized:
                 continue
             if len(normalized) > 120 or any(ord(character) < 32 for character in normalized):
-                raise ValueError(f"{key} filter contains unsupported content.")
+                raise ValueError(f"Der Filter {key} enthält unzulässige Zeichen.")
             metadata_filter[key] = normalized
         if not metadata_filter.keys() <= ALLOWED_METADATA_FILTERS:
-            raise ValueError("Unsupported metadata filter.")
+            raise ValueError("Nicht unterstützter Metadatenfilter.")
         if document_id is not None and "document_id" in metadata_filter:
             metadata_filter["document_id"] = metadata_filter["document_id"].upper()
             if not DOCUMENT_ID_PATTERN.fullmatch(metadata_filter["document_id"]):
-                raise ValueError("document_id filter must match NB-<TYPE>-000.")
+                raise ValueError("Der Filter document_id muss das Format NB-<TYP>-000 haben.")
         return self.knowledge_service.search(
             normalized_question,
             top_k=top_k,

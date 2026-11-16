@@ -1,29 +1,32 @@
-Document-ID: NB-KYC-001
-Title: Customer Identification and KYC Policy
-Version: 3.0
-Effective-Date: 2026-09-01
-Owner: Financial Crime Prevention
-Classification: Internal — Synthetic Demo
+Dokument-ID: NB-KYC-001
+Titel: Richtlinie zur Kundenidentifizierung und KYC
+Version: 3.1
+Gültig ab: 2026-09-01
+Verantwortlich: Bekämpfung von Finanzkriminalität
+Klassifizierung: Intern – synthetische Demo
 
-# Customer Identification and KYC Policy
+# Richtlinie zur Kundenidentifizierung und KYC
 
-> NovaBank Financial Services AG is a fictional organization. All customers, applications, policies, rules, and financial data included in this project are synthetic and created solely for demonstration, testing, and portfolio purposes.
+> NovaBank Financial Services AG ist eine fiktive Organisation. Alle Kunden, Anträge, Richtlinien, Regeln und Finanzdaten in diesem Projekt sind synthetisch und wurden ausschließlich für Demonstrations-, Test- und Portfoliozwecke erstellt.
 
-## 2 Required identity evidence
-The applicant must provide a valid identity document. Identity attributes are checked
-against the submitted application; NovaBank demo data remains entirely synthetic.
+## 2 Erforderliche Identitätsnachweise
+Die antragstellende Person muss ein gültiges Ausweisdokument vorlegen. Die
+Identitätsmerkmale werden mit dem eingereichten Antrag abgeglichen; die Demodaten der
+NovaBank sind vollständig synthetisch.
 
-## 4.2 Verification gate
-Only status verified satisfies the approval gate. Pending and incomplete statuses
-require remediation and manual review; neither status permits final approval.
+## 4.2 Freigabevoraussetzung Verifizierung
+Nur der Status verifiziert erfüllt die Voraussetzung für eine Genehmigung. Die Status
+ausstehend und unvollständig erfordern eine Nachbesserung und eine manuelle Prüfung;
+keiner dieser Status erlaubt eine endgültige Genehmigung.
 
-## 4.3 Rejected verification
-Rejected verification is a critical failure and the application must not be approved.
-The reviewer records RULE-001 and follows the escalation path in NB-ESC-001.
+## 4.3 Abgelehnte Verifizierung
+Eine abgelehnte Verifizierung ist ein kritischer Befund, und der Antrag darf nicht
+genehmigt werden. Die prüfende Person dokumentiert RULE-001 und folgt dem
+Eskalationsweg in NB-ESC-001.
 
-## 6 Record keeping
-Store only the minimum structured verification result needed for the decision. Never
-place secrets or real identity data in the demonstration repository.
+## 6 Aufbewahrung
+Gespeichert wird nur das minimal nötige strukturierte Prüfergebnis. Geheimnisse oder
+echte Identitätsdaten gehören niemals in das Demonstrations-Repository.
 
-## Document control
-Owner: Financial Crime Prevention. Review cycle: annual. This document is synthetic.
+## Dokumentenlenkung
+Verantwortlich: Bekämpfung von Finanzkriminalität. Überprüfung: jährlich. Dieses Dokument ist synthetisch.

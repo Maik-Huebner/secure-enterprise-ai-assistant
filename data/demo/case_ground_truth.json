@@ -101,5 +101,5 @@
     "CASE-00047": "high_debt_load",
     "CASE-00048": "kyc_rejected"
   },
-  "synthetic_data_disclaimer": "NovaBank Financial Services AG is a fictional organization. All customers, applications, policies, rules, and financial data included in this project are synthetic and created solely for demonstration, testing, and portfolio purposes."
+  "synthetic_data_disclaimer": "NovaBank Financial Services AG ist eine fiktive Organisation. Alle Kunden, Anträge, Richtlinien, Regeln und Finanzdaten in diesem Projekt sind synthetisch und wurden ausschließlich für Demonstrations-, Test- und Portfoliozwecke erstellt."
 }

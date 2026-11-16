@@ -1,26 +1,29 @@
-Document-ID: NB-CRD-002
-Title: Manual Review Guidelines
-Version: 1.8
-Effective-Date: 2026-09-01
-Owner: Credit Operations
-Classification: Internal — Synthetic Demo
+Dokument-ID: NB-CRD-002
+Titel: Leitlinien für die manuelle Prüfung
+Version: 1.9
+Gültig ab: 2026-09-01
+Verantwortlich: Kreditbetrieb
+Klassifizierung: Intern – synthetische Demo
 
-# Manual Review Guidelines
+# Leitlinien für die manuelle Prüfung
 
-> NovaBank Financial Services AG is a fictional organization. All customers, applications, policies, rules, and financial data included in this project are synthetic and created solely for demonstration, testing, and portfolio purposes.
+> NovaBank Financial Services AG ist eine fiktive Organisation. Alle Kunden, Anträge, Richtlinien, Regeln und Finanzdaten in diesem Projekt sind synthetisch und wurden ausschließlich für Demonstrations-, Test- und Portfoliozwecke erstellt.
 
-## 3 Review principles
-Manual review resolves warnings; it does not override critical failures without a formal
-exception authority. Reviewers document both supporting and adverse evidence.
+## 3 Grundsätze der Prüfung
+Die manuelle Prüfung klärt Warnungen; sie hebt kritische Befunde ohne formelle
+Ausnahmebefugnis nicht auf. Prüfende Personen dokumentieren sowohl stützende als auch
+belastende Nachweise.
 
-## 5.3 Temporary employment
-Temporary employment with less than 12 months of demonstrated continuity is a warning.
-The reviewer examines contract end date, continuity, and whether the proposed term is
-reasonable. The assistant must not infer facts absent from the synthetic file.
+## 5.3 Befristete Beschäftigung
+Eine befristete Beschäftigung mit weniger als 12 Monaten nachgewiesener Dauer ist eine
+Warnung. Die prüfende Person bewertet Vertragsende, Beschäftigungsdauer und ob die
+beantragte Laufzeit angemessen ist. Der Assistent darf keine Fakten ableiten, die in der
+synthetischen Akte fehlen.
 
-## 6 Borderline affordability
-Post-loan DTI above 40% and up to 50% requires a documented budget review. A stable risk
-class does not cancel this requirement. Above 50%, NB-RSK-001 takes precedence.
+## 6 Grenzfälle der Tragfähigkeit
+Eine Schuldendienstquote nach Kredit über 40 % und bis 50 % erfordert eine dokumentierte
+Haushaltsprüfung. Eine stabile Risikoklasse hebt diese Pflicht nicht auf. Über 50 % hat
+NB-RSK-001 Vorrang.
 
-## Document control
-Owner: Credit Operations. Review cycle: annual. This document is synthetic.
+## Dokumentenlenkung
+Verantwortlich: Kreditbetrieb. Überprüfung: jährlich. Dieses Dokument ist synthetisch.

@@ -1,26 +1,28 @@
-Document-ID: NB-RES-001
-Title: Responsible Lending Policy
-Version: 1.2
-Effective-Date: 2026-09-01
-Owner: Customer Protection
-Classification: Internal — Synthetic Demo
+Dokument-ID: NB-RES-001
+Titel: Richtlinie zur verantwortungsvollen Kreditvergabe
+Version: 1.3
+Gültig ab: 2026-09-01
+Verantwortlich: Kundenschutz
+Klassifizierung: Intern – synthetische Demo
 
-# Responsible Lending Policy
+# Richtlinie zur verantwortungsvollen Kreditvergabe
 
-> NovaBank Financial Services AG is a fictional organization. All customers, applications, policies, rules, and financial data included in this project are synthetic and created solely for demonstration, testing, and portfolio purposes.
+> NovaBank Financial Services AG ist eine fiktive Organisation. Alle Kunden, Anträge, Richtlinien, Regeln und Finanzdaten in diesem Projekt sind synthetisch und wurden ausschließlich für Demonstrations-, Test- und Portfoliozwecke erstellt.
 
-## 2 Principle
-NovaBank offers credit only when the structured evidence supports sustainable repayment.
-Sales goals never override affordability, KYC, or document controls.
+## 2 Grundsatz
+Die NovaBank vergibt Kredite nur, wenn die strukturierten Nachweise eine tragfähige
+Rückzahlung belegen. Vertriebsziele haben niemals Vorrang vor Tragfähigkeit, KYC oder
+Dokumentenkontrollen.
 
-## 4 Assessment quality
-Use verified income, all known recurring debt, the contractual payment, and a reasonable
-view of the applicant's circumstances. Missing information must be stated explicitly.
+## 4 Qualität der Bewertung
+Grundlage sind verifiziertes Einkommen, alle bekannten wiederkehrenden Verpflichtungen,
+die vertragliche Rate und eine angemessene Betrachtung der Lebensumstände. Fehlende
+Informationen werden ausdrücklich benannt.
 
-## 6 Customer communication
-Decision support must use clear language and distinguish facts, calculations, policy
-requirements, and recommendations. It must not promise approval or present the assistant
-as the legal decision maker.
+## 6 Kommunikation mit Kunden
+Entscheidungsunterstützung verwendet klare Sprache und trennt Fakten, Berechnungen,
+Richtlinienanforderungen und Empfehlungen. Sie verspricht keine Genehmigung und stellt
+den Assistenten nicht als rechtlich verantwortliche Entscheidungsinstanz dar.
 
-## Document control
-Owner: Customer Protection. Review cycle: annual. This document is synthetic.
+## Dokumentenlenkung
+Verantwortlich: Kundenschutz. Überprüfung: jährlich. Dieses Dokument ist synthetisch.
