@@ -1,23 +1,24 @@
-"""Professional Gradio Blocks interface for the local NovaBank assistant."""
+"""Gradio interface for the NovaBank assistant. It is a client of the REST API.
+
+The UI holds no business logic and no direct access to cases, documents or tools: it logs in
+at the API, keeps the short-lived token in the per-browser session state, and sends every
+request with that token. Authorization happens in the API and in the MCP tools.
+"""
 
 from __future__ import annotations
 
-import asyncio
 import re
 import time
-from collections.abc import Callable
 from typing import Any
 
 import gradio as gr
-import httpx
 
 from secure_enterprise_ai_assistant.core.company import COMPANY_NAME, PROJECT_DISCLAIMER
 from secure_enterprise_ai_assistant.core.labels import CODE_LABELS
 from secure_enterprise_ai_assistant.core.logs import configure_logging, get_logger, request_context
 from secure_enterprise_ai_assistant.core.settings import get_settings
-from secure_enterprise_ai_assistant.guardrails import UnsafeInputError
-from secure_enterprise_ai_assistant.mcp import create_mcp_server
-from secure_enterprise_ai_assistant.mcp.tools import MCPToolService
+from secure_enterprise_ai_assistant.models.orchestration import TraceEvent
+from secure_enterprise_ai_assistant.ui.api_client import ApiClient, ApiError
 
 SOURCE_PATTERN = re.compile(r"\bNB-[A-Z]+-\d{3}\b")
 logger = get_logger(__name__)
@@ -181,6 +182,11 @@ GRADIO_UI_LOCALIZATION_JS = """
 """
 
 
+Session = dict[str, Any]
+EMPTY_SOURCES = "### Quellen\nNoch keine Quellen vorhanden."
+ROLE_LABELS = {"sachbearbeiter": "Sachbearbeitung", "pruefer": "Prüfung", "admin": "Administration"}
+
+
 def _ui_value(value: Any) -> Any:
     """Translate known presentation values without changing backend data."""
     if isinstance(value, dict):
@@ -199,191 +205,169 @@ def _trace_detail(event: str, detail: str) -> str:
             return detail
         return (
             "Die native CrewAI-Ausgabe hat die Qualitätsprüfung nicht bestanden; "
-            "der deterministische MCP-Fallback wurde verwendet."
+            "der deterministische MCP-Rückfallweg wurde verwendet."
         )
     return str(_ui_value(detail))
 
 
 class AssistantController:
-    """UI adapter that exposes safe outputs and never leaks internal exceptions."""
+    """UI adapter: talks only to the API and never shows internal exception details."""
 
-    def __init__(
-        self,
-        tools: MCPToolService | None = None,
-        flow_runner: Callable[[str], tuple[str, Any, list[Any]]] | None = None,
-    ) -> None:
-        self.tools = tools or MCPToolService.build_default()
-        self.flow_runner = flow_runner or self._run_flow
+    def __init__(self, api: ApiClient | None = None) -> None:
+        self.api = api or ApiClient(get_settings().api_base_url)
+
+    # ----- session ---------------------------------------------------------------------------
+    def login(self, username: str, password: str) -> tuple[Session, str, Any]:
+        """Log in at the API; return the new session, a status line and the case choices."""
+        try:
+            token = self.api.login(username.strip(), password)
+            me = self.api.me(token)
+            cases = [item["case_id"] for item in self.api.cases(token)]
+        except ApiError as exc:
+            return {}, f"**Anmeldung fehlgeschlagen:** {exc}", gr.update(choices=[], value=None)
+        session = {"token": token, "username": me["username"], "role": me["role"]}
+        role = ROLE_LABELS.get(me["role"], me["role"])
+        team = f", {me['team']}" if me.get("team") else ""
+        status = f"Angemeldet als **{me['username']}** ({role}{team}). {len(cases)} Fälle sichtbar."
+        return session, status, gr.update(choices=cases, value=cases[0] if cases else None)
 
     @staticmethod
-    def _run_flow(query: str) -> tuple[str, Any, list[Any]]:
-        from secure_enterprise_ai_assistant.flows import NovaBankAssistantFlow
+    def logout() -> tuple[Session, str, Any]:
+        return {}, "Abgemeldet.", gr.update(choices=[], value=None)
 
-        flow = NovaBankAssistantFlow()
-        answer = str(flow.kickoff(inputs={"query": query}))
-        return answer, flow.state.route, flow.state.trace
-
+    # ----- assistant -------------------------------------------------------------------------
     def submit(
-        self, message: str, history: list[dict[str, str]] | None
+        self, message: str, history: list[dict[str, str]] | None, session: Session | None
     ) -> tuple[list[dict[str, str]], str, list[list[str]], dict[str, Any], str]:
-        """Execute a Flow and return chat, sources, trace, tools, and status."""
+        """Send one request to the API; return chat, sources, trace, routing info and status."""
         with request_context():
-            return self._submit(message, history)
+            return self._submit(message, list(history or []), session or {})
 
     def _submit(
-        self, message: str, history: list[dict[str, str]] | None
+        self, message: str, history: list[dict[str, str]], session: Session
     ) -> tuple[list[dict[str, str]], str, list[list[str]], dict[str, Any], str]:
-        history = list(history or [])
         query = message.strip()
         if not query:
-            return (
-                history,
-                "### Quellen\nNoch keine Quellen vorhanden.",
-                [],
-                {},
-                ("Bitte eine Anfrage eingeben."),
-            )
+            return history, EMPTY_SOURCES, [], {}, "Bitte eine Anfrage eingeben."
+        if not session.get("token"):
+            return history, EMPTY_SOURCES, [], {}, "Bitte zuerst anmelden."
         history.append({"role": "user", "content": query})
         started = time.perf_counter()
         try:
-            answer, route, trace = self.flow_runner(query)
-            if route is None:
-                raise RuntimeError("Workflow completed without a route.")
-            source_ids = sorted(set(SOURCE_PATTERN.findall(answer)))
-            sources = (
-                "### Quellen\n" + "\n".join(f"- `{source_id}`" for source_id in source_ids)
-                if source_ids
-                else "### Quellen\nIn der generierten Antwort wurde keine Quellen-ID genannt."
-            )
-            trace_rows = [
-                [
-                    event.timestamp.isoformat(),
-                    TRACE_EVENT_LABELS.get(event.event, event.event),
-                    _trace_detail(event.event, event.detail),
-                ]
-                for event in trace
-            ]
-            trace_details = {event.event: event.detail for event in trace}
-            tools = {
-                "Anfragetyp": _ui_value(route.intent.value),
-                "Fall-ID": route.case_id,
-                "Modellprofil": _ui_value(trace_details.get("model_profile", "not recorded")),
-                "MCP-Werkzeuge": route.required_tools,
-                "Ausführungsmodus": _ui_value(trace_details.get("execution_mode", "not recorded")),
-            }
-            if "configured_complex_model" in trace_details:
-                tools["Konfiguriertes komplexes Modell"] = trace_details["configured_complex_model"]
-                tools["Modus für vollständige Prüfung"] = _ui_value(
-                    trace_details.get("full_assessment_mode", "not recorded")
-                )
-            else:
-                tools["Ausgewähltes Modell"] = trace_details.get("model_selected", "nicht erfasst")
-            if "fallback_reason" in trace_details:
-                tools["Fallback-Grund"] = _trace_detail(
-                    "fallback_reason", trace_details["fallback_reason"]
-                )
-            if "Konfiguriertes komplexes Modell" in tools:
-                status = (
-                    f"Abgeschlossen als `{tools['Anfragetyp']}` über "
-                    f"`{tools['Modus für vollständige Prüfung']}` im Modus "
-                    f"`{tools['Ausführungsmodus']}`. Das konfigurierte Modell "
-                    f"`{tools['Konfiguriertes komplexes Modell']}` wurde nicht ausgeführt; "
-                    f"{len(trace_rows)} technische Ereignisse."
-                )
-            else:
-                status = (
-                    f"Abgeschlossen als `{tools['Anfragetyp']}` mit "
-                    f"`{tools['Ausgewähltes Modell']}` im Modus "
-                    f"`{tools['Ausführungsmodus']}`; {len(trace_rows)} technische Ereignisse."
-                )
+            result = self.api.chat(session["token"], query)
+        except ApiError as exc:
             logger.info(
-                "request_completed",
-                extra={
-                    "intent": route.intent.value,
-                    "execution_mode": trace_details.get("execution_mode"),
-                    "query_length": len(query),
-                    "duration_ms": round((time.perf_counter() - started) * 1000, 1),
-                },
+                "ui_request_failed", extra={"status": exc.status, "query_length": len(query)}
             )
-        except UnsafeInputError as exc:
-            logger.info("request_blocked", extra={"query_length": len(query)})
-            answer = (
-                "Diese Anfrage wurde aus Sicherheitsgründen nicht ausgeführt. "
-                f"{exc} Bitte formuliere eine fachliche Frage zu Richtlinien oder "
-                "einem synthetischen Fall."
-            )
-            sources = "### Quellen\nKeine Quellen – die Anfrage wurde blockiert."
-            trace_rows = []
-            tools = {}
-            status = "Anfrage blockiert."
-        except Exception:
-            logger.exception(
-                "request_failed",
-                extra={
-                    "query_length": len(query),
-                    "duration_ms": round((time.perf_counter() - started) * 1000, 1),
-                },
-            )
-            answer = (
-                "Der lokale Ablauf konnte nicht abgeschlossen werden. Prüfe, ob Ollama läuft "
-                "und das konfigurierte Modell installiert ist, und versuche es erneut."
-            )
-            sources = "### Quellen\nKeine Quellen – der Ablauf wurde nicht abgeschlossen."
-            trace_rows = []
-            tools = {}
-            status = "Ablauf nicht verfügbar; vertrauliche Fehlerdetails wurden nicht ausgegeben."
-        history.append({"role": "assistant", "content": answer})
-        return history, sources, trace_rows, tools, status
+            if exc.status in {400, 403, 401, 429}:
+                answer = f"Diese Anfrage wurde nicht ausgeführt. {exc}"
+            else:
+                answer = (
+                    "Der Ablauf konnte nicht abgeschlossen werden. Prüfe, ob API und Ollama "
+                    "laufen, und versuche es erneut."
+                )
+            history.append({"role": "assistant", "content": answer})
+            return history, "### Quellen\nKeine Quellen.", [], {}, "Anfrage nicht ausgeführt."
 
-    def case_view(self, case_id: str) -> dict[str, Any]:
-        """Return a structured case view for the non-agent browse tab."""
-        case_data = self.tools.get_customer_case(case_id).model_dump(mode="json")
-        view = _ui_value(case_data)
-        if not isinstance(view, dict):
-            raise TypeError("Case view must be a mapping.")
-        return view
+        trace = [TraceEvent.model_validate(item) for item in result["trace"]]
+        details = {event.event: event.detail for event in trace}
+        sources = (
+            "### Quellen\n" + "\n".join(f"- `{source}`" for source in result["sources"])
+            if result["sources"]
+            else "### Quellen\nIn der Antwort wurde keine Quellen-ID genannt."
+        )
+        trace_rows = [
+            [
+                event.timestamp.isoformat(),
+                TRACE_EVENT_LABELS.get(event.event, event.event),
+                _trace_detail(event.event, event.detail),
+            ]
+            for event in trace
+        ]
+        info: dict[str, Any] = {
+            "Anfragetyp": _ui_value(result["intent"]),
+            "Fall-ID": result["case_id"],
+            "Erkennungsmethode": _ui_value(result["routing_method"]),
+            "Modellprofil": _ui_value(details.get("model_profile", "not recorded")),
+            "Ausführungsmodus": _ui_value(result["execution_mode"] or "not recorded"),
+        }
+        if "configured_complex_model" in details:
+            info["Konfiguriertes komplexes Modell"] = details["configured_complex_model"]
+            info["Modus für vollständige Prüfung"] = _ui_value(
+                details.get("full_assessment_mode", "not recorded")
+            )
+            status = (
+                f"Abgeschlossen als `{info['Anfragetyp']}` im Modus `{info['Ausführungsmodus']}`. "
+                f"Das konfigurierte Modell `{info['Konfiguriertes komplexes Modell']}` wurde nicht "
+                f"ausgeführt; {len(trace_rows)} technische Ereignisse."
+            )
+        else:
+            info["Ausgewähltes Modell"] = details.get("model_selected", "nicht erfasst")
+            status = (
+                f"Abgeschlossen als `{info['Anfragetyp']}` mit `{info['Ausgewähltes Modell']}` im "
+                f"Modus `{info['Ausführungsmodus']}`; {len(trace_rows)} technische Ereignisse."
+            )
+        if "fallback_reason" in details:
+            info["Fallback-Grund"] = _trace_detail("fallback_reason", details["fallback_reason"])
+        logger.info(
+            "ui_request_completed",
+            extra={
+                "intent": result["intent"],
+                "duration_ms": round((time.perf_counter() - started) * 1000, 1),
+            },
+        )
+        history.append({"role": "assistant", "content": result["answer"]})
+        return history, sources, trace_rows, info, status
+
+    # ----- cases and diagnostics -------------------------------------------------------------
+    def case_view(self, case_id: str | None, session: Session | None) -> dict[str, Any]:
+        """Return a structured, German-labelled case view (data comes from the API)."""
+        if not case_id or not (session or {}).get("token"):
+            return {}
+        try:
+            view = _ui_value(self.api.case(session["token"], case_id))  # type: ignore[index]
+        except ApiError as exc:
+            return {"Hinweis": str(exc)}
+        return view if isinstance(view, dict) else {}
 
     def diagnostics(self) -> dict[str, Any]:
-        """Check local components without sending enterprise data externally."""
+        """Readiness of API, search index and Ollama, without sending case data anywhere."""
         settings = get_settings()
-        ollama = "nicht verfügbar"
         try:
-            response = httpx.get(f"{settings.ollama_base_url.rstrip('/')}/api/tags", timeout=1.0)
-            ollama = "verfügbar" if response.is_success else f"HTTP {response.status_code}"
-        except httpx.HTTPError:
-            pass
-        try:
-            registered = asyncio.run(create_mcp_server(self.tools).list_tools())
-            mcp_tools = sorted(tool.name for tool in registered)
-        except Exception:
-            mcp_tools = []
+            ready = self.api.ready()
+            api_status = "erreichbar"
+            checks = ready["checks"]
+        except ApiError:
+            api_status, checks = "nicht erreichbar", {}
         return {
-            "Umgebung": _ui_value(settings.app_env),
-            "Ollama": ollama,
+            "API": api_status,
+            "API-Adresse": settings.api_base_url,
+            "Suchindex": "bereit" if checks.get("knowledge_index") else "nicht bereit",
+            "Ollama": "verfügbar" if checks.get("ollama") else "nicht verfügbar",
             "Schnelles lokales Modell": settings.ollama_fast_model,
-            "Komplexes agentisches Modell": settings.ollama_complex_model,
-            "Modus für vollständige Prüfung": _ui_value(settings.full_assessment_mode),
-            "MCP-Status": "bereit" if len(mcp_tools) == 4 else "nicht verfügbar",
-            "MCP-Werkzeuge": mcp_tools,
-            "Synthetische Fälle": len(self.tools.repository.list_cases()),
-            "Dokumente in der Wissensbasis": len(self.tools.knowledge_service.document_ids()),
+            "Embedding-Modell": settings.embedding_model,
+            "Umgebung": _ui_value(settings.app_env),
             "Externe Cloud erforderlich": "Nein",
         }
 
 
 def build_app(controller: AssistantController | None = None) -> gr.Blocks:
-    """Build the enterprise-oriented Blocks application without launching it."""
+    """Build the Blocks application without launching it."""
     controller = controller or AssistantController()
-    case_ids = [case.case_id for case in controller.tools.repository.list_cases()]
-    document_count = len(controller.tools.knowledge_service.document_ids())
-
     app = gr.Blocks(title=UI_TITLE)
     with app:
+        session = gr.State({})
         gr.HTML(
             f"<div class='hero'><h1>{UI_TITLE}</h1>"
             f"<p>{COMPANY_NAME} · Lokale agentische Entscheidungsunterstützung</p></div>"
         )
         gr.Markdown(f"> **Synthetische Demo:** {UI_DISCLAIMER}")
+        with gr.Row():
+            username = gr.Textbox(label="Benutzername", scale=2)
+            password = gr.Textbox(label="Passwort", type="password", scale=2)
+            login_button = gr.Button("Anmelden", variant="primary", scale=1)
+            logout_button = gr.Button("Abmelden", scale=1)
+        login_status = gr.Markdown("Nicht angemeldet.", elem_classes="status-card")
 
         with gr.Tabs():
             with gr.Tab("Assistent"):
@@ -393,7 +377,7 @@ def build_app(controller: AssistantController | None = None) -> gr.Blocks:
                             "role": "assistant",
                             "content": (
                                 "Bereit für Fragen zu synthetischen NovaBank-Richtlinien und "
-                                "Kreditfällen. Sämtliche Fachfunktionen werden über MCP aufgerufen."
+                                "Kreditfällen. Alle Fachfunktionen laufen über die API und MCP."
                             ),
                         }
                     ],
@@ -420,7 +404,7 @@ def build_app(controller: AssistantController | None = None) -> gr.Blocks:
                 )
                 run_status = gr.Markdown("Bereit.", elem_classes="status-card")
                 with gr.Row():
-                    sources = gr.Markdown("### Quellen\nNoch keine Quellen vorhanden.")
+                    sources = gr.Markdown(EMPTY_SOURCES)
                     tools_used = gr.JSON(label="Routing, Modell und MCP-Werkzeuge")
                 trace = gr.Dataframe(
                     headers=["Zeitstempel", "Ereignis", "Details"],
@@ -428,38 +412,29 @@ def build_app(controller: AssistantController | None = None) -> gr.Blocks:
                     label="Ausführungsprotokoll (nur technische Ereignisse)",
                     interactive=False,
                 )
-                submit.click(
-                    controller.submit,
-                    inputs=[prompt, chatbot],
-                    outputs=[chatbot, sources, trace, tools_used, run_status],
-                )
-                prompt.submit(
-                    controller.submit,
-                    inputs=[prompt, chatbot],
-                    outputs=[chatbot, sources, trace, tools_used, run_status],
-                )
+                outputs = [chatbot, sources, trace, tools_used, run_status]
+                submit.click(controller.submit, inputs=[prompt, chatbot, session], outputs=outputs)
+                prompt.submit(controller.submit, inputs=[prompt, chatbot, session], outputs=outputs)
 
             with gr.Tab("Fälle"):
                 gr.Markdown(
-                    "Validierte synthetische Datensätze durchsuchen, ohne ein Sprachmodell "
-                    "aufzurufen."
+                    "Validierte synthetische Datensätze, die du sehen darfst – ohne Sprachmodell."
                 )
-                case_selector = gr.Dropdown(
-                    case_ids, value="CASE-00001", label="Synthetischer Fall"
+                case_selector = gr.Dropdown([], label="Synthetischer Fall")
+                case_json = gr.JSON(label="Falldaten")
+                case_selector.change(
+                    controller.case_view, inputs=[case_selector, session], outputs=case_json
                 )
-                case_json = gr.JSON(value=controller.case_view("CASE-00001"), label="Falldaten")
-                case_selector.change(controller.case_view, inputs=case_selector, outputs=case_json)
 
             with gr.Tab("Wissensbasis & Dokumente"):
                 gr.Markdown(
-                    f"Das Repository enthält {document_count} synthetische, versionierte "
-                    "interne Richtlinien. "
-                    "Suchergebnisse bewahren Metadaten zu Dokument, Abschnitt, Version, "
-                    "Verantwortlichen und Seite."
+                    "Die Wissensbasis enthält synthetische, versionierte interne Richtlinien. "
+                    "Welche du durchsuchen darfst, hängt von deiner Rolle ab: vertrauliche "
+                    "Dokumente (z. B. `NB-AML-001`) sehen nur Prüferinnen, Prüfer und Admins."
                 )
                 gr.Markdown(
-                    "Zentrale Kontrollgrundlagen: `NB-CRD-001`, `NB-KYC-001`, `NB-DOC-001`, "
-                    "`NB-RSK-001` und `NB-SEC-001`."
+                    "Zentrale Kontrollgrundlagen: `NB-CRD-001`, `NB-KYC-001`, `NB-DOC-001` und "
+                    "`NB-RSK-001`."
                 )
 
             with gr.Tab("System / Diagnose"):
@@ -471,6 +446,12 @@ def build_app(controller: AssistantController | None = None) -> gr.Blocks:
                 diagnostic_button = gr.Button("Diagnose starten")
                 diagnostic_button.click(controller.diagnostics, outputs=diagnostic_output)
 
+        login_button.click(
+            controller.login,
+            inputs=[username, password],
+            outputs=[session, login_status, case_selector],
+        )
+        logout_button.click(controller.logout, outputs=[session, login_status, case_selector])
     return app
 
 
