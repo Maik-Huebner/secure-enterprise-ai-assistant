@@ -11,6 +11,7 @@ Usage: python scripts/build_documents.py [--ohne-praesentation]
 
 from __future__ import annotations
 
+import platform
 import shutil
 import subprocess
 import sys
@@ -105,7 +106,8 @@ def main() -> None:
         "--ohne-praesentation", action="store_true", help="PowerPoint und Keynote überspringen"
     )
     arguments = parser.parse_args()
-    if sys.platform != "darwin" or not CHROME.exists():
+    # platform.system() instead of sys.platform: mypy would treat the rest as unreachable on Linux.
+    if platform.system() != "Darwin" or not CHROME.exists():
         sys.exit("Braucht macOS mit Google Chrome (und Keynote für die Präsentation).")
     _require("pandoc")
 
