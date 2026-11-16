@@ -1,46 +1,5 @@
 {
-  "routing": [
-    [
-      "Welche Unterlagen benötigt NovaBank für einen Konsumentenkredit?",
-      "knowledge"
-    ],
-    [
-      "What does the KYC policy require?",
-      "knowledge"
-    ],
-    [
-      "Zeige CASE-00001.",
-      "customer_case"
-    ],
-    [
-      "Show me CASE-00012.",
-      "customer_case"
-    ],
-    [
-      "Berechne die Kreditbelastung für CASE-00001.",
-      "financial_analysis"
-    ],
-    [
-      "What is the monthly payment for CASE-00007?",
-      "financial_analysis"
-    ],
-    [
-      "Welche Compliance-Probleme hat CASE-00017?",
-      "compliance_check"
-    ],
-    [
-      "Check policy compliance for CASE-00008.",
-      "compliance_check"
-    ],
-    [
-      "Prüfe CASE-00031 vollständig und erstelle eine Entscheidungsvorlage.",
-      "full_assessment"
-    ],
-    [
-      "Fully assess CASE-00003 and create a decision brief.",
-      "full_assessment"
-    ]
-  ],
+  "description": "Deterministic financial and compliance expectations. Routing, retrieval and guardrail suites live in their own files.",
   "financial": {
     "CASE-00001": [
       "419.46",
@@ -93,32 +52,5 @@
     "CASE-00031": [
       "RULE-005"
     ]
-  },
-  "retrieval": [
-    [
-      "Welche Pflichtunterlagen braucht ein Verbraucherkredit?",
-      "NB-DOC-001"
-    ],
-    [
-      "Wo liegt die harte Grenze der Schuldendienstquote nach Kredit?",
-      "NB-RSK-001"
-    ],
-    [
-      "Wie werden abgelaufene Unterlagen behandelt?",
-      "NB-DOC-002"
-    ],
-    [
-      "Welche Risikoklassen sind zulässig?",
-      "NB-RSK-002"
-    ],
-    [
-      "Welche Unterlagen benötigt NovaBank für einen Konsumentenkredit?",
-      "NB-DOC-001"
-    ]
-  ],
-  "out_of_scope": [
-    "Vulkanische Petrologie, Zeolithe und Mantelkonvektion",
-    "Wie repariere ich einen Schiffsdieselmotor?",
-    "Schreib mir ein Rezept für Pistazieneis."
-  ]
+  }
 }

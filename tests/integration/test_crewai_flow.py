@@ -21,6 +21,7 @@ def test_flow_dispatches_router_result_to_workflow(monkeypatch) -> None:
     assert [event.event for event in flow.state.trace] == [
         "request_received",
         "intent_classified",
+        "routing_method",
         "model_selected",
         "model_profile",
         "model_reason",
@@ -32,6 +33,7 @@ def test_flow_dispatches_router_result_to_workflow(monkeypatch) -> None:
     assert trace["model_selected"] == "qwen3.5:9b"
     assert trace["model_profile"] == "fast_local"
     assert trace["execution_mode"] == "crewai"
+    assert trace["routing_method"] == "keyword"
 
 
 def test_full_assessment_trace_exposes_demo_safe_mode_without_claiming_model_run(

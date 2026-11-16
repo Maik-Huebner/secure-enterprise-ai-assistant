@@ -27,8 +27,8 @@ support for employees; it does not automate final credit approval.
   references;
 - 18 internally consistent synthetic NovaBank policies with document-control metadata;
 - Markdown, text, and PDF ingestion with section/page provenance and safe path handling;
-- FAISS + BM25S rank fusion, metadata filters, and scope rejection (with the default hashing
-  embedder both rankings are lexical; see [Advanced RAG](#advanced-rag));
+- hybrid retrieval (multilingual embeddings via Ollama + BM25S + identifier signal) with a
+  persistent FAISS index, filters before ranking, and calibrated scope rejection;
 - a real FastMCP server with four structured tools;
 - native CrewAI stdio-MCP discovery with per-agent least-privilege tool filters;
 - deterministic five-route classification, dual-model selection, and CrewAI Flow orchestration;
@@ -108,18 +108,64 @@ production-ready decision system.
 ## Advanced RAG
 
 The corpus is chunked by document section while preserving document ID, title, version,
-effective date, owner, section, and page where available. A vector ranking uses FAISS, a
-lexical ranking uses BM25S, and reciprocal-rank fusion combines both.
+effective date, owner, section, and page where available. Three signals are fused:
 
-**Honest scope of the default configuration:** the default embedder is a deterministic hashing
-bag-of-words, not a semantic model. In this mode both rankings are lexical, so the system does
-not yet perform meaning-based retrieval. Knowledge base, rules, prompts, and UI are German since
-v1.1. A semantic multilingual embedder is planned for v1.2 (see
-[docs/plan-v2.md](docs/plan-v2.md)); the retriever already accepts one through its embedder
-interface.
+- **vector ranking** in FAISS with a local multilingual embedding model via Ollama (default
+  `qwen3-embedding:0.6b`, chosen by measurement below);
+- **lexical ranking** with BM25S and German stopwords;
+- **identifier signal**: an explicitly named document ID (`NB-RSK-001`) and section number
+  (`Abschnitt 7.4`) always rank first.
 
-Retrieval does not equate nearest with relevant: weak matches produce `out_of_scope=true` and
-no passages. Retrieved content is explicitly treated as untrusted evidence, not instructions.
+**Filters run before ranking.** Only permitted chunks are scored; BM25 term statistics are
+computed on the permitted subset, so hidden documents cannot shift rank positions or the
+"no answer" decision. A unit test compares the filtered ranking with a ranking built from the
+permitted documents alone.
+
+**Persistent index.** Vectors are stored in `<RUNTIME_DIR>/index/<embedder>/` with a manifest
+(embedder, dimension, corpus hash, chunker version). A mismatch triggers a rebuild, never the
+silent reuse of a stale index. `novabank-index rebuild` and `novabank-index status` manage it.
+Building takes about 2 s for 76 chunks on an M4 Pro; loading takes about 0.02 s.
+
+**No answer instead of a weak answer.** For semantic models, the out-of-scope threshold is
+calibrated per model on the dev split only (`resources/retrieval/thresholds.json`).
+
+### Before/after: hashing vs. real embedding models
+
+Measured on 16.11.2026 on an Apple M4 Pro with `scripts/benchmark_retrieval.py`; full report in
+`reports/evaluation/retrieval_comparison.json`. Test split: 20 answerable German questions
+(paraphrases, compounds, document and section numbers) and 4 questions without an answer.
+
+| Embedder | Recall@5 | MRR | nDCG@5 | No-answer correct | False rejections | Query latency |
+|---|---:|---:|---:|---:|---:|---:|
+| Hashing (v1 default) | 0.75 | 0.60 | 0.63 | 1.00 | 0.10 | 0.2 ms |
+| bge-m3 | 1.00 | 0.92 | 0.92 | 1.00 | 0.00 | 25 ms |
+| **qwen3-embedding:0.6b** (default) | **1.00** | **0.98** | **0.96** | **1.00** | **0.00** | 32 ms |
+| embeddinggemma | 0.95 | 0.90 | 0.89 | 1.00 | 0.05 | 21 ms |
+
+With 20 answerable questions, a difference of 0.10 in recall equals two questions. The suite was
+written by the project author; it is a regression benchmark, not an independent one. Rankings
+break score ties by chunk position at six decimals, so the offline report is identical on
+macOS/arm64 and Linux/amd64 (verified in a container); an earlier version without this rule
+produced platform-dependent numbers.
+
+### Routing
+
+Case-ID extraction is a rule (`CASE-00031`, `case-00031`, `Fall 31`). For case requests the
+intent is chosen by a hybrid router: explicit keywords decide when present, otherwise the
+request is compared with labelled example requests via embeddings (no language model call).
+Measured with `scripts/benchmark_routing.py` (`reports/evaluation/routing_comparison.json`):
+
+| Router | Dev | Test | Mean latency |
+|---|---:|---:|---:|
+| Keyword rules only (v1 approach, extended) | 25/25 | 22/24 | < 0.1 ms |
+| Semantic only | 25/25 | 24/24 | 25 ms |
+| **Hybrid** (default) | 25/25 | **24/24** | 8 ms |
+
+The two keyword misses ("freigegeben", "umfassend") are words that occur only in the test split
+and were deliberately not added to the rules. CI has no Ollama, so the offline evaluation below
+reports the hashing and keyword baselines.
+
+Retrieved content is explicitly treated as untrusted evidence, not instructions.
 
 ## Measured evaluation
 
@@ -130,26 +176,27 @@ cases, rules, and knowledge corpus.
 
 | Metric | Result | Evaluation set |
 |---|---:|---:|
-| Routing accuracy | 1.0000 | 10 queries |
-| Tool-selection accuracy | 1.0000 | 10 queries |
+| Routing accuracy, keyword baseline – test | 0.9167 | 24 queries |
 | Financial exact match | 1.0000 | 5 cases × 5 metrics |
 | Compliance-rule exact match | 1.0000 | 5 cases |
-| Retrieval Recall@5 (German questions, hashing embedder) | 0.8000 | 5 questions |
-| Source-attribution rate | 0.8000 | 5 questions |
-| Out-of-scope accuracy | 1.0000 | 3 questions |
+| Retrieval Recall@5, hashing baseline – test | 0.7500 | 20 answerable questions |
+| Retrieval MRR, hashing baseline – test | 0.6042 | 20 answerable questions |
+| No-answer accuracy, hashing baseline – test | 1.0000 | 4 questions |
 | Guardrail attack recall – dev split | 1.0000 | 30 attacks |
 | Guardrail false-positive rate – dev split | 0.0000 | 30 benign questions |
 | Guardrail attack recall – **holdout split** | **0.7500** | 20 attacks |
 | Guardrail false-positive rate – holdout split | 0.0000 | 20 benign questions |
 
-Measured on 16.11.2026 for v1.1.0. The guardrail dev split was used to design the patterns and
+This offline report runs in CI without Ollama, so retrieval and routing use the deterministic
+hashing and keyword baselines; real-model results are in the tables above. The former
+"tool-selection accuracy" and "source-attribution rate" were removed in v1.2 because they were
+true by construction.
+
+Measured on 16.11.2026 for v1.2.0. The guardrail dev split was used to design the patterns and
 is optimistic by construction; the holdout split was written afterwards and measured without
 tuning. Both splits come from the pattern author, so neither is an independent benchmark. The
 holdout result (15 of 20 attacks blocked) is the honest estimate, and it is why the pattern
-filter is only the first security layer. Since v1.1 the knowledge base is German and the former
-eight-term query-expansion map is gone; the remaining retrieval miss is a German compound
-("Pflichtunterlagen" vs. "Pflichtnachweise") that lexical hashing cannot bridge. Semantic
-embeddings follow in v1.2.
+filter is only the first security layer.
 
 These scores describe only a **synthetic offline benchmark** implemented as a deliberately small
 regression suite. They do not measure real credit-decision accuracy, certify regulatory
@@ -182,7 +229,7 @@ See [docs/security.md](docs/security.md) for controls and known production gaps.
 ## Local setup
 
 Requirements: Python 3.13 (`>=3.13,<3.14`), Ollama, and sufficient memory for the chosen
-local model. Python 3.13.9 is the reproducibly validated runtime for release v1.1.0.
+local model. Python 3.13.9 is the reproducibly validated runtime for release v1.2.0.
 
 ```bash
 python3.13 -m venv .venv
@@ -192,6 +239,8 @@ python -m pip install --no-deps -r requirements/lock-py313.txt
 python -m pip install --no-deps --no-build-isolation .
 cp .env.example .env
 ollama pull qwen3.5:9b
+ollama pull qwen3-embedding:0.6b
+novabank-index rebuild
 # Only required for experimental FULL_ASSESSMENT_MODE=agentic:
 ollama pull mistral-small3.2:24b
 ```
@@ -244,7 +293,7 @@ make build
 The full test suite does not need a running model or network connection. End-to-end generation
 does require the configured Ollama server and model.
 
-Current local release gate: **190 tests passing** under Python 3.13 with warnings treated as
+Current local release gate: **216 tests passing** under Python 3.13 with warnings treated as
 errors. CI installs the package non-editably and proves that imports resolve from
 `site-packages`.
 
@@ -287,11 +336,10 @@ tests/                unit and integration regression suite
 ## Limitations and roadmap
 
 - The committed regression suite is intentionally compact and synthetic.
-- The default hashing embedder is an offline bootstrap, not a multilingual production model.
 - End-to-end answer quality and latency depend on the locally selected Ollama model.
 - Authentication, role-based authorization, encrypted storage, malware scanning, distributed
   tracing, and formal regulatory validation remain production work.
-- A larger adversarial corpus, reranker, persistent vector index, and measured LLM/RAG/agentic
+- A larger adversarial corpus, a cross-encoder reranker, and a measured LLM/RAG/agentic
   baseline comparison are logical next steps after choosing final local-model hardware.
 - One dependency exception is open: `chromadb` (pulled in only by CrewAI, unused by this
   package) has known vulnerabilities without a fixed release. It is ignored explicitly in

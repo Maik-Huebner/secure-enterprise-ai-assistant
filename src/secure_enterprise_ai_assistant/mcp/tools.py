@@ -13,7 +13,6 @@ from secure_enterprise_ai_assistant.models.tools import (
     FinancialAnalysisResult,
 )
 from secure_enterprise_ai_assistant.rag import KnowledgeService
-from secure_enterprise_ai_assistant.rag.retrieval import SentenceTransformerEmbedder
 from secure_enterprise_ai_assistant.services import (
     ComplianceService,
     CustomerCaseRepository,
@@ -43,17 +42,16 @@ class MCPToolService:
     @classmethod
     def build_default(cls) -> MCPToolService:
         """Build the local-first tool boundary from repository-owned data."""
-        settings = get_settings()
-        embedder = (
-            SentenceTransformerEmbedder(settings.embedding_model)
-            if settings.embedding_model
-            else None
-        )
+        return cls.build(KnowledgeService.from_settings(get_settings()))
+
+    @classmethod
+    def build(cls, knowledge_service: KnowledgeService) -> MCPToolService:
+        """Build the tool boundary around an explicitly chosen knowledge service."""
         return cls(
             repository=CustomerCaseRepository.from_json(),
             financial_service=FinancialAnalysisService(),
             compliance_service=ComplianceService.from_json(),
-            knowledge_service=KnowledgeService.from_directory(embedder=embedder),
+            knowledge_service=knowledge_service,
         )
 
     @staticmethod

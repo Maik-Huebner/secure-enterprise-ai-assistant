@@ -1,0 +1,66 @@
+{
+  "measured_at": "2026-11-16T14:09:46+00:00",
+  "embedder": "ollama:qwen3-embedding:0.6b",
+  "note": "Keyword stems come from the intent examples and the dev split only. The test split was written by the same author before the rules, so it is not a blind benchmark.",
+  "results": {
+    "keyword": {
+      "dev": {
+        "accuracy": 1.0,
+        "correct": 25,
+        "total": 25,
+        "mean_latency_ms": 0.0,
+        "errors": []
+      },
+      "test": {
+        "accuracy": 0.9167,
+        "correct": 22,
+        "total": 24,
+        "mean_latency_ms": 0.0,
+        "errors": [
+          {
+            "query": "Kann CASE-00029 freigegeben werden?",
+            "expected": "full_assessment",
+            "actual": "customer_case"
+          },
+          {
+            "query": "Bewerte CASE-00036 umfassend.",
+            "expected": "full_assessment",
+            "actual": "customer_case"
+          }
+        ]
+      }
+    },
+    "semantic": {
+      "dev": {
+        "accuracy": 1.0,
+        "correct": 25,
+        "total": 25,
+        "mean_latency_ms": 24.3,
+        "errors": []
+      },
+      "test": {
+        "accuracy": 1.0,
+        "correct": 24,
+        "total": 24,
+        "mean_latency_ms": 24.7,
+        "errors": []
+      }
+    },
+    "hybrid": {
+      "dev": {
+        "accuracy": 1.0,
+        "correct": 25,
+        "total": 25,
+        "mean_latency_ms": 5.3,
+        "errors": []
+      },
+      "test": {
+        "accuracy": 1.0,
+        "correct": 24,
+        "total": 24,
+        "mean_latency_ms": 7.7,
+        "errors": []
+      }
+    }
+  }
+}
