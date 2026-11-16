@@ -1,26 +1,30 @@
-# Security policy
+# Sicherheitsrichtlinie
 
-## Scope
+## Geltungsbereich
 
-This repository is a portfolio reference system built with synthetic data. It demonstrates
-security-oriented design controls, but it is not a certified security product or a production
-banking system.
+Dieses Repository ist ein Referenzsystem für ein Portfolio und arbeitet nur mit synthetischen
+Daten. Es zeigt sicherheitsorientierte Entwurfsentscheidungen, ist aber weder ein zertifiziertes
+Sicherheitsprodukt noch ein produktives Bankensystem.
 
-## Reporting a vulnerability
+## Schwachstellen melden
 
-Do not open a public issue for a suspected vulnerability that could expose a secret or enable
-abuse. Use GitHub's private vulnerability reporting for this repository when available. Include
-the affected revision, reproduction steps, impact, and any suggested mitigation. Do not include
-real customer, financial, identity, or authentication data in a report.
+Öffne für eine vermutete Schwachstelle, die ein Geheimnis preisgeben oder Missbrauch ermöglichen
+könnte, kein öffentliches Issue. Nutze die private Schwachstellenmeldung von GitHub für dieses
+Repository, sofern sie verfügbar ist. Nenne die betroffene Version, die Schritte zum
+Nachstellen, die Auswirkung und gern einen Vorschlag zur Behebung. Schicke in einer Meldung keine
+echten Kunden-, Finanz-, Identitäts- oder Anmeldedaten mit.
 
-## Supported versions
+## Unterstützte Versionen
 
-Only the current default branch is considered for security fixes. Historical tags remain
-immutable portfolio releases and may contain limitations documented at the time of release.
+Sicherheitskorrekturen gibt es nur für den aktuellen Standard-Branch. Ältere Tags bleiben
+unveränderte Portfolio-Stände und können Grenzen enthalten, die zum Zeitpunkt der Veröffentlichung
+dokumentiert waren.
 
-## Security boundaries
+## Sicherheitsgrenzen
 
-The supported offline path uses synthetic cases and policies, four allowlisted MCP tools, and no
-external provider. Authentication, role-based authorization, encrypted persistence, malware
-sandboxing, production audit-log shipping, and formal penetration testing are outside the current
-scope. See [docs/security.md](docs/security.md) and [RESPONSIBLE_USE.md](RESPONSIBLE_USE.md).
+Der unterstützte Weg nutzt synthetische Fälle und Richtlinien, vier freigegebene MCP-Werkzeuge
+und keinen externen Anbieter. Anmeldung mit JWT, rollenbasierte Berechtigungen, Vier-Augen-Freigabe
+und ein Audit-Log mit Hash-Kette sind enthalten. Verschlüsselte Speicherung, eine Sandbox für
+Schadsoftware, die Weiterleitung des Audit-Logs in einen manipulationssicheren Speicher und ein
+formaler Penetrationstest gehören nicht zum aktuellen Umfang. Siehe
+[docs/security.md](docs/security.md) und [RESPONSIBLE_USE.md](RESPONSIBLE_USE.md).

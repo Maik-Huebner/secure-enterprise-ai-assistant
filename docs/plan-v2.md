@@ -75,7 +75,7 @@ Beides kann nicht gleichzeitig installiert sein. Bliebe die Reihenfolge, müsste
   - `qwen3-embedding:0.6b`: stark und klein
   - `embeddinggemma`: bereits installiert
 - Auswahl **per Messung**, nicht per Bauchgefühl. Hashing bleibt nur für schnelle Tests.
-- **Persistenter Index:** FAISS-Datei plus Manifest (Modellname, Dimension, Hash der Wissensbasis). Neuaufbau per Befehl `novabank-index rebuild`. Beim Start wird geprüft, ob Index und Wissensbasis zusammenpassen.
+- **Persistenter Index:** FAISS-Datei plus Manifest (Modellname, Dimension, Hash der Wissensbasis). Neuaufbau per Befehl `novabank-index neu-aufbauen`. Beim Start wird geprüft, ob Index und Wissensbasis zusammenpassen.
 - Der Index wird einmal geladen und nicht mehr pro MCP-Prozess neu berechnet.
 - Schwellen für „keine Antwort“ werden neu bestimmt, auf dem Entwicklungsteil.
 - Optional: Reranker (Cross-Encoder, z. B. `bge-reranker-v2-m3`). Er kommt nur dazu, wenn er messbar hilft.

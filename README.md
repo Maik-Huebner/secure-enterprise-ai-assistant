@@ -255,9 +255,9 @@ Dauer, die Person als Pseudonym, der Thread als Sitzung.
 python scripts/langfuse_env.py --port 3000   # zufällige Geheimnisse in deploy/langfuse/.env (git-ignoriert)
 make langfuse-up                             # Langfuse 4.80 + Postgres, ClickHouse, Redis, MinIO
 # LANGFUSE_ENABLED/BASE_URL/PUBLIC_KEY/SECRET_KEY in .env übernehmen, dann:
-novabank-langfuse check                      # Schlüssel in Ordnung?
-novabank-langfuse setup                      # Modelldefinition mit eingestelltem Token-Preis
-novabank-langfuse datasets                   # Antwortsuite (17) und Such-Testsplit (24)
+novabank-langfuse pruefen                    # Schlüssel in Ordnung?
+novabank-langfuse einrichten                 # Modelldefinition mit eingestelltem Token-Preis
+novabank-langfuse datensaetze                # Antwortsuite (17) und Such-Testsplit (24)
 novabank-langfuse experiment                 # alle 17 Fragen durch den echten Ablauf, bewertet
 ```
 
@@ -306,7 +306,7 @@ Weitere Kontrollen:
 - getrennte Tokens für API und MCP (Audience), kein Token Passthrough
 - Rate Limits für Anmeldung, Chat und API; CORS geschlossen; Sicherheitsheader (CSP, `nosniff`,
   `DENY`, `no-referrer`, `no-store`, optional HSTS)
-- Audit-Log mit SHA-256-Hash-Kette ohne Passwörter und Fragetexte (`novabank-audit verify`)
+- Audit-Log mit SHA-256-Hash-Kette ohne Passwörter und Fragetexte (`novabank-audit pruefen`)
 - Fehlerantworten nach RFC 9457 auf Deutsch, ohne interne Details und ohne Echo der Eingabe
 - Eingabefilter Deutsch/Englisch mit Normalisierung (Holdout 15/20, keine Fehlalarme)
 - Dokumenttext im Prompt als markierte Daten, Quarantäne bei Injektionsmustern
@@ -330,18 +330,23 @@ python -m pip install --no-deps --no-build-isolation .
 cp .env.example .env            # JWT_SECRET eintragen (Befehl steht in der Datei)
 ollama pull qwen3.5:9b
 ollama pull qwen3-embedding:0.6b
-novabank-index rebuild
+novabank-index neu-aufbauen
 ```
 
 Benutzer anlegen (das Passwort wird verdeckt abgefragt) und API und Oberfläche starten:
 
 ```bash
-novabank-users add anna.becker --role pruefer --name "Anna Becker"
-novabank-users add tom.klein --role pruefer --name "Tom Klein"
-novabank-users add max.muster --role sachbearbeiter --team team-nord --name "Max Muster"
+novabank-users anlegen anna.becker --rolle pruefer --name "Anna Becker"
+novabank-users anlegen tom.klein --rolle pruefer --name "Tom Klein"
+novabank-users anlegen max.muster --rolle sachbearbeiter --team team-nord --name "Max Muster"
 novabank-api      # http://127.0.0.1:8000, OpenAPI unter /docs
 novabank-ui       # http://127.0.0.1:7860, meldet sich an der API an
 ```
+
+Alle `novabank-*`-Befehle sind deutsch: Hilfe mit `--hilfe` (oder `-h`), deutsche Fehlermeldungen
+und deutsche Befehlsnamen (`anlegen`, `anzeigen`, `loeschen`, `neu-aufbauen`, `status`, `pruefen`,
+`einrichten`, `datensaetze`). Die englischen Namen und Optionen aus v2.0.0 (`add`, `--role` …)
+funktionieren als Aliase weiter.
 
 Der MCP-Server startet standardmäßig pro Anfrage über stdio. Als eigener Dienst:
 
@@ -358,7 +363,7 @@ GPU). `JWT_SECRET` muss in `.env` stehen.
 ```bash
 docker compose up -d --build
 printf '%s\n' '<Passwort>' | docker compose run --rm -T api \
-    novabank-users add anna.becker --role pruefer --password-stdin
+    novabank-users anlegen anna.becker --rolle pruefer --passwort-stdin
 ```
 
 Oberfläche: http://localhost:7860, API: http://localhost:8000/docs. Mit
@@ -441,6 +446,13 @@ tests/                Unit, Integration, E2E, Sicherheit, Live
   für sich allein.
 - **Tracing:** Traces enthalten Prompts und damit Falldaten und Namen; für echte Daten fehlen
   eine Maskierung personenbezogener Daten und eine Löschfrist.
+- **Sprache:** Oberfläche, API-Meldungen, Wissensbasis, Befehle und Dokumentation sind deutsch.
+  Englisch bleibt, wo es Entwicklersprache oder Fremdsoftware ist: Python-Code, Kommentare und
+  Namen von Log-Ereignissen, technische Codes in den Daten (`rejected`, `identity_document`; die
+  Oberfläche zeigt deutsche Bezeichnungen), die Swagger-Seite unter `/docs`, Ausgaben von
+  Bibliotheken (Zusammenfassung des Langfuse-Experiments, „Error executing tool“ im MCP SDK),
+  absichtlich englische Testangriffe und Routing-Fragen sowie die unveränderten Rohdaten der
+  Antwortqualitäts-Läufe.
 - **Nächste Schritte:** Reranker (für die fälschlich abgelehnte Frage), größere Angriffs- und
   Antwortsuiten mit unabhängiger Prüfung, Identitätsdienst, PII-Maskierung im Tracing.
 

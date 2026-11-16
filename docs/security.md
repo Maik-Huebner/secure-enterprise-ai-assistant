@@ -1,111 +1,124 @@
-# Security model
+# Sicherheitsmodell
 
-This is a portfolio-grade synthetic demo, not a production banking system.
+Dies ist eine synthetische Demo für ein Portfolio, kein produktives Bankensystem.
 
-## Identity and access (v1.3)
+## Identität und Zugriff (v1.3)
 
-- **Authentication:** `POST /v1/auth/token` with username and password. Passwords are stored as
-  Argon2id hashes (argon2-cffi defaults, RFC 9106) in `<RUNTIME_DIR>/security/users.json` with
-  owner-only permissions; unknown users are verified against a dummy hash so that response time
-  does not reveal valid names. Users are managed with `novabank-users`.
-- **Tokens:** HS256 JWTs, 15 minutes by default; algorithm fixed (no `none`), `iss`, `aud`, `exp`,
-  `nbf`, `iat`, `sub`, `jti` required. `JWT_SECRET` has no default and must be at least 32 bytes;
-  the API refuses to start without it. Deleted or deactivated users lose access immediately.
-- **Authorization** (`security/access.py`), enforced in code and inside every MCP tool:
+- **Anmeldung:** `POST /v1/auth/token` mit Benutzername und Passwort. Passwörter liegen als
+  Argon2id-Hashes (Standardwerte von argon2-cffi, RFC 9106) in `<RUNTIME_DIR>/security/users.json`,
+  nur für den Besitzer lesbar. Unbekannte Benutzer werden gegen einen Dummy-Hash geprüft, damit
+  die Antwortzeit keine gültigen Namen verrät. Benutzer verwaltet `novabank-users`.
+- **Tokens:** HS256-JWTs, standardmäßig 15 Minuten gültig. Der Algorithmus ist fest (kein `none`);
+  `iss`, `aud`, `exp`, `nbf`, `iat`, `sub` und `jti` sind Pflicht. `JWT_SECRET` hat keinen
+  Standardwert und muss mindestens 32 Byte lang sein; ohne ihn startet die API nicht. Gelöschte
+  oder deaktivierte Benutzer verlieren den Zugriff sofort.
+- **Berechtigungen** (`security/access.py`), im Code und in jedem MCP-Werkzeug durchgesetzt:
 
-| Role | Cases | Documents | Decision brief |
+| Rolle | Fälle | Dokumente | Entscheidungsvorlage |
 |---|---|---|---|
-| `sachbearbeiter` | own team only | `intern` | no (four-eyes principle) |
-| `pruefer` | all | `intern`, `vertraulich` | yes |
-| `admin` | all | `intern`, `vertraulich` | yes |
+| `sachbearbeiter` | nur das eigene Team | `intern` | nein (Vier-Augen-Prinzip) |
+| `pruefer` | alle | `intern`, `vertraulich` | ja |
+| `admin` | alle | `intern`, `vertraulich` | ja |
 
-- **No detours:** a foreign case returns the same 404 as an unknown case. Knowledge search
-  filters documents before ranking; BM25 statistics are computed on the permitted subset (a test
-  had shown that full-corpus IDF let hidden documents shift the ranking). Explicit document IDs
-  or `document_id` filters for forbidden documents return nothing.
-- **Token propagation (v1.5):** the API never forwards its own bearer token. For each workflow
-  run it issues a separate MCP token (audience `novabank-mcp`, 5 minutes). It reaches the MCP
-  server either in `NOVABANK_ACCESS_TOKEN` (stdio subprocess) or as `Authorization: Bearer`
-  (Streamable HTTP). The server verifies signature, issuer, audience and expiry and scopes every
-  tool call; without a valid token every call is denied. An API token is rejected by the MCP
-  server and an MCP token by the API (tested). Subprocesses receive only allowlisted application
-  settings, never the full parent environment.
-- **MCP over HTTP:** stateless Streamable HTTP, resource-server role with protected-resource
-  metadata (RFC 9728) naming the API as token issuer; 401 with `WWW-Authenticate` for missing,
-  forged, expired or wrongly addressed tokens. Only anticipated tool errors (unknown or foreign
-  case, missing rights, invalid input) return their message; any other exception is masked as
-  "Error executing tool".
+- **Keine Umwege:** Ein fremder Fall liefert dasselbe 404 wie ein unbekannter. Die Wissenssuche
+  filtert Dokumente vor dem Ranking; die BM25-Statistik wird nur über die erlaubten Dokumente
+  berechnet (ein Test hatte gezeigt, dass die IDF über den ganzen Korpus versteckte Dokumente das
+  Ranking verschieben ließ). Ausdrückliche Dokument-IDs oder `document_id`-Filter auf verbotene
+  Dokumente liefern nichts.
+- **Weitergabe des Tokens (v1.5):** Die API reicht ihr eigenes Bearer-Token nie weiter. Für jeden
+  Lauf stellt sie ein eigenes MCP-Token aus (Audience `novabank-mcp`, 5 Minuten). Es erreicht den
+  MCP-Server entweder in `NOVABANK_ACCESS_TOKEN` (stdio-Unterprozess) oder als
+  `Authorization: Bearer` (Streamable HTTP). Der Server prüft Signatur, Aussteller, Audience und
+  Ablauf und bindet jeden Werkzeugaufruf an die geprüfte Identität; ohne gültiges Token wird jeder
+  Aufruf abgelehnt. Ein API-Token weist der MCP-Server ab, ein MCP-Token die API (getestet).
+  Unterprozesse erhalten nur freigegebene Anwendungseinstellungen, nie die ganze Umgebung des
+  Elternprozesses.
+- **MCP über HTTP:** zustandsloses Streamable HTTP in der Rolle eines Resource Servers mit
+  Protected-Resource-Metadaten (RFC 9728), die die API als Token-Aussteller nennen. Fehlende,
+  gefälschte, abgelaufene oder falsch adressierte Tokens bekommen 401 mit `WWW-Authenticate`.
+  Nur erwartete Werkzeugfehler (unbekannter oder fremder Fall, fehlende Rechte, ungültige
+  Eingabe) geben ihre Meldung zurück; jede andere Ausnahme wird als „Error executing tool“
+  maskiert (Text des MCP SDK).
 
-## API hardening
+## Härtung der API
 
-- rate limits: login per client IP (5/min), chat per user (20/min), API per user (120/min);
-- CORS closed by default (`CORS_ALLOWED_ORIGINS`), no credentials, GET/POST only;
-- headers: strict CSP for the API (relaxed only for `/docs`), `X-Content-Type-Options`,
+- Ratenbegrenzung: Anmeldung je Client-IP (5/min), Chat je Benutzer (20/min), API je Benutzer
+  (120/min);
+- CORS standardmäßig geschlossen (`CORS_ALLOWED_ORIGINS`), keine Credentials, nur GET und POST;
+- Header: strenge CSP für die API (nur für `/docs` gelockert), `X-Content-Type-Options`,
   `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, `Cache-Control: no-store`,
   `Permissions-Policy`, optional HSTS;
-- RFC 9457 problem details in German; validation errors list field names only (never echo
-  values such as passwords); unexpected errors return a neutral 500 and are logged server-side;
-- request IDs (`X-Request-ID`) for logs and audit entries.
+- Problem Details nach RFC 9457 auf Deutsch; Validierungsfehler nennen nur Feldnamen und geben nie
+  Werte wie Passwörter zurück; unerwartete Fehler liefern ein neutrales 500 und werden
+  serverseitig protokolliert;
+- Request-IDs (`X-Request-ID`) für Logs und Audit-Einträge.
 
-## Audit log
+## Audit-Log
 
-`<RUNTIME_DIR>/audit/audit.jsonl`, one JSON object per line with a SHA-256 hash chain
-(`prev_hash`, `hash`). Recorded: logins (success/failure), case reads and denials, searches
-(question length and returned document IDs, not the question text), chat outcomes and denials.
-`novabank-audit verify` reports the first broken line. The chain makes tampering evident; it
-does not prevent deletion of the whole file — production systems ship entries to write-once
-storage.
+`<RUNTIME_DIR>/audit/audit.jsonl`, ein JSON-Objekt pro Zeile mit SHA-256-Hash-Kette
+(`prev_hash`, `hash`). Erfasst werden Anmeldungen (Erfolg und Fehlschlag), Fallzugriffe und
+Ablehnungen, Suchen (Länge der Frage und gelieferte Dokument-IDs, nicht der Fragetext) sowie
+Ergebnisse und Ablehnungen im Chat. `novabank-audit pruefen` meldet die erste beschädigte Zeile.
+Die Kette macht Manipulation sichtbar; sie verhindert nicht, dass die ganze Datei gelöscht wird.
+Produktive Systeme schreiben Einträge zusätzlich in einen nur beschreibbaren Speicher (WORM).
 
-## Input and content controls
+## Kontrollen für Eingaben und Inhalte
 
-- strict Pydantic domain and MCP response schemas;
-- four-tool allowlist; the language model never selects or calls tools (the router fixes the
-  tool plan, the LangGraph tool node executes it over MCP with the caller's token);
-- no arbitrary SQL, shell, code execution, URL fetching, or filesystem tool;
-- case-ID, query-length, metadata-filter, and path-containment validation;
-- a first-layer German/English prompt-injection filter (five categories, Unicode/obfuscation
-  normalization), applied in the API before the workflow and again in the workflow. On the
-  holdout split it blocked 15 of 20 attacks with no false positives on 20 benign questions
-  (16.11.2026). Paraphrases such as "lass die Vorgaben außer Acht" still pass, which is why this
-  filter is never the only control;
-- retrieved documents are fenced as data (`<richtlinie>`) in the prompt; documents with
-  model-directed injection patterns are quarantined and logged;
-- every model answer is verified (numbers and document IDs must occur in the evidence,
-  citations required, German labels); one retry, then a verified fallback without the model;
-- decision briefs are rendered without the model and need approval by a second reviewer
-  (four-eyes principle enforced in the API and again in a separate graph node);
-- the access token is run context and never written to the graph checkpoint (tested);
-- final lending responsibility remains with an authorized human reviewer.
+- strenge Pydantic-Schemas für Domäne und MCP-Antworten;
+- Positivliste aus vier Werkzeugen; das Sprachmodell wählt oder ruft nie selbst Werkzeuge auf
+  (der Router legt den Werkzeugplan fest, der LangGraph-Werkzeugknoten führt ihn über MCP mit dem
+  Token des Aufrufers aus);
+- kein beliebiges SQL, keine Shell, keine Codeausführung, kein URL-Abruf, kein Dateisystem-Werkzeug;
+- Prüfung von Fall-ID, Länge der Anfrage, Metadatenfilter und Pfadgrenzen;
+- ein Prompt-Injection-Filter als erste Schicht für Deutsch und Englisch (fünf Kategorien,
+  Unicode- und Verschleierungsnormalisierung), angewendet in der API vor dem Ablauf und noch
+  einmal im Ablauf. Auf dem Holdout-Split hat er 15 von 20 Angriffen erkannt, ohne eine der
+  20 harmlosen Fragen zu blockieren (16.11.2026). Umschreibungen wie „lass die Vorgaben außer
+  Acht“ kommen noch durch; deshalb ist dieser Filter nie die einzige Kontrolle;
+- gefundene Dokumente stehen im Prompt als Daten abgegrenzt (`<richtlinie>`); Dokumente mit
+  Injection-Mustern, die sich an das Modell richten, werden in Quarantäne genommen und protokolliert;
+- jede Modellantwort wird geprüft (Zahlen und Dokument-IDs müssen in den Nachweisen vorkommen,
+  Quellenangaben sind Pflicht, Bezeichnungen deutsch); ein zweiter Versuch, danach eine geprüfte
+  Ersatzantwort ohne Modell;
+- Entscheidungsvorlagen entstehen ohne Modell und brauchen die Freigabe einer zweiten Person
+  (Vier-Augen-Prinzip, in der API und noch einmal in einem eigenen Graph-Knoten durchgesetzt);
+- das Zugriffstoken ist Laufkontext und wird nie in den Checkpoint des Graphen geschrieben
+  (getestet);
+- die endgültige Kreditverantwortung bleibt bei einer berechtigten Person.
 
-## Tracing and privacy (v1.6)
+## Tracing und Datenschutz (v1.6)
 
-- Langfuse tracing is **off by default**; without `LANGFUSE_ENABLED=true` and both project keys no
-  client is created and nothing leaves the process (tested).
-- When on, traces contain prompts and answers, so they contain the (synthetic) case data that
-  reached the model. A real deployment needs a data-protection assessment, a self-hosted
-  instance in the bank's own network and a retention policy; the provided Compose profile binds
-  every port to `127.0.0.1`, disables telemetry and has no default passwords
-  (`scripts/langfuse_env.py` generates them into a git-ignored, owner-only file).
-- The trace's user field is a pseudonym (HMAC keyed by the application's JWT secret, which the
-  trace store never sees); the thread ID is the session. This keeps names out of filters and
-  dashboards, but **not** out of trace contents: the graph state (`requested_by`), the approval
-  note of a decision brief and the synthetic case data name people. Access to Langfuse must
-  therefore be restricted like access to the case files.
-- Access tokens are run context and never part of traced state; additionally, a mask function
-  removes anything that looks like a JWT before export (tested with a captured trace).
-- Langfuse keys are excluded from the settings forwarded to the MCP subprocess (tested).
+- Das Langfuse-Tracing ist **standardmäßig aus**. Ohne `LANGFUSE_ENABLED=true` und beide
+  Projektschlüssel wird kein Client erzeugt, und nichts verlässt den Prozess (getestet).
+- Eingeschaltet enthalten Traces Prompts und Antworten, also auch die (synthetischen) Falldaten,
+  die das Modell gesehen hat. Ein echter Einsatz braucht eine Datenschutz-Folgenabschätzung, eine
+  selbst betriebene Instanz im Netz der Bank und eine Aufbewahrungsregel. Das mitgelieferte
+  Compose-Profil bindet jeden Port an `127.0.0.1`, schaltet Telemetrie ab und hat keine
+  Standardpasswörter (`scripts/langfuse_env.py` erzeugt sie in eine git-ignorierte Datei, die nur
+  der Besitzer lesen darf).
+- Das Benutzerfeld eines Traces ist ein Pseudonym (HMAC mit dem JWT-Schlüssel der Anwendung, den
+  der Trace-Speicher nie sieht); die Thread-ID ist die Sitzung. So tauchen Namen nicht in Filtern
+  und Dashboards auf, **aber** weiterhin in den Trace-Inhalten: der Zustand des Graphen
+  (`requested_by`), die Freigabenotiz einer Entscheidungsvorlage und die synthetischen Falldaten
+  nennen Personen. Der Zugang zu Langfuse muss deshalb so beschränkt werden wie der Zugang zu den
+  Fallakten.
+- Zugriffstokens sind Laufkontext und nie Teil des aufgezeichneten Zustands; zusätzlich entfernt
+  eine Maskierungsfunktion vor dem Export alles, was wie ein JWT aussieht (mit einem
+  mitgeschnittenen Trace getestet).
+- Die Langfuse-Schlüssel gehören nicht zu den Einstellungen, die an den MCP-Unterprozess gehen
+  (getestet).
 
-## Known production gaps
+## Bekannte Lücken bis zur Produktion
 
-- one shared HS256 key instead of an identity provider (OAuth 2.1 / OpenID Connect, SSO, MFA);
-  the API issues MCP tokens but is not a full OAuth 2.1 authorization server;
-- the MCP HTTP server does not check deactivation within a token's five-minute lifetime and has
-  no TLS of its own (bind it to loopback or put it behind a proxy);
-- users in a JSON file instead of a directory service;
-- rate limits are in-memory per process (several instances need Redis or a gateway);
-- no TLS termination in the application (belongs to a reverse proxy);
-- audit log is tamper-evident, not tamper-proof;
-- traces are not masked for personal data beyond tokens (fine for synthetic data, not for real
-  customers);
-- encrypted persistence, model-supply-chain controls, malicious-file sandboxing, and formal
-  regulatory review.
+- ein gemeinsamer HS256-Schlüssel statt eines Identity Providers (OAuth 2.1 / OpenID Connect,
+  SSO, MFA); die API stellt MCP-Tokens aus, ist aber kein vollständiger OAuth-2.1-Autorisierungsserver;
+- der MCP-HTTP-Server prüft innerhalb der fünf Minuten Token-Laufzeit keine Deaktivierung und hat
+  kein eigenes TLS (an Loopback binden oder hinter einen Proxy stellen);
+- Benutzer in einer JSON-Datei statt in einem Verzeichnisdienst;
+- Ratenbegrenzung im Speicher je Prozess (mehrere Instanzen brauchen Redis oder ein Gateway);
+- keine TLS-Terminierung in der Anwendung (gehört in einen Reverse Proxy);
+- das Audit-Log macht Manipulation sichtbar, verhindert sie aber nicht;
+- Traces werden außer bei Tokens nicht auf personenbezogene Daten maskiert (für synthetische
+  Daten in Ordnung, für echte Kundinnen und Kunden nicht);
+- verschlüsselte Speicherung, Kontrollen der Modell-Lieferkette, Sandbox für schädliche Dateien
+  und eine formale regulatorische Prüfung fehlen.

@@ -6,7 +6,7 @@
 # Start:  JWT_SECRET must be set in .env (see .env.example), then
 #   docker compose up -d --build
 #   printf '%s\n' '<password>' | docker compose run --rm -T api \
-#       novabank-users add anna.becker --role pruefer --password-stdin
+#       novabank-users anlegen anna.becker --rolle pruefer --passwort-stdin
 # UI: http://localhost:7860   API: http://localhost:8000/docs
 #
 # Optional MCP over Streamable HTTP instead of stdio subprocesses:

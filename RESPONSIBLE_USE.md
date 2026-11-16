@@ -1,33 +1,38 @@
-# Responsible use
+# Verantwortungsvoller Einsatz
 
-This project is a technical portfolio reference system for a fictional organization. All bundled
-cases, identities, policies, rules, thresholds, labels, and evaluation examples are synthetic.
+Dieses Projekt ist ein technisches Referenzsystem für ein Portfolio und beschreibt eine fiktive
+Organisation. Alle mitgelieferten Fälle, Personen, Richtlinien, Regeln, Schwellenwerte, Etiketten
+und Evaluationsbeispiele sind synthetisch.
 
-## Intended use
+## Vorgesehener Einsatz
 
-- Study deterministic services, MCP tool contracts, retrieval, and agent orchestration.
-- Run the offline tests and synthetic evaluation locally or in CI.
-- Demonstrate how human-reviewed decision support can separate model text from factual services.
+- Deterministische Dienste, MCP-Werkzeugverträge, Suche und Agenten-Orchestrierung studieren.
+- Die Offline-Tests und die synthetische Evaluation lokal oder in der CI ausführen.
+- Zeigen, wie eine von Menschen geprüfte Entscheidungsunterstützung Modelltext von
+  Fachdiensten trennt.
 
-## Prohibited or unsupported use
+## Verbotener oder nicht unterstützter Einsatz
 
-- Do not use the software to approve, decline, price, or rank real credit applications.
-- Do not treat the synthetic rules or documents as legal, regulatory, financial, or compliance
-  advice.
-- Do not load real customer, identity, banking, employment, or transaction data into the demo.
-- Do not claim that the project is production-ready, bank-grade, certified, or regulatory
-  compliant.
-- Do not deploy it as a public service without adding authentication, authorization, data
-  protection, monitoring, abuse controls, and an independent security review.
+- Die Software nicht verwenden, um echte Kreditanträge zu genehmigen, abzulehnen, zu bepreisen
+  oder zu reihen.
+- Die synthetischen Regeln und Dokumente nicht als Rechts-, Aufsichts-, Finanz- oder
+  Compliance-Beratung verstehen.
+- Keine echten Kunden-, Identitäts-, Bank-, Beschäftigungs- oder Transaktionsdaten in die Demo laden.
+- Nicht behaupten, das Projekt sei produktionsreif, bankentauglich, zertifiziert oder
+  aufsichtsrechtlich konform.
+- Nicht als öffentlichen Dienst betreiben, ohne einen Identity Provider, Datenschutz,
+  Überwachung, Missbrauchsschutz und eine unabhängige Sicherheitsprüfung zu ergänzen.
 
-## Human oversight
+## Menschliche Aufsicht
 
-Every recommendation is decision support. An authorized human must verify source data, policy
-applicability, calculations, fairness, and legal obligations before any real-world action.
-Synthetic benchmark results must not be generalized to people, institutions, or unseen data.
+Jede Empfehlung ist Entscheidungsunterstützung. Eine berechtigte Person muss Quelldaten,
+Anwendbarkeit der Richtlinien, Berechnungen, Fairness und rechtliche Pflichten prüfen, bevor
+etwas in der echten Welt geschieht. Ergebnisse synthetischer Benchmarks dürfen nicht auf
+Menschen, Institutionen oder unbekannte Daten übertragen werden.
 
-## Model and dependency responsibilities
+## Verantwortung für Modelle und Abhängigkeiten
 
-The MIT License covers this repository's original code and documentation. Model weights, model
-servers, Python dependencies, and externally supplied documents retain their own licenses and
-terms. Operators are responsible for reviewing those terms and for validating model provenance.
+Die MIT-Lizenz gilt für den eigenen Code und die eigene Dokumentation dieses Repositorys.
+Modellgewichte, Modellserver, Python-Abhängigkeiten und von außen gelieferte Dokumente behalten
+ihre eigenen Lizenzen und Bedingungen. Wer das System betreibt, prüft diese Bedingungen und die
+Herkunft der Modelle.

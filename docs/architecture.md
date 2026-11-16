@@ -56,7 +56,7 @@ flowchart TD
 
 ## Beobachtbarkeit (optional)
 
-Mit `LANGFUSE_ENABLED=true` wird jeder Lauf ein Trace in einem selbst gehosteten Langfuse: jeder Graph-Knoten als Span, der Modellaufruf als Generation mit Prompt, Antwort und Token, Nutzer pseudonymisiert, Thread als Sitzung. Kosten rechnet Langfuse aus einer Modelldefinition mit einstellbarem Preis (`novabank-langfuse setup`). Ohne Schalter und Schlüssel wird kein Client erzeugt.
+Mit `LANGFUSE_ENABLED=true` wird jeder Lauf ein Trace in einem selbst gehosteten Langfuse: jeder Graph-Knoten als Span, der Modellaufruf als Generation mit Prompt, Antwort und Token, Nutzer pseudonymisiert, Thread als Sitzung. Kosten rechnet Langfuse aus einer Modelldefinition mit einstellbarem Preis (`novabank-langfuse einrichten`). Ohne Schalter und Schlüssel wird kein Client erzeugt.
 
 ## Auslieferung
 
