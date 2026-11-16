@@ -8,7 +8,9 @@ import warnings
 from collections.abc import Callable
 from functools import wraps
 from pathlib import Path
+from typing import Any
 
+from secure_enterprise_ai_assistant.core.logs import get_logger
 from secure_enterprise_ai_assistant.core.settings import Settings, get_settings
 
 # CrewAI resolves several default database paths during import. Point that documented override
@@ -24,12 +26,13 @@ with warnings.catch_warnings():
         category=ImportWarning,
     )
     from crewai import LLM, Agent, Crew, Process, Task
+    from crewai.lite_agent_output import LiteAgentOutput
     from crewai.mcp.config import MCPServerStdio
     from crewai.mcp.filters import create_static_tool_filter
     from crewai.memory.storage.kickoff_task_outputs_storage import (
         KickoffTaskOutputsSQLiteStorage,
     )
-    from crewai.tasks.task_output import TaskOutput
+    from crewai.tasks.task_output import TaskOutput as TaskOutput
     from crewai.utilities.task_output_storage_handler import TaskOutputStorageHandler
 from pydantic import PrivateAttr
 
@@ -45,6 +48,8 @@ from secure_enterprise_ai_assistant.core.language import (
 )
 from secure_enterprise_ai_assistant.mcp.client import VerifiedMCPReportBuilder
 from secure_enterprise_ai_assistant.models.orchestration import QueryIntent, RouteDecision
+
+logger = get_logger(__name__)
 
 MCP_MODULE = "secure_enterprise_ai_assistant.mcp.server"
 DEMO_SAFE_FALLBACK_REASON = (
@@ -76,7 +81,7 @@ class LocalTaskOutputStorageHandler(TaskOutputStorageHandler):
         )
 
     @staticmethod
-    def _run_storage_operation(operation: Callable[[], object]) -> object:
+    def _run_storage_operation[T](operation: Callable[[], T]) -> T:
         """Contain CrewAI's Python 3.13 sqlite connection cleanup warning."""
         with warnings.catch_warnings():
             warnings.filterwarnings(
@@ -88,17 +93,19 @@ class LocalTaskOutputStorageHandler(TaskOutputStorageHandler):
             gc.collect()
         return result
 
-    def add(self, *args: object, **kwargs: object) -> None:
-        self._run_storage_operation(lambda: super().add(*args, **kwargs))
+    def add(self, *args: Any, **kwargs: Any) -> None:
+        add = super().add
+        self._run_storage_operation(lambda: add(*args, **kwargs))
 
-    def update(self, task_index: int, log: dict[str, object]) -> None:
-        self._run_storage_operation(lambda: super().update(task_index, log))
+    def update(self, task_index: int, log: dict[str, Any]) -> None:
+        update = super().update
+        self._run_storage_operation(lambda: update(task_index, log))
 
     def reset(self) -> None:
         self._run_storage_operation(super().reset)
 
-    def load(self) -> list[dict[str, object]] | None:
-        return self._run_storage_operation(super().load)  # type: ignore[return-value]
+    def load(self) -> list[dict[str, Any]] | None:
+        return self._run_storage_operation(super().load)
 
 
 class LocalFirstCrew(Crew):
@@ -106,7 +113,7 @@ class LocalFirstCrew(Crew):
 
     _task_output_handler: TaskOutputStorageHandler = PrivateAttr()
 
-    def __init__(self, *, runtime_dir: Path, **data: object) -> None:
+    def __init__(self, *, runtime_dir: Path, **data: Any) -> None:
         with warnings.catch_warnings():
             warnings.filterwarnings(
                 "ignore",
@@ -127,7 +134,7 @@ def _mcp_server(*allowed_tools: str) -> MCPServerStdio:
     )
 
 
-def _agent(**kwargs: object) -> Agent:
+def _agent(**kwargs: Any) -> Agent:
     """Construct an agent while scoping one acknowledged CrewAI deprecation."""
     with warnings.catch_warnings():
         warnings.filterwarnings(
@@ -481,6 +488,10 @@ class CrewOrchestrator:
                     self.fallback_reason = message
                 else:
                     self.fallback_reason = f"{type(exc).__name__}: native CrewAI execution failed"
+                logger.warning(
+                    "full_assessment_fallback",
+                    extra={"cause": "crew_execution_failed", "error_type": type(exc).__name__},
+                )
                 return VerifiedMCPReportBuilder().build(query, route)
             raise
         if route.intent == QueryIntent.FULL_ASSESSMENT and not is_complete_decision_brief(output):
@@ -488,11 +499,13 @@ class CrewOrchestrator:
             self.fallback_reason = (
                 "Native CrewAI output failed decision-brief completeness validation"
             )
+            logger.warning("full_assessment_fallback", extra={"cause": "incomplete_brief"})
             return VerifiedMCPReportBuilder().build(query, route)
         return sanitize_model_output(output)
 
 
-OutputGuardrail = Callable[[TaskOutput], tuple[bool, str]]
+GuardrailInput = TaskOutput | LiteAgentOutput
+OutputGuardrail = Callable[[GuardrailInput], tuple[bool, Any]]
 
 
 def language_guardrail(
@@ -501,7 +514,7 @@ def language_guardrail(
 ) -> OutputGuardrail:
     """Compose evidence validation with the central user-facing language rule."""
 
-    def validate(output: TaskOutput) -> tuple[bool, str]:
+    def validate(output: GuardrailInput) -> tuple[bool, str]:
         if evidence_guardrail is not None:
             valid, result = evidence_guardrail(output)
             if not valid:
@@ -521,7 +534,7 @@ def language_guardrail(
     return validate
 
 
-def validate_decision_brief(output: TaskOutput) -> tuple[bool, str]:
+def validate_decision_brief(output: GuardrailInput) -> tuple[bool, str]:
     """Require a substantive, sourced final report before accepting reviewer output."""
     text = output.raw.strip()
     if is_complete_decision_brief(text):
@@ -564,7 +577,7 @@ def is_complete_decision_brief(text: str) -> bool:
     )
 
 
-def validate_financial_output(output: TaskOutput) -> tuple[bool, str]:
+def validate_financial_output(output: GuardrailInput) -> tuple[bool, str]:
     """Reject intermediate analysis that omits deterministic calculator evidence."""
     text = output.raw.strip()
     out_of_scope_language = any(
@@ -607,7 +620,7 @@ def validate_financial_output(output: TaskOutput) -> tuple[bool, str]:
     return True, text
 
 
-def validate_compliance_output(output: TaskOutput) -> tuple[bool, str]:
+def validate_compliance_output(output: GuardrailInput) -> tuple[bool, str]:
     """Reject intermediate compliance output without rules and policy provenance."""
     text = output.raw.strip()
     requirements = len(text) >= 300 and "CASE-" in text and "RULE-" in text and "NB-" in text

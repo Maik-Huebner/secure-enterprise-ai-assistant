@@ -1,0 +1,10 @@
+version: 2
+updates:
+  # Keeps the commit-SHA pins of GitHub Actions current. Python dependencies follow the
+  # reviewed lock-refresh process in requirements/README.md instead.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: ci

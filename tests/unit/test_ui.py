@@ -38,7 +38,9 @@ app.close()
         for line in completed.stdout.splitlines()
         if line.startswith("UI_PROBE=")
     )
-    return json.loads(marker)
+    probe = json.loads(marker)
+    assert isinstance(probe, dict)
+    return probe
 
 
 def test_gradio_blocks_builds_without_launching() -> None:

@@ -6,6 +6,7 @@ import json
 from dataclasses import dataclass
 from decimal import Decimal
 from pathlib import Path
+from typing import TypedDict
 
 from secure_enterprise_ai_assistant.core.company import PROJECT_DISCLAIMER
 from secure_enterprise_ai_assistant.models.domain import (
@@ -182,7 +183,17 @@ def _scenario_for(case_number: int) -> Scenario:
     return SCENARIOS[(case_number - 1) % len(SCENARIOS)]
 
 
-def build_dataset(case_count: int = 48) -> tuple[list[CreditCase], dict[str, object]]:
+class GroundTruth(TypedDict):
+    """Evaluation-only reference labels, stored separately from the case data."""
+
+    dataset_seed: int
+    synthetic_data_disclaimer: str
+    labels_are_evaluation_only: bool
+    decision_labels: dict[str, str]
+    scenario_labels: dict[str, str]
+
+
+def build_dataset(case_count: int = 48) -> tuple[list[CreditCase], GroundTruth]:
     """Build deterministic cases and a separate evaluation-only ground-truth file."""
     if case_count < 40:
         raise ValueError("The NovaBank portfolio dataset must contain at least 40 cases.")
@@ -249,7 +260,7 @@ def build_dataset(case_count: int = 48) -> tuple[list[CreditCase], dict[str, obj
         labels[case_id] = scenario.ground_truth
         scenarios[case_id] = scenario.name
 
-    ground_truth: dict[str, object] = {
+    ground_truth: GroundTruth = {
         "dataset_seed": DATASET_SEED,
         "synthetic_data_disclaimer": PROJECT_DISCLAIMER,
         "labels_are_evaluation_only": True,

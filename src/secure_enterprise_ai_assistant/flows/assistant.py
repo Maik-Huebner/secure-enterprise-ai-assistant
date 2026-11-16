@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import warnings
+from typing import Any
 
 with warnings.catch_warnings():
     warnings.filterwarnings(
@@ -35,39 +36,46 @@ class AssistantFlowState(BaseModel):
 class NovaBankAssistantFlow(Flow[AssistantFlowState]):
     """Route requests to the smallest CrewAI/MCP workflow."""
 
-    def __init__(self, **kwargs: object) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         kwargs.setdefault("tracing", False)
         kwargs.setdefault("suppress_flow_events", True)
         super().__init__(**kwargs)
 
+    @property
+    def typed_state(self) -> AssistantFlowState:
+        """Return the Flow state narrowed to its declared model at runtime."""
+        state = self.state
+        if not isinstance(state, AssistantFlowState):
+            raise TypeError("Flow state has an unexpected type.")
+        return state
+
     @start()
     def receive_request(self) -> str:
-        self.state.query = validate_user_query(self.state.query)
-        self.state.trace.append(TraceEvent(event="request_received", detail="Request received"))
-        return self.state.query
+        state = self.typed_state
+        state.query = validate_user_query(state.query)
+        state.trace.append(TraceEvent(event="request_received", detail="Request received"))
+        return state.query
 
     @router(receive_request)
     def select_route(self, query: str) -> str:
-        self.state.route = IntentRouter().classify(query)
-        self.state.trace.append(
-            TraceEvent(
-                event="intent_classified",
-                detail=self.state.route.intent.value,
-            )
-        )
-        return self.state.route.intent.value
+        state = self.typed_state
+        route = IntentRouter().classify(query)
+        state.route = route
+        state.trace.append(TraceEvent(event="intent_classified", detail=route.intent.value))
+        return route.intent.value
 
     def _execute_selected_route(self) -> str:
-        if self.state.route is None:
+        state = self.typed_state
+        if state.route is None:
             raise RuntimeError("Flow route has not been selected.")
         orchestrator = CrewOrchestrator()
-        selection = orchestrator.select_model(self.state.route)
+        selection = orchestrator.select_model(state.route)
         demo_safe_mode = (
-            self.state.route.intent == QueryIntent.FULL_ASSESSMENT
+            state.route.intent == QueryIntent.FULL_ASSESSMENT
             and orchestrator.factory.settings.full_assessment_mode == "verified_mcp"
         )
         if demo_safe_mode:
-            self.state.trace.extend(
+            state.trace.extend(
                 [
                     TraceEvent(event="configured_complex_model", detail=selection.model),
                     TraceEvent(event="model_profile", detail=selection.profile.value),
@@ -76,35 +84,32 @@ class NovaBankAssistantFlow(Flow[AssistantFlowState]):
                 ]
             )
         else:
-            self.state.trace.extend(
+            state.trace.extend(
                 [
                     TraceEvent(event="model_selected", detail=selection.model),
                     TraceEvent(event="model_profile", detail=selection.profile.value),
                     TraceEvent(event="model_reason", detail=selection.reason),
                 ]
             )
-        self.state.trace.append(
+        state.trace.append(
             TraceEvent(
                 event="tools_selected",
-                detail=", ".join(self.state.route.required_tools),
+                detail=", ".join(state.route.required_tools),
             )
         )
-        self.state.answer = orchestrator.run(
-            self.state.query,
-            self.state.route,
-            selection,
-        )
+        answer = orchestrator.run(state.query, state.route, selection)
+        state.answer = answer
         if orchestrator.fallback_reason is not None:
-            self.state.trace.append(
+            state.trace.append(
                 TraceEvent(event="fallback_reason", detail=orchestrator.fallback_reason)
             )
-        self.state.trace.extend(
+        state.trace.extend(
             [
                 TraceEvent(event="execution_mode", detail=orchestrator.execution_mode),
                 TraceEvent(event="workflow_completed", detail="Workflow completed"),
             ]
         )
-        return self.state.answer
+        return answer
 
     @listen("knowledge")
     def execute_knowledge_route(self) -> str:

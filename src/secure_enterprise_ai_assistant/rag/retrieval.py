@@ -11,11 +11,14 @@ import bm25s
 import faiss
 import numpy as np
 
+from secure_enterprise_ai_assistant.core.logs import get_logger
 from secure_enterprise_ai_assistant.models.knowledge import (
     KnowledgeChunk,
     KnowledgeSearchResponse,
     RetrievalResult,
 )
+
+logger = get_logger(__name__)
 
 TOKEN_PATTERN = re.compile(r"(?u)\b\w\w+\b")
 QUERY_EXPANSIONS = {
@@ -106,6 +109,14 @@ class HybridRetriever:
         if len(chunk_ids) != len(set(chunk_ids)):
             raise ValueError("Knowledge chunks must have unique chunk IDs.")
         flagged_documents = {chunk.document_id for chunk in chunks if chunk.security_flags}
+        if flagged_documents:
+            logger.warning(
+                "knowledge_documents_quarantined",
+                extra={
+                    "document_ids": sorted(flagged_documents),
+                    "flags": sorted({flag for chunk in chunks for flag in chunk.security_flags}),
+                },
+            )
         safe_chunks = [chunk for chunk in chunks if chunk.document_id not in flagged_documents]
         if not safe_chunks:
             raise ValueError("At least one knowledge chunk is required.")

@@ -4,6 +4,10 @@ from __future__ import annotations
 
 import re
 
+from secure_enterprise_ai_assistant.core.logs import get_logger
+
+logger = get_logger(__name__)
+
 
 class UnsafeInputError(ValueError):
     """Raised for input that attempts to cross the assistant trust boundary."""
@@ -34,6 +38,10 @@ def validate_user_query(query: str) -> str:
         raise UnsafeInputError("Query contains unsupported control characters.")
     for category, pattern in BLOCKED_PATTERNS:
         if pattern.search(normalized):
+            logger.warning(
+                "input_blocked",
+                extra={"category": category, "query_length": len(normalized)},
+            )
             raise UnsafeInputError(f"Query blocked by security policy: {category}.")
     return normalized
 

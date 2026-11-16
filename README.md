@@ -23,10 +23,12 @@ support for employees; it does not automate final credit approval.
 - 48 reproducible synthetic credit cases across eight risk scenarios;
 - strict Pydantic domain models shared across services, MCP, agents, flows, UI, and evaluation;
 - Decimal-based annuity, repayment, interest, and pre/post-loan DTI calculations;
-- versioned JSON compliance rules with ten allowlisted predicates and policy references;
+- ten versioned JSON compliance rules built from nine allowlisted predicates, with policy
+  references;
 - 18 internally consistent synthetic NovaBank policies with document-control metadata;
 - Markdown, text, and PDF ingestion with section/page provenance and safe path handling;
-- hybrid FAISS + BM25S retrieval, German query expansion, metadata filters, and scope rejection;
+- FAISS + BM25S rank fusion, metadata filters, and scope rejection (with the default hashing
+  embedder both rankings are lexical; see [Advanced RAG](#advanced-rag));
 - a real FastMCP server with four structured tools;
 - native CrewAI stdio-MCP discovery with per-agent least-privilege tool filters;
 - deterministic five-route classification, dual-model selection, and CrewAI Flow orchestration;
@@ -106,11 +108,15 @@ production-ready decision system.
 ## Advanced RAG
 
 The corpus is chunked by document section while preserving document ID, title, version,
-effective date, owner, section, and page where available. Dense rankings use FAISS; lexical
-rankings use BM25S; reciprocal-rank fusion combines both. The offline bootstrap embedder is
-deterministic and requires lexical evidence before accepting a result. A local Sentence
-Transformer can be injected for production-quality semantic embeddings without changing the
-retriever or MCP contract.
+effective date, owner, section, and page where available. A vector ranking uses FAISS, a
+lexical ranking uses BM25S, and reciprocal-rank fusion combines both.
+
+**Honest scope of the default configuration:** the default embedder is a deterministic hashing
+bag-of-words, not a semantic model. In this mode both rankings are lexical, so the system does
+not yet perform meaning-based retrieval. The knowledge base is English while the UI is German;
+a fixed map of eight German terms bridges the gap. A semantic multilingual embedder is planned
+for v1.2 (see [docs/plan-v2.md](docs/plan-v2.md)); the retriever already accepts one through its
+embedder interface.
 
 Retrieval does not equate nearest with relevant: weak matches produce `out_of_scope=true` and
 no passages. Retrieved content is explicitly treated as untrusted evidence, not instructions.
@@ -139,6 +145,13 @@ or establish that the complete agentic pipeline is 100% accurate. LLM-only compa
 part of this benchmark; measured live-model behavior is documented separately in
 `docs/example-execution-trace.md`.
 
+Two metrics carry little independent information, and the report says so in `metric_notes`:
+tool-selection accuracy is derived from the routed intent and therefore equals routing accuracy,
+and source attribution only checks that returned chunks carry metadata. The routing and
+guardrail suites consist of the demo phrasings. A separate probe with paraphrased German input,
+documented in [docs/audit-v1.md](docs/audit-v1.md), measured far lower results (for example
+1 of 12 attack phrasings blocked and 4 of 14 German policy questions retrieved).
+
 ## Security controls
 
 - strict input and output schemas with forbidden extra fields;
@@ -157,7 +170,7 @@ See [docs/security.md](docs/security.md) for controls and known production gaps.
 ## Local setup
 
 Requirements: Python 3.13 (`>=3.13,<3.14`), Ollama, and sufficient memory for the chosen
-local model. Python 3.13.9 is the reproducibly validated runtime for release v1.0.2.
+local model. Python 3.13.9 is the reproducibly validated runtime for release v1.0.3.
 
 ```bash
 python3.13 -m venv .venv
@@ -206,10 +219,11 @@ On Linux, configure an equivalent reachable Ollama host address for the containe
 ## Quality checks
 
 ```bash
-make quality
-make test
+make quality        # strict mypy, Ruff lint and format check
+make test           # pytest with warnings as errors and a coverage floor
 make evidence-check
 make audit
+make deps-audit     # pip-audit against the exact lock (needs pipx; or PIP_AUDIT="uvx pip-audit==2.10.1")
 python -m pip check
 make reproduce-evidence
 make build
@@ -218,7 +232,7 @@ make build
 The full test suite does not need a running model or network connection. End-to-end generation
 does require the configured Ollama server and model.
 
-Current local release gate: **84 tests passing** under Python 3.13 with warnings treated as
+Current local release gate: **92 tests passing** under Python 3.13 with warnings treated as
 errors. CI installs the package non-editably and proves that imports resolve from
 `site-packages`.
 
@@ -244,7 +258,7 @@ chain-of-thought.
 ## Repository map
 
 ```text
-docs/                 architecture, security, and demo guidance
+docs/                 architecture, security, demo guidance, audit, and v2 plan
 reports/evaluation/   measured evaluation output
 requirements/         exact Python 3.13 dependency lock and lock policy
 scripts/              thin repository wrappers for generation, evidence, and audit
@@ -267,6 +281,11 @@ tests/                unit and integration regression suite
   tracing, and formal regulatory validation remain production work.
 - A larger adversarial corpus, reranker, persistent vector index, and measured LLM/RAG/agentic
   baseline comparison are logical next steps after choosing final local-model hardware.
+- One dependency exception is open: `chromadb` (pulled in only by CrewAI, unused by this
+  package) has known vulnerabilities without a fixed release. It is ignored explicitly in
+  `make deps-audit` and disappears when CrewAI is replaced (planned v1.4).
+- The v2.0 roadmap with its work packages is in [docs/plan-v2.md](docs/plan-v2.md); the audit of
+  v1.0.2 is in [docs/audit-v1.md](docs/audit-v1.md).
 
 ## License and responsible use
 
