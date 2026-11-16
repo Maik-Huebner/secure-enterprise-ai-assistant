@@ -27,7 +27,7 @@ streng getrennt:
 - **Entscheidungen trifft ein Mensch:** Eine Entscheidungsvorlage wird erst gültig, wenn eine
   *zweite* prüfende Person sie freigibt.
 
-## Was gebaut ist (v2.0)
+## Was gebaut ist (v2.1)
 
 - 48 reproduzierbare synthetische Kreditfälle in acht Risikoszenarien
 - Decimal-genaue Annuität, Zinsen, Rückzahlung, DTI vor und nach Kredit
@@ -45,7 +45,8 @@ streng getrennt:
 - **Gradio-Oberfläche** als reiner API-Client (Anmeldung, Assistent, Fälle, Freigaben)
 - **Langfuse** (optional, selbst gehostet): Traces, Token, Kosten, Datensätze, Experimente
 - gemessene Antwortqualität mit Handprüfung, Offline-Evaluation in der CI
-- 306 automatisierte Tests + 4 Live-Tests, strenge Typprüfung, Docker Compose
+- 321 automatisierte Tests + 4 Live-Tests, strenge Typprüfung, Docker Compose
+- durchgehend deutsch bedienbar: Oberfläche, API-Meldungen, Wissensbasis, Befehle, Dokumente
 
 ## Architektur
 
@@ -146,9 +147,10 @@ kalibriert (`resources/retrieval/thresholds.json`).
 ### Vorher/nachher: Hashing gegen echte Embedding-Modelle
 
 Gemessen am 16.11.2026 auf einem Apple M4 Pro mit `scripts/benchmark_retrieval.py`
-(`reports/evaluation/retrieval_comparison.json`; Qualitätswerte bei der Wiederholung nach
-der Umbenennung der Richtlinien-Dateien unverändert, Latenzen aus dem letzten Lauf). Test-Split: 20 beantwortbare deutsche Fragen
-(Umschreibungen, zusammengesetzte Wörter, Dokument- und Abschnittsnummern) und 4 ohne Antwort.
+(`reports/evaluation/retrieval_comparison.json`). Bei der Wiederholung nach der Umbenennung der
+Richtlinien-Dateien (v2.1) waren alle Qualitätswerte gleich; die Latenzen stammen aus diesem
+letzten Lauf. Test-Split: 20 beantwortbare deutsche Fragen (Umschreibungen, zusammengesetzte
+Wörter, Dokument- und Abschnittsnummern) und 4 ohne Antwort.
 
 | Embedder | Recall@5 | MRR | nDCG@5 | „Keine Antwort“ richtig | Falsch abgelehnt | Latenz |
 |---|---:|---:|---:|---:|---:|---:|
@@ -319,7 +321,7 @@ Mehr in [docs/security.md](docs/security.md), inklusive der bekannten Lücken f�
 ## Lokal starten
 
 Voraussetzungen: Python 3.13 und [Ollama](https://ollama.com). Entwickelt und gemessen auf einem
-MacBook Pro M4 Pro mit 24 GB Arbeitsspeicher. Validiert mit Python 3.13.9 für Release v2.0.0.
+MacBook Pro M4 Pro mit 24 GB Arbeitsspeicher. Validiert mit Python 3.13.9 für Release v2.1.0.
 
 ```bash
 python3.13 -m venv .venv
@@ -386,14 +388,14 @@ make build
 
 | Ebene | Ordner | Tests | Läuft in der CI |
 |---|---|---:|---|
-| Unit | `tests/unit` | 238 | ja |
+| Unit | `tests/unit` | 253 | ja |
 | Integration | `tests/integration` | 5 | ja |
 | End-to-End (echter MCP-Unterprozess, API) | `tests/e2e` | 5 | ja |
 | Sicherheit | `tests/security` | 58 | ja |
 | Live (echtes Modell) | `tests/live` | 4 | nein, `make test-live` |
 
-Aktueller Stand: **306 Tests bestanden** unter Python 3.13 mit Warnungen als Fehler, Abdeckung
-88 %, plus 4 Live-Tests. GitHub-Runner können ein 9B-Modell nicht sinnvoll ausführen; die
+Aktueller Stand: **321 Tests bestanden** unter Python 3.13 mit Warnungen als Fehler, Abdeckung
+89 %, plus 4 Live-Tests. GitHub-Runner können ein 9B-Modell nicht sinnvoll ausführen; die
 Live-Tests und die Antwortmessung laufen deshalb lokal. Die CI installiert das Paket ohne
 Editiermodus, prüft das Lock mit `pip-audit` und baut das Container-Image.
 
@@ -412,10 +414,12 @@ Alle Szenarien mit erwarteten Ergebnissen: [docs/demo-scenarios.md](docs/demo-sc
 ```text
 compose.yaml          API und Oberfläche als Container
 deploy/langfuse/      optional: Langfuse selbst gehostet (Docker Compose)
-docs/                 Architektur, Sicherheit, Demo, Audit, Plan v2, Lernnotizen
+docs/                 Architektur, Sicherheit, Demo, Audit, Plan v2, Lernnotizen,
+                      Projektdokumentation, Präsentation und Sprechertext (Quellen)
+output/               Projektdokumentation (DOCX, PDF), Präsentation (PPTX, PDF), Sprechertext
 reports/evaluation/   gemessene Evaluation
 requirements/         exaktes Lock für Python 3.13
-scripts/              Generatoren, Benchmarks, Antwortmessung, Langfuse-Geheimnisse
+scripts/              Generatoren, Benchmarks, Antwortmessung, Langfuse-Geheimnisse, Dokumente
 src/.../api/          FastAPI
 src/.../graph/        LangGraph-Workflow, Antwortprüfung, Freigaben
 src/.../flows/        Router (Regeln + Beispielsätze)
@@ -426,7 +430,12 @@ src/.../security/     Benutzer, Tokens, Rollen, Audit-Log, Rate Limits
 src/.../services/     Fälle, Finanzrechner, Regelwerk, Entscheidungsservice
 src/.../ui/           Gradio-Oberfläche
 tests/                Unit, Integration, E2E, Sicherheit, Live
+tools/dokumente/      Vorlagen und Präsentationsgenerator für output/
 ```
+
+Die Dateien in `output/` entstehen aus den Markdown-Quellen in `docs/`
+(`python scripts/build_documents.py`, Details in [tools/dokumente/README.md](tools/dokumente/README.md)).
+Die Fassung des Abschlussprojekts (v1.0.2) liegt unverändert im Git-Tag `v1.0.2`.
 
 ## Grenzen (ehrlich)
 

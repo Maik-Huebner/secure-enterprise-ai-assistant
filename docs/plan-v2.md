@@ -150,6 +150,16 @@ Beides kann nicht gleichzeitig installiert sein. Bliebe die Reihenfolge, müsste
 - README auf Deutsch, neues Architekturdiagramm, Grenzen ehrlich benannt
 - Die Office- und PDF-Dateien in `output/` neu erstellen oder als v1-Archiv kennzeichnen. Das entscheide ich mit dir, wenn wir dort sind.
 
+## Paket 8 – Alles deutsch bedienbar, neue Dokumente (v2.1)
+
+Nachgereicht auf Wunsch nach v2.0.
+
+- Wissensbasis mit deutschen Dateinamen (Inhalt, Reihenfolge und Index unverändert)
+- Kommandozeile deutsch: Hilfe, Fehlermeldungen, Befehlsnamen; englische Namen bleiben als Aliase
+- Beschreibungen in Daten und Testsammlungen, Prüfmeldungen und Messskripte deutsch
+- `SECURITY.md`, `RESPONSIBLE_USE.md`, `docs/security.md` und `requirements/README.md` übersetzt
+- Projektdokumentation, Präsentation und Sprechertext für v2.1 neu, `output/` daraus neu erzeugt
+
 ---
 
 ## Entscheidungen, die ich von dir brauche

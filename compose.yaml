@@ -1,21 +1,21 @@
-# NovaBank Secure Enterprise AI Assistant – API and UI in containers.
+# NovaBank Secure Enterprise AI Assistant – API und Oberfläche als Container.
 #
-# Ollama runs natively on the host (on a Mac only there it can use the GPU):
+# Ollama läuft nativ auf dem Host (auf dem Mac nutzt es nur dort die GPU):
 #   ollama pull qwen3.5:9b && ollama pull qwen3-embedding:0.6b
 #
-# Start:  JWT_SECRET must be set in .env (see .env.example), then
+# Start: JWT_SECRET muss in .env stehen (siehe .env.example), dann
 #   docker compose up -d --build
-#   printf '%s\n' '<password>' | docker compose run --rm -T api \
+#   printf '%s\n' '<Passwort>' | docker compose run --rm -T api \
 #       novabank-users anlegen anna.becker --rolle pruefer --passwort-stdin
-# UI: http://localhost:7860   API: http://localhost:8000/docs
+# Oberfläche: http://localhost:7860   API: http://localhost:8000/docs
 #
-# Optional MCP over Streamable HTTP instead of stdio subprocesses:
+# Optional MCP über Streamable HTTP statt stdio-Unterprozessen:
 #   MCP_TRANSPORT=http docker compose --profile mcp-http up -d
-# Optional tracing: deploy/langfuse/docker-compose.yml (separate stack), then set
-#   LANGFUSE_ENABLED=true and the keys in .env.
+# Optionales Tracing: deploy/langfuse/docker-compose.yml (eigener Stack), danach
+#   LANGFUSE_ENABLED=true und die Schlüssel in .env setzen.
 #
-# Every port is published on 127.0.0.1 only. Only the variables listed here reach the
-# containers; the local .env is used for interpolation, not copied wholesale.
+# Jeder Port ist nur an 127.0.0.1 gebunden. Nur die hier genannten Variablen erreichen die
+# Container; die lokale .env dient zum Einsetzen von Werten und wird nicht komplett übernommen.
 
 name: novabank
 

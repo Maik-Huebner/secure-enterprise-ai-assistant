@@ -4,7 +4,7 @@ Aufgenommen am 16.11.2026 auf einem MacBook Pro M4 Pro (24 GB) mit `qwen3.5:9b` 
 `qwen3-embedding:0.6b` über Ollama, echtem MCP-stdio-Server und SQLite-Checkpointer. Zwei
 synthetische prüfende Personen: `anna.becker` und `tom.klein`. Die Protokolle zeigen nur
 technische Schritte, nie verborgene Gedanken des Modells. Die Zeiten sind Einzelwerte, keine
-Messung; gemessene Werte stehen im README (Abschnitt „Answer quality“).
+Messung; gemessene Werte stehen im README (Abschnitt „Antwortqualität des echten Modells“).
 
 ## 1 – Finanzfrage (19,0 s)
 
