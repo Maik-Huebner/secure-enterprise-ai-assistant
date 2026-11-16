@@ -1,0 +1,546 @@
+{
+  "measured_at": "2026-11-16T15:16:07+00:00",
+  "machine": "Darwin arm64",
+  "model": "qwen3.5:9b",
+  "embedding_model": "qwen3-embedding:0.6b",
+  "judge": "qwen3.5:9b (same model, temperature 0, JSON mode)",
+  "counts": {
+    "items": 17,
+    "answerable": 15,
+    "knowledge": 10
+  },
+  "summary": {
+    "answer_correct_rate": 0.9333,
+    "fact_recall_mean": 0.9333,
+    "no_answer_correct_rate": 1.0,
+    "citation_only_retrieved_rate": 0.9167,
+    "citation_expected_rate": 0.8333,
+    "final_answers_with_open_issues": 1,
+    "llm_grounded_rate": 0.8,
+    "verified_fallback_rate": 0.1333,
+    "retry_rate": 0.1333,
+    "judge_supported_rate": 0.9167,
+    "knowledge_correct_rag": 0.9,
+    "knowledge_correct_llm_only": 0.1,
+    "median_seconds": 11.6
+  },
+  "notes": "Facts are checked by substring match on accepted spellings. The faithfulness judge is the same 9B model that writes the answers and is therefore a weak, biased judge; see manual_review for a spot check. LLM-only means the same model without evidence.",
+  "items": [
+    {
+      "question": "Welche Unterlagen benötigt NovaBank für einen Konsumentenkredit?",
+      "kind": "knowledge",
+      "execution_mode": "llm_grounded",
+      "attempts": 1,
+      "seconds": 15.4,
+      "answer": "Für einen Konsumentenkredit benötigt die NovaBank laut Richtlinie (NB-DOC-001, Abschnitt 3.1) vier spezifische Unterlagen:\n\n*   Ein gültiges Ausweisdokument (erforderlich gemäß NB-KYC-001, Abschnitt 2).\n*   Einen aktuellen Einkommensnachweis.\n*   Kontoauszüge der letzten 90 Tage.\n*   Ein vollständig ausgefülltes Kreditantragsformular.\n\nJede dieser Unterlagen wird einzeln erfasst. Die NovaBank vergibt Kredite ausschließlich, wenn diese strukturierten Nachweise eine tragfähige Rückzahlung belegen (NB-RES-001, Abschnitt 2).",
+      "fact_hits": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "correct": true,
+      "fact_recall": 1.0,
+      "remaining_issues": [],
+      "citations": {
+        "cited": [
+          "NB-DOC-001",
+          "NB-KYC-001",
+          "NB-RES-001"
+        ],
+        "only_retrieved_cited": true,
+        "expected_cited": true
+      },
+      "judge": {
+        "supported": true,
+        "unsupported": []
+      },
+      "llm_only": {
+        "answer": "Für einen Konsumentenkredit benötigt die NovaBank in der Regel folgende Unterlagen:\n\n*   Ausweiskopie (Personalausweis oder Reisepass)\n*   Aktuelle Gehaltsabrechnungen (meist 3 Monate)\n*   Nachweise über bestehende Verbindlichkeiten (z. B. Mietvertrag, andere Kredite)\n*   Ein aktuelles Schufa-Abfrageergebnis (oft direkt im Online-Antrag integriert)\n\nBitte beachten Sie, dass die genauen Anforderungen je nach Kreditbetrag und -laufzeit variieren können.",
+        "correct": false
+      }
+    },
+    {
+      "question": "Ab welcher Schuldendienstquote nach Kredit ist eine manuelle Prüfung nötig?",
+      "kind": "knowledge",
+      "execution_mode": "llm_grounded",
+      "attempts": 1,
+      "seconds": 13.2,
+      "answer": "Eine manuelle Prüfung ist ab einer Schuldendienstquote (DTI) nach Kredit von über 40 % erforderlich.\n\nDiese Vorgabe ergibt sich aus der Richtlinie für Verbraucherkredite (NB-CRD-001, Abschnitt 6.2), die festlegt: „Über 40 % ist eine dokumentierte manuelle Prüfung erforderlich.\"\n\nZusätzlich wird in den Leitlinien für die manuelle Prüfung (NB-CRD-002, Abschnitt 6) bestätigt, dass eine Quote über 40 % und bis 50 % eine dokumentierte Haushaltsprüfung erfordert.",
+      "fact_hits": [
+        true
+      ],
+      "correct": true,
+      "fact_recall": 1.0,
+      "remaining_issues": [],
+      "citations": {
+        "cited": [
+          "NB-CRD-001",
+          "NB-CRD-002"
+        ],
+        "only_retrieved_cited": true,
+        "expected_cited": true
+      },
+      "judge": {
+        "supported": true,
+        "unsupported": []
+      },
+      "llm_only": {
+        "answer": "Eine manuelle Prüfung wird bei einer Schuldendienstquote (DSQ) von **100 %** oder höher eingeleitet.",
+        "correct": false
+      }
+    },
+    {
+      "question": "Welche Risikoklasse ist für Verbraucherkredite ausgeschlossen?",
+      "kind": "knowledge",
+      "execution_mode": "llm_grounded",
+      "attempts": 1,
+      "seconds": 8.9,
+      "answer": "Für Verbraucherkredite ist die **Risikoklasse E** ausgeschlossen, da sie außerhalb der Standard-Risikobereitschaft liegt (NB-CRD-001, Abschnitt 4 Voraussetzungen).",
+      "fact_hits": [
+        true
+      ],
+      "correct": true,
+      "fact_recall": 1.0,
+      "remaining_issues": [],
+      "citations": {
+        "cited": [
+          "NB-CRD-001"
+        ],
+        "only_retrieved_cited": true,
+        "expected_cited": true
+      },
+      "judge": {
+        "supported": true,
+        "unsupported": []
+      },
+      "llm_only": {
+        "answer": "Die Risikoklasse **C** (hohe Ausfallwahrscheinlichkeit) ist für Verbraucherkredite ausgeschlossen.",
+        "correct": false
+      }
+    },
+    {
+      "question": "Gibt es beim Standard-Ratenkredit eine Bearbeitungsgebühr?",
+      "kind": "knowledge",
+      "execution_mode": "llm_grounded",
+      "attempts": 1,
+      "seconds": 7.3,
+      "answer": "Nein, beim synthetischen Standard-Ratenkredit gibt es keine Bearbeitungsgebühr. Dies ist in der Richtlinie **NB-FEE-001**, Abschnitt 3 (Standardgebühren), festgelegt.",
+      "fact_hits": [
+        true
+      ],
+      "correct": true,
+      "fact_recall": 1.0,
+      "remaining_issues": [],
+      "citations": {
+        "cited": [
+          "NB-FEE-001"
+        ],
+        "only_retrieved_cited": true,
+        "expected_cited": true
+      },
+      "judge": {
+        "supported": true,
+        "unsupported": []
+      },
+      "llm_only": {
+        "answer": "Nein, für den Standard-Ratenkredit bei der NovaBank fällt keine Bearbeitungsgebühr an.",
+        "correct": true
+      }
+    },
+    {
+      "question": "Wie lange darf die Laufzeit eines Standard-Ratenkredits höchstens sein?",
+      "kind": "knowledge",
+      "execution_mode": "llm_grounded",
+      "attempts": 1,
+      "seconds": 8.9,
+      "answer": "Die maximale Laufzeit eines Standard-Ratenkredits beträgt 84 Monate.\n\nDiese Angabe basiert auf der Richtlinie **NB-PRD-001**, Abschnitt **2.1 Produktgrenzen** (Titel: \"Produktkatalog Verbraucherkredite\", Version 2.3), die Laufzeiten von 6 bis 84 Monaten für den synthetischen Standard-Ratenkredit definiert.",
+      "fact_hits": [
+        true
+      ],
+      "correct": true,
+      "fact_recall": 1.0,
+      "remaining_issues": [],
+      "citations": {
+        "cited": [
+          "NB-PRD-001"
+        ],
+        "only_retrieved_cited": true,
+        "expected_cited": true
+      },
+      "judge": {
+        "supported": true,
+        "unsupported": []
+      },
+      "llm_only": {
+        "answer": "Die maximale Laufzeit für einen Standard-Ratenkredit bei der NovaBank beträgt 120 Monate (10 Jahre).",
+        "correct": false
+      }
+    },
+    {
+      "question": "Wer darf Ausnahmen von Kreditregeln genehmigen?",
+      "kind": "knowledge",
+      "execution_mode": "llm_grounded",
+      "attempts": 1,
+      "seconds": 12.4,
+      "answer": "Gemäß den vorliegenden Nachweisen dürfen Ausnahmen von Kreditregeln nur von benannten Personen genehmigt werden.\n\nDie genauen Bestimmungen finden sich in folgenden Dokumenten:\n\n*   **NB-ESC-001, Abschnitt 6 Befugnisse**: Hier wird festgelegt, dass nur benannte Menschen Ausnahmen genehmigen dürfen. Der Assistent ist lediglich zur Empfehlung einer Eskalationsstufe befugt, darf aber keine Ausnahme erteilen.\n*   **NB-GDE-001, Abschnitt 7 Vier-Augen-Prinzip**: Dieser Abschnitt schreibt vor, dass nachteilige Entscheidungen und Ausnahmen eine zweite befugte prüfende Person erfordern. Die Identität dieser Personen wird außerhalb des öffentlichen Demodatensatzes erfasst.\n\nWeitere Richtlinien wie NB-CRD-001 enthalten keine Informationen zur Genehmigung von Ausnahmen.",
+      "fact_hits": [
+        true
+      ],
+      "correct": true,
+      "fact_recall": 1.0,
+      "remaining_issues": [],
+      "citations": {
+        "cited": [
+          "NB-CRD-001",
+          "NB-ESC-001",
+          "NB-GDE-001"
+        ],
+        "only_retrieved_cited": true,
+        "expected_cited": true
+      },
+      "judge": {
+        "supported": true,
+        "unsupported": []
+      },
+      "llm_only": {
+        "answer": "Nur das NovaBank-Präsidium kann Ausnahmen von internen Kreditrichtlinien genehmigen.",
+        "correct": false
+      }
+    },
+    {
+      "question": "Was passiert, wenn die KYC-Prüfung abgelehnt wurde?",
+      "kind": "knowledge",
+      "execution_mode": "verified_fallback",
+      "attempts": 2,
+      "seconds": 21.0,
+      "answer": "## Textstellen aus den Richtlinien\n- **NB-KYC-001, Abschnitt 4.2 Freigabevoraussetzung Verifizierung**: Nur der Status verifiziert erfüllt die Voraussetzung für eine Genehmigung. Die Status ausstehend und unvollständig erfordern eine Nachbesserung und eine manuelle Prüfung; keiner dieser Status erlaubt eine endgültige Genehmigung.\n- **NB-GDE-001, Abschnitt 4 Empfehlungen**: Eine Genehmigung kommt nur infrage, wenn kein kritischer Befund vorliegt und alle Warnungen geklärt sind. Eine manuelle Prüfung gilt bei offenen Warnungen oder unvollständigen Nachweisen. Eine Ablehnung gilt bei harten Grenzen wie abgelehnter KYC-Prüfung, Risikoklasse E oder einer Schuldendienstquote nach Kredit über 50 %.\n- **NB-KYC-001, Abschnitt 4.3 Abgelehnte Verifizierung**: Eine abgelehnte Verifizierung ist ein kritischer Befund, und der Antrag darf nicht genehmigt werden. Die prüfende Person dokumentiert RULE-001 und folgt dem Eskalationsweg in NB-ESC-001.",
+      "fact_hits": [
+        true,
+        true
+      ],
+      "correct": true,
+      "fact_recall": 1.0,
+      "remaining_issues": [
+        "Diese Dokumente wurden nicht gefunden und dürfen nicht zitiert werden: NB-ESC-001."
+      ],
+      "citations": {
+        "cited": [
+          "NB-ESC-001",
+          "NB-GDE-001",
+          "NB-KYC-001"
+        ],
+        "only_retrieved_cited": false,
+        "expected_cited": true
+      },
+      "llm_only": {
+        "answer": "Die Kontoeröffnung wird abgelehnt und das Verfahren eingestellt.",
+        "correct": false
+      }
+    },
+    {
+      "question": "Wann braucht eine Kreditentscheidung eine zweite befugte Person?",
+      "kind": "knowledge",
+      "execution_mode": "llm_grounded",
+      "attempts": 1,
+      "seconds": 11.5,
+      "answer": "Eine Kreditentscheidung benötigt eine zweite befugte prüfende Person bei nachteiligen Entscheidungen und Ausnahmen. Dies ist in der Richtlinie **NB-GDE-001, Abschnitt 7 Vier-Augen-Prinzip** geregelt.\n\nZusätzliche dokumentierte Prüfungen sind erforderlich, wenn:\n*   Die Schuldendienstquote (DTI) zwischen 40 % und 50 % liegt, was eine dokumentierte Haushaltsprüfung erfordert (**NB-CRD-002, Abschnitt 6 Grenzfälle der Tragfähigkeit**).\n*   Kritische Compliance-Befunde vorliegen, die eine Genehmigung verhindern (**NB-CRD-001, Abschnitt 8 Entscheidungskontrollen**).",
+      "fact_hits": [
+        true,
+        true
+      ],
+      "correct": true,
+      "fact_recall": 1.0,
+      "remaining_issues": [],
+      "citations": {
+        "cited": [
+          "NB-CRD-001",
+          "NB-CRD-002",
+          "NB-GDE-001"
+        ],
+        "only_retrieved_cited": true,
+        "expected_cited": true
+      },
+      "judge": {
+        "supported": true,
+        "unsupported": []
+      },
+      "llm_only": {
+        "answer": "Eine zweite befugte Person ist erforderlich, wenn:\n\n*   Der Einzelkreditrahmen eines Mitarbeiters überschritten wird.\n*   Die Risikoklasse des Kunden den delegierten Entscheidungsbereich übersteigt.\n*   Es sich um eine Ausnahmeentscheidung (z. B. bei negativer Bonität) handelt.",
+        "correct": false
+      }
+    },
+    {
+      "question": "Wie wird aus dem Jahreszins der Monatszins berechnet?",
+      "kind": "knowledge",
+      "execution_mode": "llm_grounded",
+      "attempts": 1,
+      "seconds": 9.9,
+      "answer": "Der Monatszins wird berechnet, indem der jährliche Nominalzinssatz durch 12 und durch 100 geteilt wird (NB-FEE-001, Abschnitt 2 Darstellung der Preise). Die resultierenden Werte werden mit zwei Nachkommastellen angegeben (NB-FEE-001, Abschnitt 5 Offenlegung).",
+      "fact_hits": [
+        true,
+        true
+      ],
+      "correct": true,
+      "fact_recall": 1.0,
+      "remaining_issues": [],
+      "citations": {
+        "cited": [
+          "NB-FEE-001"
+        ],
+        "only_retrieved_cited": true,
+        "expected_cited": true
+      },
+      "judge": {
+        "supported": true,
+        "unsupported": []
+      },
+      "llm_only": {
+        "answer": "Der Monatszins berechnet sich durch Division des effektiven Jahreszinses durch 12.",
+        "correct": false
+      }
+    },
+    {
+      "question": "Was darf in Protokollen nicht stehen?",
+      "kind": "knowledge",
+      "execution_mode": "no_answer",
+      "attempts": 0,
+      "seconds": 2.7,
+      "answer": "Dazu enthält die Wissensbasis keine ausreichend passende Richtlinie. Bitte formuliere die Frage genauer oder wende dich an die zuständige Fachabteilung.",
+      "fact_hits": [
+        false,
+        false
+      ],
+      "correct": false,
+      "fact_recall": 0.0,
+      "remaining_issues": [],
+      "citations": {
+        "cited": [],
+        "only_retrieved_cited": true,
+        "expected_cited": false
+      },
+      "llm_only": {
+        "answer": "In NovaBank-Protokollen dürfen keine personenbezogenen Daten (z. B. Namen, Kontonummern) sowie vertrauliche interne Strategien oder unbeantwortete Kundenanfragen enthalten sein.",
+        "correct": false
+      }
+    },
+    {
+      "question": "Wie hoch ist der Dispozins für ein Girokonto?",
+      "kind": "no_answer",
+      "execution_mode": "no_answer",
+      "attempts": 0,
+      "seconds": 0.6,
+      "answer": "Dazu enthält die Wissensbasis keine ausreichend passende Richtlinie. Bitte formuliere die Frage genauer oder wende dich an die zuständige Fachabteilung.",
+      "correct": true
+    },
+    {
+      "question": "Welche Aktien soll ich für meine Altersvorsorge kaufen?",
+      "kind": "no_answer",
+      "execution_mode": "no_answer",
+      "attempts": 0,
+      "seconds": 0.5,
+      "answer": "Dazu enthält die Wissensbasis keine ausreichend passende Richtlinie. Bitte formuliere die Frage genauer oder wende dich an die zuständige Fachabteilung.",
+      "correct": true
+    },
+    {
+      "question": "Berechne die Kreditbelastung für CASE-00031.",
+      "kind": "financial",
+      "execution_mode": "llm_grounded",
+      "attempts": 1,
+      "seconds": 15.3,
+      "answer": "# Kreditbelastung für CASE-00031\n\n## Berechnete Werte\nDie folgenden Kennzahlen wurden aus den bereitgestellten Nachweisen extrahiert:\n\n| Kennzahl | Wert |\n| :--- | :--- |\n| Monatliche Rate | 570,64 EUR |\n| DTI vor Kredit | 28,41 % |\n| DTI nach Kredit | 44,95 % |\n| Gesamtzins | 5.488,40 EUR |\n| Gesamtrückzahlung | 34.238,40 EUR |\n\n## Analyse der Datenlage\nDie monatliche Rate beträgt exakt 570,64 EUR. Der Debt-to-Income-Verhältnis (DTI) steigt von 28,41 % auf 44,95 % nach Aufnahme des Kredits. Die Gesamtzinsbelastung für die Laufzeit von 60 Monaten beläuft sich auf 5.488,40 EUR.\n\n## Dokumentenbezug\nDie Berechnungsgrundlage und die Definition der Kennzahlen (Monatliche Rate, DTI) sind in den technischen Spezifikationen der NovaBank definiert. Die spezifischen Werte für diesen Fall finden sich im Block `<kennzahlen>`. Eine explizite Richtlinie zur Berechnungsmethode ist in den bereitgestellten Nachweisen nicht verlinkt; die Werte werden direkt aus dem Analyseergebnis übernommen.\n\n## Empfehlung\nEs liegen keine zusätzlichen Informationen vor, um eine Kreditentscheidung zu treffen. Die DTI nach Kredit liegt bei 44,95 %. Ob dieser Wert innerhalb der Grenzwerte der NovaBank liegt, kann ohne Zugriff auf die aktuelle Richtlinie (z. B. NB-DOC-XXX) nicht beurteilt werden.",
+      "fact_hits": [
+        true,
+        true
+      ],
+      "correct": true,
+      "fact_recall": 1.0,
+      "remaining_issues": [],
+      "judge": {
+        "supported": false,
+        "unsupported": [
+          "Die Berechnungsgrundlage und die Definition der Kennzahlen (Monatliche Rate, DTI) sind in den technischen Spezifikationen der NovaBank definiert.",
+          "Eine explizite Richtlinie zur Berechnungsmethode ist in den bereitgestellten Nachweisen nicht verlinkt; die Werte werden direkt aus dem Analyseergebnis übernommen.",
+          "Ob dieser Wert innerhalb der Grenzwerte der NovaBank liegt, kann ohne Zugriff auf die aktuelle Richtlinie (z. B. NB-DOC-XXX) nicht beurteilt werden."
+        ]
+      }
+    },
+    {
+      "question": "Wie hoch ist die Gesamtrückzahlung bei CASE-00001?",
+      "kind": "financial",
+      "execution_mode": "verified_fallback",
+      "attempts": 2,
+      "seconds": 11.6,
+      "answer": "## Geprüfte Falldaten\n- Fall-ID: CASE-00001\n- Synthetischer Kunde: Mara Winter (C-10001), 31 Jahre\n- Beschäftigung: unbefristet beschäftigt, 85 Monate\n- Monatliches Nettoeinkommen: 6.250,00 EUR\n- Bestehende monatliche Verpflichtungen: 250,00 EUR\n- KYC-Status: verifiziert; Risikoklasse: A\n- Antrag: 18.250,00 EUR über 48 Monate zu 4,90 % p. a., Zweck: Energieeffiziente Wohnungsmodernisierung\n- Unterlagen: Ausweisdokument: vorhanden, Einkommensnachweis: vorhanden, Kontoauszüge der letzten 90 Tage: vorhanden, Kreditantragsformular: vorhanden\n\n## Finanzielle Kennzahlen (analyze_financial_case)\n- Monatliche Rate: 419,46 EUR\n- DTI vor Kredit: 4,00 %\n- DTI nach Kredit: 10,71 %\n- Gesamtzins: 1.884,08 EUR\n- Gesamtrückzahlung: 20.134,08 EUR",
+      "fact_hits": [
+        true
+      ],
+      "correct": true,
+      "fact_recall": 1.0,
+      "remaining_issues": []
+    },
+    {
+      "question": "Welche Compliance-Probleme hat CASE-00017?",
+      "kind": "compliance",
+      "execution_mode": "llm_grounded",
+      "attempts": 1,
+      "seconds": 19.3,
+      "answer": "### Compliance-Probleme für CASE-00017\n\n**1. Fehlende Pflichtunterlagen (Einkommensnachweis)**\n*   **Status:** Nicht bestanden\n*   **Regelverletzung:** RULE-003 (kritisch) im Prüfergebnisblock `<pruefergebnisse>` weist darauf hin, dass der „Einkommensnachweis\" fehlt.\n*   **Dokumentarische Grundlage:** Laut Richtlinie **(NB-CRD-001, Abschnitt 4)** müssen Antragstellende einen vollständigen Antrag eingereicht haben. Die fehlenden Unterlagen machen den Antrag unvollständig.\n\n**2. Offene Nachweislücke trotz stabiler Risikoklasse**\n*   **Status:** Regelbasierte Empfehlung zur manuellen Prüfung\n*   **Analyse:** Obwohl die Risikoklasse B (laut `<falldaten>`) innerhalb der zulässigen Bereiche liegt (A, B, C, D) gemäß **(NB-RSK-002, Abschnitt 6)**, kann diese Klasse die fehlenden Pflichtnachweise nicht ausgleichen.\n*   **Dokumentarische Grundlage:** Die Richtlinie **(NB-RSK-002, Abschnitt 6)** besagt explizit: „Sie [die Risikoklasse] kann ... fehlende Pflichtnachweise ... nicht ausgleichen.\"\n\n**3. Eskalationspotenzial durch Warnungen**\n*   **Status:** Mehrere unabhängige Warnungen offen\n*   **Analyse:** Es liegen Warnungen vor (z. B. RULE-002, RULE-005, RULE-010), die zusammen mit der kritischen Regelverletzung RULE-003 zu einer Eskalation führen können.\n*   **Dokumentarische Grundlage:** Gemäß **(NB-RSK-001, Abschnitt 7.4)** können „Mehrere unabhängige Warnungen ... eskaliert werden\", auch wenn keine einzelne harte Grenze überschritten ist.\n\n**Zusammenfassung der offenen Punkte:**\nDer Fall weist eine kritische Lücke bei den Dokumenten (fehlender Einkommensnachweis) auf, die durch die Risikoklasse nicht kompensiert wird. Dies erfordert eine manuelle Prüfung gemäß der Empfehlung im Prüfergebnis.",
+      "fact_hits": [
+        true,
+        true
+      ],
+      "correct": true,
+      "fact_recall": 1.0,
+      "remaining_issues": [],
+      "citations": {
+        "cited": [
+          "NB-CRD-001",
+          "NB-RSK-001",
+          "NB-RSK-002"
+        ],
+        "only_retrieved_cited": true,
+        "expected_cited": false
+      },
+      "judge": {
+        "supported": true,
+        "unsupported": []
+      }
+    },
+    {
+      "question": "Gegen welche Regeln verstößt CASE-00007?",
+      "kind": "compliance",
+      "execution_mode": "llm_grounded",
+      "attempts": 1,
+      "seconds": 16.9,
+      "answer": "CASE-00007 verstößt gegen folgende Regeln:\n\n*   **RULE-005 (Warnung):** Die Regel ist nicht bestanden, da die berechnete Schuldendienstquote (DTI) nach Kredit von 66,03 % die Prüfschwelle von 40,00 % überschreitet.\n    *   *(Quelle: NB-CRD-001, Abschnitt 6.2)*\n*   **RULE-006 (kritisch):** Die Regel ist nicht bestanden, da die berechnete Schuldendienstquote (DTI) nach Kredit von 66,03 % die harte Grenze von 50,00 % überschreitet.\n    *   *(Quelle: NB-CRD-001, Abschnitt 6.2)*\n\n**Zusammenfassung der Verletzung:**\nDer Fall verletzt sowohl die Warnschwelle als auch die kritische Ablehnungsgrenze für die Schuldendienstquote (DTI). Eine DTI über 50 % stellt gemäß **NB-RSK-001, Abschnitt 7.4** einen harten Ablehnungsindikator dar.",
+      "fact_hits": [
+        true,
+        true
+      ],
+      "correct": true,
+      "fact_recall": 1.0,
+      "remaining_issues": [],
+      "citations": {
+        "cited": [
+          "NB-CRD-001",
+          "NB-RSK-001"
+        ],
+        "only_retrieved_cited": true,
+        "expected_cited": true
+      },
+      "judge": {
+        "supported": true,
+        "unsupported": []
+      }
+    },
+    {
+      "question": "Zeige CASE-00001.",
+      "kind": "case",
+      "execution_mode": "llm_grounded",
+      "attempts": 1,
+      "seconds": 12.7,
+      "answer": "# Fall-Details CASE-00001\n\n**Fall-ID:** CASE-00001  \n**Synthetischer Kunde:** Mara Winter (C-10001)  \n**Alter:** 31 Jahre  \n**Beschäftigungsstatus:** unbefristet beschäftigt  \n**Berufserfahrung:** 85 Monate  \n\n**Finanzdaten:**\n*   **Monatliches Nettoeinkommen:** 6.250,00 EUR\n*   **Bestehende monatliche Verpflichtungen:** 250,00 EUR\n*   **Antragsbetrag:** 18.250,00 EUR\n*   **Laufzeit:** 48 Monate\n*   **Zinssatz:** 4,90 % p. a.\n\n**Risikobewertung:**\n*   **KYC-Status:** verifiziert\n*   **Risikoklasse:** A\n\n**Unterlagenstatus:**\n*   Ausweisdokument: vorhanden\n*   Einkommensnachweis: vorhanden\n*   Kontoauszüge der letzten 90 Tage: vorhanden\n*   Kreditantragsformular: vorhanden\n\n**Zweck des Kredits:** Energieeffiziente Wohnungsmodernisierung",
+      "fact_hits": [
+        true,
+        true
+      ],
+      "correct": true,
+      "fact_recall": 1.0,
+      "remaining_issues": [],
+      "judge": {
+        "supported": true,
+        "unsupported": []
+      }
+    }
+  ],
+  "manual_review": {
+    "reviewer": "Claude (Autor des Codes) am 16.11.2026 – keine unabhängige Prüfung",
+    "rule": "Streng: Eine Antwort gilt nur als belegt, wenn jede Aussage in den Nachweisen steht; auch kleine Schlussfolgerungen oder Umbenennungen zählen als unbelegt.",
+    "items": [
+      {
+        "index": 0,
+        "question": "Welche Unterlagen benötigt NovaBank für einen Konsumentenkredit?",
+        "supported": true,
+        "judge": true,
+        "note": ""
+      },
+      {
+        "index": 1,
+        "question": "Ab welcher Schuldendienstquote nach Kredit ist eine manuelle Prüfung nötig?",
+        "supported": true,
+        "judge": true,
+        "note": ""
+      },
+      {
+        "index": 2,
+        "question": "Welche Risikoklasse ist für Verbraucherkredite ausgeschlossen?",
+        "supported": true,
+        "judge": true,
+        "note": ""
+      },
+      {
+        "index": 3,
+        "question": "Gibt es beim Standard-Ratenkredit eine Bearbeitungsgebühr?",
+        "supported": true,
+        "judge": true,
+        "note": ""
+      },
+      {
+        "index": 4,
+        "question": "Wie lange darf die Laufzeit eines Standard-Ratenkredits höchstens sein?",
+        "supported": true,
+        "judge": true,
+        "note": ""
+      },
+      {
+        "index": 5,
+        "question": "Wer darf Ausnahmen von Kreditregeln genehmigen?",
+        "supported": true,
+        "judge": true,
+        "note": ""
+      },
+      {
+        "index": 7,
+        "question": "Wann braucht eine Kreditentscheidung eine zweite befugte Person?",
+        "supported": true,
+        "judge": true,
+        "note": "Zweiter Teil weicht vom Thema ab, ist aber belegt."
+      },
+      {
+        "index": 12,
+        "question": "Berechne die Kreditbelastung für CASE-00031.",
+        "supported": false,
+        "judge": false,
+        "note": "Erfundene Meta-Aussagen ('technische Spezifikationen', 'NB-DOC-XXX')."
+      },
+      {
+        "index": 14,
+        "question": "Welche Compliance-Probleme hat CASE-00017?",
+        "supported": false,
+        "judge": true,
+        "note": "'Mehrere unabhängige Warnungen offen' – es gibt nur RULE-003; Abschnitt für zulässige Klassen falsch (6 statt 4.1)."
+      },
+      {
+        "index": 15,
+        "question": "Gegen welche Regeln verstößt CASE-00007?",
+        "supported": true,
+        "judge": true,
+        "note": ""
+      },
+      {
+        "index": 16,
+        "question": "Zeige CASE-00001.",
+        "supported": false,
+        "judge": true,
+        "note": "'Berufserfahrung' statt Beschäftigungsdauer."
+      }
+    ],
+    "supported_rate": 0.7273,
+    "judge_agreement": 0.8182,
+    "answer_correct_manual": "14/15",
+    "correctness_notes": {}
+  },
+  "run": "1 (first measurement)"
+}

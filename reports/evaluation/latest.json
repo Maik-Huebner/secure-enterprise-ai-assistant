@@ -23,7 +23,7 @@
     "knowledge_corpus_sha256": "578cc84e97ede778357bc2a003658609261f222ad0cf3ff20b2e2589dbc5bdc7",
     "retrieval_suite_sha256": "fdd7f5c0db1b001de30e4aa87b95b81f7ce43065d6d89d82a1700b747eb7ae05",
     "routing_suite_sha256": "e079d3dfe54d759c4c54b3dbf6446b98065fd5ee0f1534aaa137e04892cf9ead",
-    "rules_sha256": "7c993cc89a9945d4046ee1e65b299b1f788e128ef2a58bfa08a4f34d8d005e89",
+    "rules_sha256": "064ab3603a3c045e22c30eb4919e13aa8d2c8d744e439188b5f6ea64c2217514",
     "suite_sha256": "00f264ee34763389eab57ccedd65379fd536813ef0d9d4b0c858f98211f93686"
   },
   "limitations": "Small synthetic suites written by the project author; they do not measure real lending quality, legal compliance, free-form model accuracy, or production security.",
