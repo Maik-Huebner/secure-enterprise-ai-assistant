@@ -148,10 +148,15 @@ class McpEvidenceClient:
                 {ACCESS_TOKEN_VARIABLE: self._access_token} if self._access_token else None
             ),
         )
-        async with stdio_client(parameters) as (read_stream, write_stream):
-            async with ClientSession(read_stream, write_stream) as session:
-                await session.initialize()
-                return await run_tool_plan(session, route, query)
+        try:
+            async with stdio_client(parameters) as (read_stream, write_stream):
+                async with ClientSession(read_stream, write_stream) as session:
+                    await session.initialize()
+                    return await run_tool_plan(session, route, query)
+        except BaseExceptionGroup as group:
+            # MCP 2.x runs the transport in a task group: domain errors arrive wrapped.
+            _raise_domain_error(group)
+            raise MCPClientError("Der MCP-Server hat die Anfrage nicht beantwortet.") from group
 
     async def _collect_http(self, route: RouteDecision, query: str) -> Evidence:
         headers = {"Authorization": f"Bearer {self._access_token}"} if self._access_token else {}
@@ -174,12 +179,17 @@ class McpEvidenceClient:
         except BaseExceptionGroup as group:
             if {401, 403} & set(statuses):
                 raise AccessDeniedError("Für diese Anfrage fehlt die Berechtigung.") from group
-            for error in _leaves(group):
-                if isinstance(error, (CaseNotFoundError, AccessDeniedError, MCPClientError)):
-                    raise error from group
+            _raise_domain_error(group)
             raise MCPClientError("Der MCP-HTTP-Server ist nicht erreichbar.") from group
         except httpx2.TransportError as exc:
             raise MCPClientError("Der MCP-HTTP-Server ist nicht erreichbar.") from exc
+
+
+def _raise_domain_error(group: BaseExceptionGroup[BaseException]) -> None:
+    """Re-raise the first expected error hidden in a task-group exception, if any."""
+    for error in _leaves(group):
+        if isinstance(error, (CaseNotFoundError, AccessDeniedError, MCPClientError)):
+            raise error from None
 
 
 def _leaves(group: BaseExceptionGroup[BaseException]) -> list[BaseException]:
