@@ -1,14 +1,17 @@
 PYTHON ?= python
 
-.PHONY: install-lock quality test evidence-check reproduce-evidence audit build
+.PHONY: install-lock quality typecheck test evidence-check reproduce-evidence audit build
 
 install-lock:
 	$(PYTHON) -m pip install --no-deps -r requirements/lock-py313.txt
 	$(PYTHON) -m pip install --no-deps --no-build-isolation .
 
-quality:
+quality: typecheck
 	$(PYTHON) -m ruff check src scripts tests
 	$(PYTHON) -m ruff format --check src scripts tests
+
+typecheck:
+	$(PYTHON) -m mypy
 
 test:
 	$(PYTHON) -m pytest -q -W error

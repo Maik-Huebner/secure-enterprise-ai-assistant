@@ -97,7 +97,8 @@ def test_case_rejects_mismatched_customer() -> None:
 
 def test_extra_fields_are_rejected() -> None:
     with pytest.raises(ValidationError):
-        CustomerProfile(
+        # The unknown field is the point of this test; mypy rejects it statically as well.
+        CustomerProfile(  # type: ignore[call-arg]
             customer_id="C-10284",
             full_name="Anna Becker",
             age=42,

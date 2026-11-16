@@ -62,7 +62,9 @@ class KnowledgeIngestor:
             ]
         full_text = "\n".join(text for _, text in pages)
         metadata = self._metadata(full_text, path)
-        sections = [(f"Page {page}", text, page) for page, text in pages if text.strip()]
+        sections: list[tuple[str, str, int | None]] = [
+            (f"Page {page}", text, page) for page, text in pages if text.strip()
+        ]
         return self._build_chunks(metadata, sections)
 
     @staticmethod

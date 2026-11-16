@@ -330,7 +330,10 @@ class AssistantController:
     def case_view(self, case_id: str) -> dict[str, Any]:
         """Return a structured case view for the non-agent browse tab."""
         case_data = self.tools.get_customer_case(case_id).model_dump(mode="json")
-        return _ui_value(case_data)
+        view = _ui_value(case_data)
+        if not isinstance(view, dict):
+            raise TypeError("Case view must be a mapping.")
+        return view
 
     def diagnostics(self) -> dict[str, Any]:
         """Check local components without sending enterprise data externally."""
@@ -365,7 +368,8 @@ def build_app(controller: AssistantController | None = None) -> gr.Blocks:
     controller = controller or AssistantController()
     case_ids = [case.case_id for case in controller.tools.repository.list_cases()]
 
-    with gr.Blocks(title=UI_TITLE) as app:
+    app = gr.Blocks(title=UI_TITLE)
+    with app:
         gr.HTML(
             f"<div class='hero'><h1>{UI_TITLE}</h1>"
             f"<p>{COMPANY_NAME} · Lokale agentische Entscheidungsunterstützung</p></div>"

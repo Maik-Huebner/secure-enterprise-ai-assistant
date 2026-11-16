@@ -80,9 +80,9 @@ def test_full_assessment_crew_builds_with_reviewer_guardrail(tmp_path) -> None:
     crew = CrewOrchestrator(AgentFactory(settings)).build("demo", route)
 
     assert len(crew.tasks) == 3
-    assert crew.tasks[-1].guardrail.__wrapped__ is validate_decision_brief
-    assert all(agent.llm.model == "complex-test-model" for agent in crew.agents)
-    assert all(agent.llm.provider == "ollama" for agent in crew.agents)
+    assert getattr(crew.tasks[-1].guardrail, "__wrapped__", None) is validate_decision_brief
+    assert all(getattr(agent.llm, "model", None) == "complex-test-model" for agent in crew.agents)
+    assert all(getattr(agent.llm, "provider", None) == "ollama" for agent in crew.agents)
     assert len({id(agent.llm) for agent in crew.agents}) == 1
     assert all(
         "Never introduce a general financial or regulatory threshold" in task.description
