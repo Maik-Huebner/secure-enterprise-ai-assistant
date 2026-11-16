@@ -113,10 +113,10 @@ lexical ranking uses BM25S, and reciprocal-rank fusion combines both.
 
 **Honest scope of the default configuration:** the default embedder is a deterministic hashing
 bag-of-words, not a semantic model. In this mode both rankings are lexical, so the system does
-not yet perform meaning-based retrieval. The knowledge base is English while the UI is German;
-a fixed map of eight German terms bridges the gap. A semantic multilingual embedder is planned
-for v1.2 (see [docs/plan-v2.md](docs/plan-v2.md)); the retriever already accepts one through its
-embedder interface.
+not yet perform meaning-based retrieval. Knowledge base, rules, prompts, and UI are German since
+v1.1. A semantic multilingual embedder is planned for v1.2 (see
+[docs/plan-v2.md](docs/plan-v2.md)); the retriever already accepts one through its embedder
+interface.
 
 Retrieval does not equate nearest with relevant: weak matches produce `out_of_scope=true` and
 no passages. Retrieved content is explicitly treated as untrusted evidence, not instructions.
@@ -134,29 +134,41 @@ cases, rules, and knowledge corpus.
 | Tool-selection accuracy | 1.0000 | 10 queries |
 | Financial exact match | 1.0000 | 5 cases × 5 metrics |
 | Compliance-rule exact match | 1.0000 | 5 cases |
-| Retrieval Recall@5 | 1.0000 | 5 questions |
-| Source-attribution rate | 1.0000 | 5 questions |
+| Retrieval Recall@5 (German questions, hashing embedder) | 0.8000 | 5 questions |
+| Source-attribution rate | 0.8000 | 5 questions |
 | Out-of-scope accuracy | 1.0000 | 3 questions |
-| Input-guardrail accuracy | 1.0000 | 6 blocked/benign queries |
+| Guardrail attack recall – dev split | 1.0000 | 30 attacks |
+| Guardrail false-positive rate – dev split | 0.0000 | 30 benign questions |
+| Guardrail attack recall – **holdout split** | **0.7500** | 20 attacks |
+| Guardrail false-positive rate – holdout split | 0.0000 | 20 benign questions |
 
-These eight perfect scores describe only a **synthetic offline benchmark** implemented as a
-deliberately small regression suite. They do not measure real credit-decision accuracy, certify regulatory compliance,
-or establish that the complete agentic pipeline is 100% accurate. LLM-only comparison is not
-part of this benchmark; measured live-model behavior is documented separately in
+Measured on 16.11.2026 for v1.1.0. The guardrail dev split was used to design the patterns and
+is optimistic by construction; the holdout split was written afterwards and measured without
+tuning. Both splits come from the pattern author, so neither is an independent benchmark. The
+holdout result (15 of 20 attacks blocked) is the honest estimate, and it is why the pattern
+filter is only the first security layer. Since v1.1 the knowledge base is German and the former
+eight-term query-expansion map is gone; the remaining retrieval miss is a German compound
+("Pflichtunterlagen" vs. "Pflichtnachweise") that lexical hashing cannot bridge. Semantic
+embeddings follow in v1.2.
+
+These scores describe only a **synthetic offline benchmark** implemented as a deliberately small
+regression suite. They do not measure real credit-decision accuracy, certify regulatory
+compliance, or establish that the complete agentic pipeline is accurate. LLM-only comparison is
+not part of this benchmark; measured live-model behavior is documented separately in
 `docs/example-execution-trace.md`.
 
 Two metrics carry little independent information, and the report says so in `metric_notes`:
 tool-selection accuracy is derived from the routed intent and therefore equals routing accuracy,
-and source attribution only checks that returned chunks carry metadata. The routing and
-guardrail suites consist of the demo phrasings. A separate probe with paraphrased German input,
-documented in [docs/audit-v1.md](docs/audit-v1.md), measured far lower results (for example
-1 of 12 attack phrasings blocked and 4 of 14 German policy questions retrieved).
+and source attribution only checks that returned chunks carry metadata. The routing suite still
+consists of the demo phrasings; it is extended in v1.2. The v1.0.2 audit probe
+([docs/audit-v1.md](docs/audit-v1.md)) had measured 1 of 12 attack phrasings blocked.
 
 ## Security controls
 
 - strict input and output schemas with forbidden extra fields;
 - tool and per-agent allowlists;
-- explicit prompt-override, prompt-exfiltration, and shell-request blocking;
+- a first-layer German/English prompt-injection filter with obfuscation normalization (holdout
+  recall 0.75, no false positives on 50 benign questions);
 - safe knowledge-root containment and supported-extension checks;
 - no secrets, production customer data, arbitrary SQL, shell, or model-written arithmetic;
 - error sanitization at the UI boundary;
@@ -170,7 +182,7 @@ See [docs/security.md](docs/security.md) for controls and known production gaps.
 ## Local setup
 
 Requirements: Python 3.13 (`>=3.13,<3.14`), Ollama, and sufficient memory for the chosen
-local model. Python 3.13.9 is the reproducibly validated runtime for release v1.0.3.
+local model. Python 3.13.9 is the reproducibly validated runtime for release v1.1.0.
 
 ```bash
 python3.13 -m venv .venv
@@ -232,7 +244,7 @@ make build
 The full test suite does not need a running model or network connection. End-to-end generation
 does require the configured Ollama server and model.
 
-Current local release gate: **92 tests passing** under Python 3.13 with warnings treated as
+Current local release gate: **190 tests passing** under Python 3.13 with warnings treated as
 errors. CI installs the package non-editably and proves that imports resolve from
 `site-packages`.
 

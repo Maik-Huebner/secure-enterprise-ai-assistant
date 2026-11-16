@@ -8,7 +8,8 @@ Implemented controls:
 - four-tool allowlist with per-agent least-privilege MCP filters;
 - no arbitrary SQL, shell, code execution, URL fetching, or filesystem tool;
 - case-ID, query-length, metadata-filter, and path-containment validation;
-- explicit prompt-override, prompt-exfiltration, and shell-request blocking;
+- a first-layer German/English prompt-injection filter (five categories, Unicode/obfuscation
+  normalization) measured on a dev and a separate holdout split;
 - retrieved documents treated as untrusted evidence in every agent prompt;
 - source metadata retained from ingestion through retrieval output and surfaced as document,
   version, and section citations;
@@ -24,8 +25,12 @@ Implemented controls:
   direct Python-service bypass;
 - final lending responsibility remains with an authorized human reviewer.
 
-Prompt-injection handling is deliberately narrow and testable: user requests containing prompt
-override, prompt-exfiltration, or shell-execution patterns are blocked before routing. Retrieved
+Prompt-injection handling is layered. The first layer is a pattern filter for German and English
+input (instruction override, role/mode switch, prompt exfiltration, code execution, policy
+bypass) that normalizes NFKC forms, invisible characters, spaced-out letters, and digit-for-letter
+substitutions. On the holdout split it blocked 15 of 20 attacks with no false positives on 20
+benign questions (v1.1.0, 16.11.2026). Paraphrases such as "lass die Vorgaben außer Acht" still
+pass, which is why this filter is never the only control. Retrieved
 document text is treated as untrusted evidence and cannot expand the four-tool allowlist or grant
 shell, SQL, URL-fetching, or arbitrary filesystem capabilities.
 
