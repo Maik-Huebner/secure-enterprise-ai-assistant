@@ -1,25 +1,28 @@
-Document-ID: NB-RSK-002
-Title: Risk Classification Guide
-Version: 1.7
-Effective-Date: 2026-09-01
-Owner: Credit Risk Management
-Classification: Internal — Synthetic Demo
+Dokument-ID: NB-RSK-002
+Titel: Leitfaden zur Risikoklassifizierung
+Version: 1.8
+Gültig ab: 2026-09-01
+Verantwortlich: Kreditrisikomanagement
+Klassifizierung: Intern – synthetische Demo
 
-# Risk Classification Guide
+# Leitfaden zur Risikoklassifizierung
 
-> NovaBank Financial Services AG is a fictional organization. All customers, applications, policies, rules, and financial data included in this project are synthetic and created solely for demonstration, testing, and portfolio purposes.
+> NovaBank Financial Services AG ist eine fiktive Organisation. Alle Kunden, Anträge, Richtlinien, Regeln und Finanzdaten in diesem Projekt sind synthetisch und wurden ausschließlich für Demonstrations-, Test- und Portfoliozwecke erstellt.
 
-## 3 Classes
-Class A indicates strongest synthetic risk quality; B indicates good quality; C indicates
-moderate risk; D indicates elevated risk requiring senior review; E is ineligible.
+## 3 Klassen
+Klasse A steht für die beste synthetische Risikoqualität, B für gute Qualität, C für
+mittleres Risiko und D für erhöhtes Risiko mit Prüfung durch eine erfahrene prüfende
+Person. Klasse E ist nicht zulässig.
 
-## 4.1 Eligible risk classes
-Classes A, B, C, and D can enter assessment, subject to all other controls. Class D is
-never an automatic approval. Class E fails the standard appetite rule.
+## 4.1 Zulässige Risikoklassen
+Die Klassen A, B, C und D können in die Bewertung gehen, sofern alle anderen Kontrollen
+erfüllt sind. Klasse D führt niemals zu einer automatischen Genehmigung. Klasse E
+verletzt die Regel zur Standard-Risikobereitschaft.
 
-## 6 Use limitations
-Risk class is one input, not a decision by itself. It cannot compensate for rejected KYC,
-missing mandatory evidence, or a breached hard affordability limit.
+## 6 Grenzen der Verwendung
+Die Risikoklasse ist ein Merkmal unter mehreren und allein keine Entscheidung. Sie kann
+eine abgelehnte KYC-Prüfung, fehlende Pflichtnachweise oder eine überschrittene harte
+Tragfähigkeitsgrenze nicht ausgleichen.
 
-## Document control
-Owner: Credit Risk Management. Review cycle: annual. This document is synthetic.
+## Dokumentenlenkung
+Verantwortlich: Kreditrisikomanagement. Überprüfung: jährlich. Dieses Dokument ist synthetisch.

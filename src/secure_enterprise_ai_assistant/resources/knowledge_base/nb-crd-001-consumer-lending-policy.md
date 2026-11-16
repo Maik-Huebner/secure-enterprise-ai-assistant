@@ -1,32 +1,38 @@
-Document-ID: NB-CRD-001
-Title: Consumer Lending Policy
-Version: 1.3
-Effective-Date: 2026-09-01
-Owner: Retail Credit Risk
-Classification: Internal — Synthetic Demo
+Dokument-ID: NB-CRD-001
+Titel: Richtlinie für Verbraucherkredite
+Version: 1.4
+Gültig ab: 2026-09-01
+Verantwortlich: Kreditrisiko Privatkunden
+Klassifizierung: Intern – synthetische Demo
 
-# Consumer Lending Policy
+# Richtlinie für Verbraucherkredite
 
-> NovaBank Financial Services AG is a fictional organization. All customers, applications, policies, rules, and financial data included in this project are synthetic and created solely for demonstration, testing, and portfolio purposes.
+> NovaBank Financial Services AG ist eine fiktive Organisation. Alle Kunden, Anträge, Richtlinien, Regeln und Finanzdaten in diesem Projekt sind synthetisch und wurden ausschließlich für Demonstrations-, Test- und Portfoliozwecke erstellt.
 
-## 1 Purpose and scope
-This policy governs NovaBank unsecured consumer credits for synthetic retail customers.
-It must be read with NB-DOC-001, NB-KYC-001, and NB-RSK-001.
+## 1 Zweck und Geltungsbereich
+Diese Richtlinie regelt unbesicherte Verbraucherkredite der NovaBank für synthetische
+Privatkunden. Sie gilt zusammen mit NB-DOC-001, NB-KYC-001 und NB-RSK-001.
 
-## 4 Eligibility
-Applicants must be at least 18 years old, have a completed application, and have a
-KYC status of verified before approval. Risk class E is outside standard appetite.
+## 4 Voraussetzungen
+Antragstellende müssen mindestens 18 Jahre alt sein, einen vollständigen Antrag
+eingereicht haben und vor der Genehmigung den KYC-Status verifiziert haben. Risikoklasse E
+liegt außerhalb der Standard-Risikobereitschaft.
 
-## 6 Affordability assessment
-Affordability uses verified monthly net income and existing monthly debt commitments.
-The new contractual annuity payment is added to existing debt. A post-loan DTI up to
-40% is within the standard review corridor. Above 40% requires documented manual
-review; above 50% is a hard decline indicator under NB-RSK-001 section 7.4.
+## 6 Tragfähigkeitsprüfung
+Die Tragfähigkeit wird aus dem verifizierten monatlichen Nettoeinkommen und den
+bestehenden monatlichen Zahlungsverpflichtungen berechnet. Die neue vertragliche
+Annuitätenrate wird zu den bestehenden Verpflichtungen addiert.
 
-## 8 Decision controls
-Financial values must come from the approved deterministic calculator. An employee
-may not replace calculated values with estimates. Critical compliance findings block
-approval; warnings require a recorded reviewer disposition.
+## 6.2 Schwellenwerte der Schuldendienstquote
+Eine Schuldendienstquote (DTI) nach Kredit bis 40 % liegt im Standard-Prüfkorridor.
+Über 40 % ist eine dokumentierte manuelle Prüfung erforderlich. Über 50 % liegt ein harter
+Ablehnungsindikator nach NB-RSK-001 Abschnitt 7.4 vor.
 
-## Document control
-Owner: Retail Credit Risk. Review cycle: annual. This document is synthetic.
+## 8 Entscheidungskontrollen
+Finanzkennzahlen müssen aus dem freigegebenen deterministischen Rechner stammen.
+Mitarbeitende dürfen berechnete Werte nicht durch Schätzungen ersetzen. Kritische
+Compliance-Befunde verhindern eine Genehmigung; Warnungen erfordern eine dokumentierte
+Entscheidung der prüfenden Person.
+
+## Dokumentenlenkung
+Verantwortlich: Kreditrisiko Privatkunden. Überprüfung: jährlich. Dieses Dokument ist synthetisch.

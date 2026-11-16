@@ -1,25 +1,27 @@
-Document-ID: NB-CMP-001
-Title: Customer Complaint Procedure
-Version: 1.1
-Effective-Date: 2026-09-01
-Owner: Customer Care
-Classification: Internal — Synthetic Demo
+Dokument-ID: NB-CMP-001
+Titel: Verfahren für Kundenbeschwerden
+Version: 1.2
+Gültig ab: 2026-09-01
+Verantwortlich: Kundenservice
+Klassifizierung: Intern – synthetische Demo
 
-# Customer Complaint Procedure
+# Verfahren für Kundenbeschwerden
 
-> NovaBank Financial Services AG is a fictional organization. All customers, applications, policies, rules, and financial data included in this project are synthetic and created solely for demonstration, testing, and portfolio purposes.
+> NovaBank Financial Services AG ist eine fiktive Organisation. Alle Kunden, Anträge, Richtlinien, Regeln und Finanzdaten in diesem Projekt sind synthetisch und wurden ausschließlich für Demonstrations-, Test- und Portfoliozwecke erstellt.
 
-## 2 Intake
-Record the complaint category, case reference, received time, and requested outcome.
-Do not request unnecessary identity or financial details in free text.
+## 2 Aufnahme
+Erfasst werden Beschwerdekategorie, Fallbezug, Eingangszeit und gewünschtes Ergebnis.
+Im Freitext werden keine unnötigen Identitäts- oder Finanzdaten abgefragt.
 
-## 4 Investigation
-The handler reviews the relevant decision record, tool outputs, source citations, and
-customer-provided corrections. AI-generated summaries are supporting material only.
+## 4 Untersuchung
+Die bearbeitende Person prüft die zugehörige Entscheidungsakte, die Werkzeugausgaben,
+die Quellenangaben und die Korrekturen der Kundin oder des Kunden. KI-generierte
+Zusammenfassungen sind nur unterstützendes Material.
 
-## 6 Resolution
-Communicate the result in plain language, identify corrections made, and explain the
-human escalation channel. Complaints involving data accuracy also follow NB-DPR-001.
+## 6 Abschluss
+Das Ergebnis wird in verständlicher Sprache mitgeteilt, vorgenommene Korrekturen werden
+benannt, und der Weg zur Eskalation an einen Menschen wird erklärt. Beschwerden zur
+Richtigkeit von Daten folgen zusätzlich NB-DPR-001.
 
-## Document control
-Owner: Customer Care. Review cycle: annual. This document is synthetic.
+## Dokumentenlenkung
+Verantwortlich: Kundenservice. Überprüfung: jährlich. Dieses Dokument ist synthetisch.

@@ -1,27 +1,29 @@
-Document-ID: NB-AML-001
-Title: Anti-Money-Laundering Guidelines
-Version: 1.4
-Effective-Date: 2026-09-01
-Owner: Financial Crime Prevention
-Classification: Internal — Synthetic Demo
+Dokument-ID: NB-AML-001
+Titel: Leitlinien zur Geldwäscheprävention
+Version: 1.5
+Gültig ab: 2026-09-01
+Verantwortlich: Bekämpfung von Finanzkriminalität
+Klassifizierung: Intern – synthetische Demo
 
-# Anti-Money-Laundering Guidelines
+# Leitlinien zur Geldwäscheprävention
 
-> NovaBank Financial Services AG is a fictional organization. All customers, applications, policies, rules, and financial data included in this project are synthetic and created solely for demonstration, testing, and portfolio purposes.
+> NovaBank Financial Services AG ist eine fiktive Organisation. Alle Kunden, Anträge, Richtlinien, Regeln und Finanzdaten in diesem Projekt sind synthetisch und wurden ausschließlich für Demonstrations-, Test- und Portfoliozwecke erstellt.
 
-## 2 Scope
-These synthetic guidelines demonstrate AML reasoning without representing legal advice
-or the procedures of any real bank.
+## 2 Geltungsbereich
+Diese synthetischen Leitlinien zeigen beispielhaft Überlegungen zur Geldwäscheprävention
+(AML). Sie sind keine Rechtsberatung und beschreiben nicht die Verfahren einer echten
+Bank.
 
-## 4 Review triggers
-Unexplained transaction patterns, inconsistent stated purpose, identity discrepancies,
-or attempts to bypass evidence requirements trigger manual review. A trigger is not by
-itself proof of wrongdoing.
+## 4 Prüfauslöser
+Unerklärliche Transaktionsmuster, widersprüchlich angegebene Verwendungszwecke,
+Abweichungen bei der Identität oder Versuche, Nachweispflichten zu umgehen, lösen eine
+manuelle Prüfung aus. Ein Auslöser allein ist kein Beweis für ein Fehlverhalten.
 
-## 5 Handling
-Employees must not reveal internal detection logic to an applicant. Record objective
-facts, preserve provenance, and escalate through NB-ESC-001. The assistant may summarize
-the workflow but may not make accusations or create unsupported findings.
+## 5 Vorgehen
+Mitarbeitende dürfen die interne Erkennungslogik nicht gegenüber Antragstellenden
+offenlegen. Sie halten objektive Fakten fest, sichern die Herkunft der Informationen und
+eskalieren nach NB-ESC-001. Der Assistent darf den Ablauf zusammenfassen, aber keine
+Beschuldigungen aussprechen und keine unbelegten Befunde erzeugen.
 
-## Document control
-Owner: Financial Crime Prevention. Review cycle: annual. This document is synthetic.
+## Dokumentenlenkung
+Verantwortlich: Bekämpfung von Finanzkriminalität. Überprüfung: jährlich. Dieses Dokument ist synthetisch.

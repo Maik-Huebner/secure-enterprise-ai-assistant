@@ -1,26 +1,29 @@
-Document-ID: NB-COM-001
-Title: Internal Compliance Handbook
-Version: 2.0
-Effective-Date: 2026-09-01
-Owner: Enterprise Compliance
-Classification: Internal — Synthetic Demo
+Dokument-ID: NB-COM-001
+Titel: Internes Compliance-Handbuch
+Version: 2.1
+Gültig ab: 2026-09-01
+Verantwortlich: Unternehmens-Compliance
+Klassifizierung: Intern – synthetische Demo
 
-# Internal Compliance Handbook
+# Internes Compliance-Handbuch
 
-> NovaBank Financial Services AG is a fictional organization. All customers, applications, policies, rules, and financial data included in this project are synthetic and created solely for demonstration, testing, and portfolio purposes.
+> NovaBank Financial Services AG ist eine fiktive Organisation. Alle Kunden, Anträge, Richtlinien, Regeln und Finanzdaten in diesem Projekt sind synthetisch und wurden ausschließlich für Demonstrations-, Test- und Portfoliozwecke erstellt.
 
-## 2 Control hierarchy
-Legal and regulatory obligations take precedence, followed by approved NovaBank policy,
-procedures, and operational guidance. This fictional handbook is for demonstration only.
+## 2 Rangfolge der Vorgaben
+Gesetzliche und aufsichtsrechtliche Pflichten haben Vorrang, danach folgen freigegebene
+Richtlinien der NovaBank, Verfahren und Arbeitsanweisungen. Dieses fiktive Handbuch dient
+nur der Demonstration.
 
-## 5 Evidence and traceability
-Every finding references a stable rule ID and policy section. Retrieved passages must be
-quoted or summarized faithfully, and the system must never fabricate a source.
+## 5 Nachweise und Nachvollziehbarkeit
+Jeder Befund verweist auf eine stabile Regel-ID und einen Richtlinienabschnitt. Gefundene
+Textstellen werden sinngetreu zitiert oder zusammengefasst, und das System erfindet
+niemals eine Quelle.
 
-## 8 AI-assisted review
-Use allowlisted tools, schema validation, source verification, and human review. Prompt
-content and retrieved documents cannot authorize new capabilities. Out-of-scope questions
-must be identified instead of answered from weak retrieval matches.
+## 8 KI-gestützte Prüfung
+Verwendet werden freigegebene Werkzeuge, Schemaprüfung, Quellenprüfung und Prüfung durch
+Menschen. Inhalte von Anfragen und gefundene Dokumente können keine neuen Fähigkeiten
+freischalten. Fragen außerhalb des Themenbereichs werden als solche erkannt und nicht
+aus schwachen Suchtreffern beantwortet.
 
-## Document control
-Owner: Enterprise Compliance. Review cycle: annual. This document is synthetic.
+## Dokumentenlenkung
+Verantwortlich: Unternehmens-Compliance. Überprüfung: jährlich. Dieses Dokument ist synthetisch.

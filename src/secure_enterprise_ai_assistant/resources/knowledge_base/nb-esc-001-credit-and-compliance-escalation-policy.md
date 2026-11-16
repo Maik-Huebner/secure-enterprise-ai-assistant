@@ -1,26 +1,29 @@
-Document-ID: NB-ESC-001
-Title: Credit and Compliance Escalation Policy
-Version: 1.5
-Effective-Date: 2026-09-01
-Owner: Enterprise Compliance
-Classification: Internal — Synthetic Demo
+Dokument-ID: NB-ESC-001
+Titel: Richtlinie zur Eskalation von Kredit- und Compliance-Fällen
+Version: 1.6
+Gültig ab: 2026-09-01
+Verantwortlich: Unternehmens-Compliance
+Klassifizierung: Intern – synthetische Demo
 
-# Credit and Compliance Escalation Policy
+# Richtlinie zur Eskalation von Kredit- und Compliance-Fällen
 
-> NovaBank Financial Services AG is a fictional organization. All customers, applications, policies, rules, and financial data included in this project are synthetic and created solely for demonstration, testing, and portfolio purposes.
+> NovaBank Financial Services AG ist eine fiktive Organisation. Alle Kunden, Anträge, Richtlinien, Regeln und Finanzdaten in diesem Projekt sind synthetisch und wurden ausschließlich für Demonstrations-, Test- und Portfoliozwecke erstellt.
 
-## 2 Escalation levels
-Level 1 covers routine warnings handled by a credit reviewer. Level 2 covers multiple
-warnings, class D risk, or material inconsistencies. Level 3 covers critical compliance
-failures, suspected document fraud, and security incidents.
+## 2 Eskalationsstufen
+Stufe 1 umfasst routinemäßige Warnungen, die eine Kreditprüferin oder ein Kreditprüfer
+bearbeitet. Stufe 2 umfasst mehrere Warnungen, Risikoklasse D oder wesentliche
+Widersprüche. Stufe 3 umfasst kritische Compliance-Befunde, Verdacht auf
+Dokumentenbetrug und Sicherheitsvorfälle.
 
-## 4 Required package
-Escalation includes case ID, objective issue summary, calculator output, rule IDs, source
-sections, and actions already taken. Do not include hidden model reasoning.
+## 4 Erforderliche Unterlagen
+Eine Eskalation enthält Fall-ID, eine sachliche Zusammenfassung des Problems, die Ausgabe
+des Rechners, Regel-IDs, Quellenabschnitte und bereits ergriffene Maßnahmen. Interne
+Gedankengänge des Modells gehören nicht hinein.
 
-## 6 Authority
-Only designated humans approve exceptions. The assistant may recommend an escalation
-level but cannot grant an exception or mark a critical rule as resolved.
+## 6 Befugnisse
+Nur benannte Menschen genehmigen Ausnahmen. Der Assistent darf eine Eskalationsstufe
+empfehlen, aber keine Ausnahme erteilen und keine kritische Regel als erledigt
+markieren.
 
-## Document control
-Owner: Enterprise Compliance. Review cycle: annual. This document is synthetic.
+## Dokumentenlenkung
+Verantwortlich: Unternehmens-Compliance. Überprüfung: jährlich. Dieses Dokument ist synthetisch.

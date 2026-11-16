@@ -1,26 +1,28 @@
-Document-ID: NB-PRD-001
-Title: Consumer Credit Product Catalogue
-Version: 2.2
-Effective-Date: 2026-09-01
-Owner: Retail Products
-Classification: Internal — Synthetic Demo
+Dokument-ID: NB-PRD-001
+Titel: Produktkatalog Verbraucherkredite
+Version: 2.3
+Gültig ab: 2026-09-01
+Verantwortlich: Privatkundenprodukte
+Klassifizierung: Intern – synthetische Demo
 
-# Consumer Credit Product Catalogue
+# Produktkatalog Verbraucherkredite
 
-> NovaBank Financial Services AG is a fictional organization. All customers, applications, policies, rules, and financial data included in this project are synthetic and created solely for demonstration, testing, and portfolio purposes.
+> NovaBank Financial Services AG ist eine fiktive Organisation. Alle Kunden, Anträge, Richtlinien, Regeln und Finanzdaten in diesem Projekt sind synthetisch und wurden ausschließlich für Demonstrations-, Test- und Portfoliozwecke erstellt.
 
-## 2.1 Standard Personal Loan
-The synthetic Standard Personal Loan supports EUR 1,000 to EUR 75,000 and terms from
-6 to 84 months. Interest is fixed for the contractual term. Amounts or terms outside
-these limits need an exception route and are not eligible for automated approval.
+## 2.1 Produktgrenzen
+Der synthetische Standard-Ratenkredit umfasst Beträge von 1.000 EUR bis 75.000 EUR und
+Laufzeiten von 6 bis 84 Monaten. Der Zinssatz ist für die gesamte Vertragslaufzeit fest.
+Beträge oder Laufzeiten außerhalb dieser Grenzen benötigen einen Ausnahmeweg und sind
+nicht für eine automatisierte Genehmigung geeignet.
 
-## 2.2 Permitted purposes
-Typical purposes include vehicle purchase, durable goods, education, and energy-efficient
-home improvements. The product is unsecured and must not be presented as a mortgage.
+## 2.2 Zulässige Verwendungszwecke
+Typische Verwendungszwecke sind Fahrzeugkauf, langlebige Gebrauchsgüter, Ausbildung und
+energieeffiziente Wohnungsmodernisierung. Das Produkt ist unbesichert und darf nicht als
+Baufinanzierung dargestellt werden.
 
-## 3 Linked controls
-Required evidence is defined in NB-DOC-001. Pricing is listed in NB-FEE-001.
-Affordability and risk eligibility remain governed by NB-CRD-001 and NB-RSK-001.
+## 3 Verknüpfte Kontrollen
+Die erforderlichen Nachweise regelt NB-DOC-001. Die Preise stehen in NB-FEE-001.
+Tragfähigkeit und Risikozulässigkeit regeln weiterhin NB-CRD-001 und NB-RSK-001.
 
-## Document control
-Owner: Retail Products. Review cycle: annual. This document is synthetic.
+## Dokumentenlenkung
+Verantwortlich: Privatkundenprodukte. Überprüfung: jährlich. Dieses Dokument ist synthetisch.

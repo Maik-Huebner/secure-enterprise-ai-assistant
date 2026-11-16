@@ -1,28 +1,30 @@
-Document-ID: NB-DOC-001
-Title: Consumer Credit Required Documents Policy
-Version: 1.6
-Effective-Date: 2026-09-01
-Owner: Credit Operations
-Classification: Internal — Synthetic Demo
+Dokument-ID: NB-DOC-001
+Titel: Richtlinie zu erforderlichen Unterlagen für Verbraucherkredite
+Version: 1.7
+Gültig ab: 2026-09-01
+Verantwortlich: Kreditbetrieb
+Klassifizierung: Intern – synthetische Demo
 
-# Consumer Credit Required Documents Policy
+# Richtlinie zu erforderlichen Unterlagen für Verbraucherkredite
 
-> NovaBank Financial Services AG is a fictional organization. All customers, applications, policies, rules, and financial data included in this project are synthetic and created solely for demonstration, testing, and portfolio purposes.
+> NovaBank Financial Services AG ist eine fiktive Organisation. Alle Kunden, Anträge, Richtlinien, Regeln und Finanzdaten in diesem Projekt sind synthetisch und wurden ausschließlich für Demonstrations-, Test- und Portfoliozwecke erstellt.
 
-## 3.1 Mandatory evidence
-Every consumer-credit file requires four items: a valid identity document, a current
-income statement, bank statements covering the most recent 90 days, and a completed
-credit application form. Each item must be recorded separately.
+## 3.1 Pflichtnachweise
+Jede Verbraucherkreditakte benötigt vier Unterlagen: ein gültiges Ausweisdokument, einen
+aktuellen Einkommensnachweis, Kontoauszüge der letzten 90 Tage und ein vollständig
+ausgefülltes Kreditantragsformular. Jede Unterlage wird einzeln erfasst.
 
-## 3.2 Conditional evidence
-Self-employed applicants provide business-income evidence; temporary employees provide
-their current contract and continuity evidence. Reviewers may request clarification when
-income or debt data conflicts across documents.
+## 3.2 Zusätzliche Nachweise
+Selbstständige legen Nachweise über ihr Geschäftseinkommen vor; befristet Beschäftigte
+legen ihren aktuellen Arbeitsvertrag und Nachweise über die Dauer der Beschäftigung vor.
+Die prüfende Person kann Rückfragen stellen, wenn Einkommens- oder Schuldendaten in
+verschiedenen Unterlagen nicht übereinstimmen.
 
-## 5 Missing evidence
-A missing mandatory item prevents approval and creates a critical document finding.
-The case may remain in manual review while the applicant supplies evidence. Validation
-steps and invalid/expired handling are defined in NB-DOC-002.
+## 5 Fehlende Nachweise
+Fehlt eine Pflichtunterlage, ist keine Genehmigung möglich, und es entsteht ein
+kritischer Dokumentenbefund. Der Fall kann in der manuellen Prüfung bleiben, während die
+antragstellende Person Nachweise nachreicht. Die Prüfschritte sowie der Umgang mit
+ungültigen und abgelaufenen Unterlagen sind in NB-DOC-002 geregelt.
 
-## Document control
-Owner: Credit Operations. Review cycle: annual. This document is synthetic.
+## Dokumentenlenkung
+Verantwortlich: Kreditbetrieb. Überprüfung: jährlich. Dieses Dokument ist synthetisch.

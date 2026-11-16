@@ -11,11 +11,11 @@ from secure_enterprise_ai_assistant.guardrails import scan_untrusted_content
 from secure_enterprise_ai_assistant.models.knowledge import KnowledgeChunk
 
 METADATA_FIELDS = {
-    "Document-ID": "document_id",
-    "Title": "title",
+    "Dokument-ID": "document_id",
+    "Titel": "title",
     "Version": "version",
-    "Effective-Date": "effective_date",
-    "Owner": "owner",
+    "Gültig ab": "effective_date",
+    "Verantwortlich": "owner",
 }
 
 
@@ -30,7 +30,8 @@ class KnowledgeIngestor:
         """Ingest supported files in deterministic filename order."""
         if not self.knowledge_root.is_dir():
             raise FileNotFoundError(
-                "Configured knowledge root does not exist or is not a directory."
+                "Das konfigurierte Verzeichnis der Wissensbasis existiert nicht "
+                "oder ist kein Ordner."
             )
         chunks: list[KnowledgeChunk] = []
         for path in sorted(self.knowledge_root.iterdir()):
@@ -42,12 +43,14 @@ class KnowledgeIngestor:
         """Validate path containment and load a supported document."""
         resolved = path.resolve()
         if not resolved.is_relative_to(self.knowledge_root):
-            raise ValueError("Knowledge file must remain inside the configured root.")
+            raise ValueError(
+                "Wissensdateien müssen im konfigurierten Verzeichnis der Wissensbasis liegen."
+            )
         if resolved.suffix.lower() == ".pdf":
             return self._ingest_pdf(resolved)
         if resolved.suffix.lower() in {".md", ".txt"}:
             return self._ingest_text(resolved)
-        raise ValueError(f"Unsupported knowledge file type: {resolved.suffix}")
+        raise ValueError(f"Nicht unterstützter Dateityp für die Wissensbasis: {resolved.suffix}")
 
     def _ingest_text(self, path: Path) -> list[KnowledgeChunk]:
         text = path.read_text(encoding="utf-8")
@@ -63,7 +66,7 @@ class KnowledgeIngestor:
         full_text = "\n".join(text for _, text in pages)
         metadata = self._metadata(full_text, path)
         sections: list[tuple[str, str, int | None]] = [
-            (f"Page {page}", text, page) for page, text in pages if text.strip()
+            (f"Seite {page}", text, page) for page, text in pages if text.strip()
         ]
         return self._build_chunks(metadata, sections)
 
@@ -76,15 +79,15 @@ class KnowledgeIngestor:
                 values[key] = match.group(1).strip()
         values.setdefault("document_id", path.stem.upper())
         values.setdefault("title", path.stem.replace("-", " ").title())
-        values.setdefault("version", "unknown")
-        values.setdefault("effective_date", "unknown")
-        values.setdefault("owner", "unknown")
+        values.setdefault("version", "unbekannt")
+        values.setdefault("effective_date", "unbekannt")
+        values.setdefault("owner", "unbekannt")
         return values
 
     @staticmethod
     def _sections(text: str) -> list[tuple[str, str, int | None]]:
         sections: list[tuple[str, str, int | None]] = []
-        current_title = "Document metadata"
+        current_title = "Dokumentmetadaten"
         current_lines: list[str] = []
         for line in text.splitlines():
             if line.startswith("## "):

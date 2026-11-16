@@ -1,27 +1,30 @@
-Document-ID: NB-WFL-001
-Title: Loan Approval Workflow
-Version: 2.0
-Effective-Date: 2026-09-01
-Owner: Credit Operations
-Classification: Internal — Synthetic Demo
+Dokument-ID: NB-WFL-001
+Titel: Ablauf der Kreditgenehmigung
+Version: 2.1
+Gültig ab: 2026-09-01
+Verantwortlich: Kreditbetrieb
+Klassifizierung: Intern – synthetische Demo
 
-# Loan Approval Workflow
+# Ablauf der Kreditgenehmigung
 
-> NovaBank Financial Services AG is a fictional organization. All customers, applications, policies, rules, and financial data included in this project are synthetic and created solely for demonstration, testing, and portfolio purposes.
+> NovaBank Financial Services AG ist eine fiktive Organisation. Alle Kunden, Anträge, Richtlinien, Regeln und Finanzdaten in diesem Projekt sind synthetisch und wurden ausschließlich für Demonstrations-, Test- und Portfoliozwecke erstellt.
 
-## 2 Workflow stages
-The standard sequence is intake, identity verification, document validation, financial
-analysis, policy and compliance checks, reviewer confirmation, and decision recording.
+## 2 Ablaufschritte
+Die Standardreihenfolge lautet: Antragseingang, Identitätsprüfung, Prüfung der
+Unterlagen, Finanzanalyse, Richtlinien- und Compliance-Prüfung, Bestätigung durch die
+prüfende Person und Dokumentation der Entscheidung.
 
-## 3 Automated routing
-Simple knowledge questions use knowledge retrieval only. Case questions load structured
-case data. Financial questions add the deterministic calculator. Full assessments also
-run compliance and evidence review.
+## 3 Automatisierte Weiterleitung
+Einfache Wissensfragen nutzen nur die Wissenssuche. Fragen zu einem Fall laden die
+strukturierten Falldaten. Finanzfragen nutzen zusätzlich den deterministischen Rechner.
+Vollständige Prüfungen umfassen außerdem die Compliance-Prüfung und die Prüfung der
+Nachweise.
 
-## 5 Completion criteria
-A final decision record contains case ID, financial metrics, findings, rationale, source
-references, and a technical execution trace. The trace exposes events and tool names but
-never private chain-of-thought or hidden prompts.
+## 5 Abschlusskriterien
+Eine endgültige Entscheidungsakte enthält Fall-ID, Finanzkennzahlen, Befunde,
+Begründung, Quellenangaben und ein technisches Ausführungsprotokoll. Das Protokoll zeigt
+Ereignisse und Werkzeugnamen, aber niemals interne Gedankengänge des Modells oder
+verborgene Systemanweisungen.
 
-## Document control
-Owner: Credit Operations. Review cycle: annual. This document is synthetic.
+## Dokumentenlenkung
+Verantwortlich: Kreditbetrieb. Überprüfung: jährlich. Dieses Dokument ist synthetisch.
