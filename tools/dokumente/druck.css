@@ -1,0 +1,57 @@
+/* Druckvorlage für die PDF-Fassungen (pandoc → HTML → Chrome). */
+@page {
+  size: A4;
+  margin: 22mm 20mm 22mm 20mm;
+  @bottom-right {
+    content: counter(page);
+    font: 9pt Calibri, "Helvetica Neue", Arial, sans-serif;
+    color: #6B7C93;
+  }
+  @bottom-left {
+    content: "Secure Enterprise AI Assistant · v2.1 · NovaBank ist fiktiv, alle Daten synthetisch";
+    font: 9pt Calibri, "Helvetica Neue", Arial, sans-serif;
+    color: #6B7C93;
+  }
+}
+:root { --navy: #13294B; --slate: #3E5470; --teal: #0E7C86; --tint: #EEF3F9; --line: #C9D6E6; }
+html { background: #ffffff; }
+body {
+  font-family: Calibri, "Helvetica Neue", Arial, sans-serif;
+  font-size: 10.5pt;
+  line-height: 1.45;
+  color: #1F2A37;
+  margin: 0;
+}
+h1, h2, h3 { font-family: Georgia, "Times New Roman", serif; color: var(--navy); line-height: 1.2; }
+h1 { font-size: 26pt; margin: 0 0 4pt; }
+h2 { font-size: 15pt; margin: 20pt 0 6pt; break-after: avoid; }
+h3 { font-size: 12pt; margin: 14pt 0 4pt; break-after: avoid; }
+h1 + h2 { margin-top: 2pt; color: var(--teal); font-size: 14pt; }
+p { margin: 0 0 7pt; }
+ul, ol { margin: 0 0 8pt; padding-left: 18pt; }
+li { margin: 0 0 3pt; }
+strong { color: var(--navy); }
+code {
+  font-family: Menlo, Consolas, monospace;
+  font-size: 9pt;
+  background: var(--tint);
+  padding: 0 2pt;
+  border-radius: 2pt;
+}
+blockquote {
+  margin: 8pt 0 10pt;
+  padding: 7pt 10pt;
+  background: var(--tint);
+  border-radius: 4pt;
+  color: var(--slate);
+}
+blockquote p { margin: 0; }
+table { border-collapse: collapse; width: 100%; margin: 6pt 0 10pt; font-size: 9.5pt; break-inside: avoid; }
+th { background: var(--navy); color: #ffffff; text-align: left; font-weight: 700; }
+th, td { padding: 4pt 6pt; border: 0.75pt solid var(--line); vertical-align: top; }
+tr:nth-child(even) td { background: #F6F9FC; }
+td[style*="right"], th[style*="right"] { text-align: right; }
+figure { margin: 8pt 0 12pt; break-inside: avoid; text-align: center; }
+img { max-width: 100%; max-height: 105mm; border: 0.75pt solid var(--line); border-radius: 4pt; }
+figcaption { font-size: 9pt; color: #6B7C93; margin-top: 3pt; }
+a { color: var(--teal); text-decoration: none; }

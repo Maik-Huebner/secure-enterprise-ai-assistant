@@ -1,0 +1,11 @@
+{
+  "name": "novabank-dokumente",
+  "private": true,
+  "description": "Erzeugt die Präsentation (PPTX) aus docs/presentation-speaker-notes.md.",
+  "scripts": {
+    "praesentation": "node praesentation.cjs"
+  },
+  "dependencies": {
+    "pptxgenjs": "3.12.0"
+  }
+}

@@ -1,163 +1,99 @@
-# Präsentationsstruktur: Secure Enterprise AI Assistant
+# Präsentationsstruktur: Secure Enterprise AI Assistant (v2.1)
 
-> **Historischer Stand (v1.0.2, Abschlussprojekt).** Dieses Dokument beschreibt die erste Version mit CrewAI und einem 24B-Mistral-Profil. Beides wurde in v1.4 durch einen LangGraph-Workflow mit einem lokalen 9B-Modell ersetzt. Aktuell gelten [README](../README.md) und [Architektur](architecture.md).
-
-Zielzeit: **9:20 Minuten**. Die Präsentation besteht aus neun Folien und lässt rund 40 Sekunden Reserve im 10-Minuten-Fenster.
+Zielzeit: **9:15 Minuten** für zehn Folien, rund 45 Sekunden Reserve im 10-Minuten-Fenster. Die
+Sprechtexte stehen in [presentation-speaker-notes.md](presentation-speaker-notes.md) und als
+Notizen in der PowerPoint-Datei. Alle Zahlen stammen aus echten Läufen (README, `reports/`).
 
 ## Folie 1: Secure Enterprise AI Assistant
 
-**Sichtbare Inhalte**
+- Lokale Entscheidungsunterstützung für Kreditfälle einer fiktiven Bank
+- NovaBank Financial Services AG, alle Daten synthetisch
+- Release v2.1.0, MacBook Pro M4 Pro, `qwen3.5:9b`
 
-- Lokaler Enterprise-KI-Assistent für eine fiktive Bank
-- NovaBank Financial Services AG ist vollständig fiktiv
-- Alle Fälle, Regeln und Richtlinien sind synthetisch
-- Release `v1.0.2`
+**Bild:** `assets/ui-v2-assistant.jpg` · **Zeit:** 0:40 · **Kernaussage:** Ein lokaler
+KI-Assistent, dessen Fakten man nachprüfen kann.
 
-**Visual:** `assets/ui-overview.png` groß auf der rechten Folienhälfte.
+## Folie 2: Fakten aus Code, Sprache aus dem Modell
 
-**Zielzeit:** 0:45 Minuten
+- Links: Risiken eines reinen Chatbots (verrechnet sich, übersieht Regeln, erfindet Quellen)
+- Rechts: Antwort des Projekts (Rechner und Regelwerk hinter MCP, Quellenpflicht, Antwortprüfung,
+  Freigabe durch einen Menschen)
 
-**Kernaussage:** Das Projekt demonstriert einen lokalen, nachvollziehbaren KI-Assistenten ohne reale Kunden- oder Bankdaten.
+**Zeit:** 0:55 · **Kernaussage:** Das Modell formuliert nur; Fakten und Entscheidungen liegen
+woanders.
 
-## Folie 2: Problem und Projektziel
+## Folie 3: Von v1 zu v2
 
-**Sichtbare Inhalte**
+- Prüfbericht von v1.0.2 als Ausgangspunkt, neun Pakete mit Tag und Lernnotiz
+- Zahlen: Recall@5 0,75 → 1,00; Eingabefilter 1/12 → 15/20 im Holdout; CrewAI und 24B → LangGraph
+  und 9B; keine Anmeldung → JWT, Rollen, Audit-Log
 
-- Strukturierte Falldaten und unstrukturierte Policies zusammenführen
-- Finanzwerte reproduzierbar statt probabilistisch berechnen
-- Compliance-Regeln vollständig prüfen
-- Quellen und Tool-Nutzung sichtbar belegen
-- Lokale Verarbeitung und kontrollierte MCP-Zugriffe
+**Zeit:** 0:55 · **Kernaussage:** Jede Verbesserung ist gemessen, nicht behauptet.
 
-**Visual:** Zweispaltige Gegenüberstellung von fachlichem Risiko und technischer Projektantwort.
+## Folie 4: Architektur
 
-**Zielzeit:** 0:55 Minuten
+**Bild:** `assets/architektur-v2.png` · **Zeit:** 1:05 · **Kernaussage:** Der Router legt die
+Werkzeuge fest, das Modell wählt keine („Least Agency“); Rechte werden dreimal geprüft.
 
-**Kernaussage:** Ein einfacher Chatbot reicht für kreditnahe Abläufe nicht aus; Fakten, Regeln und Quellen benötigen kontrollierte Komponenten.
+## Folie 5: Suche und Routing
 
-## Folie 3: Vollständig synthetische Datenbasis
+- Diagramm: MRR im Testteil für Hashing, bge-m3, qwen3-embedding:0.6b, embeddinggemma
+- Hybrid aus Vektoren, BM25 und Kennungen, Filter vor dem Ranking, „keine Antwort“ statt Raten
+- Hybrider Router: 24/24 im Testteil, 8 ms, kein Sprachmodell
 
-**Sichtbare Inhalte**
+**Zeit:** 0:55 · **Kernaussage:** Gute Suche ist gemessen und rechtebewusst.
 
-- 48 fiktive Kreditfälle
-- Fiktive Kundenprofile und Kreditanträge
-- 18 interne Richtlinien und Wissensdokumente
-- Versionierte Compliance-Regeln
-- Synthetische Ground Truth für Evaluation
+## Folie 6: Antwortprüfung und Vier-Augen-Freigabe
 
-**Visual:** Vier große Kennzahlen und ein klarer Hinweis „Keine realen Kunden- oder Bankdaten“.
+- Ablauf: Antwort → Prüfung → zweiter Versuch → verifizierter Rückfallweg
+- Vorlage ohne Modell → Pause → zweite Person gibt frei
 
-**Zielzeit:** 0:50 Minuten
-
-**Kernaussage:** Die gesamte Demonstration basiert auf reproduzierbaren, eigens erzeugten Testdaten.
-
-## Folie 4: Was kann das System?
-
-**Sichtbare Inhalte**
-
-- Kundenfälle strukturiert zusammenfassen
-- Finanzkennzahlen deterministisch berechnen
-- Compliance-Regeln mit Policy-Evidenz prüfen
-- Wissensbasis per RAG durchsuchen
-- Verifizierte Entscheidungsvorlagen erzeugen
-
-**Visual:** `assets/ui-financial-analysis.png` mit Fokus auf deutsche Kennzahlen und Routing-Informationen.
-
-**Zielzeit:** 1:10 Minuten
-
-**Kernaussage:** Natürliche Anfragen führen zu überprüfbaren Ergebnissen aus klar getrennten Fachfähigkeiten.
-
-## Folie 5: Systemarchitektur
-
-**Sichtbare Inhalte**
-
-- Gradio UI und deterministisches Intent Routing
-- Model Router mit `fast_local` und `complex_agentic`
-- CrewAI oder verifizierter MCP-Pfad
-- Echter MCP-stdio-Transport zu vier FastMCP-Tools
-- Eigene Services für Fälle, Finanzlogik, Compliance und RAG
-
-**Visual:** Zentrales Architekturdiagramm mit klarer Tool-Grenze und beiden Modellprofilen.
-
-**Zielzeit:** 1:15 Minuten
-
-**Kernaussage:** Sprachmodelle orchestrieren und erklären; strukturierte Services liefern die fachlichen Fakten.
-
-## Folie 6: NLP und Generative AI im Projekt
-
-**Sichtbare Inhalte**
-
-- Ollama, lokale LLMs und Prompt Engineering
-- RAG mit Chunking, Embeddings, FAISS, BM25S und Hybrid Retrieval
-- Agentic AI mit CrewAI, CrewAI Flows und Tool Use
-- MCP/FastMCP, Pydantic, Guardrails, Gradio und Evaluation
-- Nicht verwendet: **LangChain** und **LangGraph**
-
-**Visual:** Technologieübersicht links und `assets/ui-rag-sources.png` rechts als Quellenbeleg.
-
-**Zielzeit:** 1:10 Minuten
-
-**Kernaussage:** Die Kursinhalte sind direkt im eigenen Stack umgesetzt; LangChain und LangGraph gehören nicht zur finalen Architektur.
+**Bild:** `assets/ui-v2-approval.jpg` · **Zeit:** 1:00 · **Kernaussage:** Kein ungeprüfter Satz
+und keine Selbstfreigabe.
 
 ## Folie 7: Praxisbeispiel CASE-00031
 
-**Sichtbare Inhalte**
+- Rate 570,64 EUR, DTI 28,41 % → 44,95 %, Gesamtzins 5.488,40 EUR
+- `RULE-005` nicht bestanden (Prüfschwelle 40 %), neun Regeln bestanden → manuelle Prüfung
+- Selbstfreigabe abgewiesen, zweite Person gibt frei
 
-- Monatliche Rate: **570,64 EUR**
-- DTI nach Finanzierung: **44,95 %**
-- Gesamtzins: **5.488,40 EUR**
-- `RULE-005`: `FAIL`
-- Empfehlung: `MANUAL REVIEW`
+**Zeit:** 0:55 · **Kernaussage:** Vom Fall zur geprüften Vorlage in einem nachvollziehbaren Ablauf.
 
-**Visual:** `assets/ui-full-assessment-report.png` groß mit sichtbarem Report und Policy-Kontext.
+## Folie 8: Sicherheit
 
-**Zielzeit:** 1:20 Minuten
+- Rollen und Team-Rechte, fremde Fälle wie unbekannte
+- eigenes MCP-Token pro Lauf, kein Token Passthrough
+- Eingabefilter, Dokumente als Daten, Audit-Log mit Hash-Kette, alles lokal
 
-**Kernaussage:** Full Assessment verbindet Fall, Financial Engine, Compliance und RAG zu einer belegten Entscheidungsvorlage.
+**Zeit:** 0:55 · **Kernaussage:** Rechte gehören in den Code, nicht in den Prompt.
 
-## Folie 8: Qualität, Guardrails und Demo-Safe-Modus
+## Folie 9: Qualität ehrlich gemessen
 
-**Sichtbare Inhalte**
+- Antwortqualität Lauf 3: 13/15 Fakten, 2/2 richtig abgelehnt, 11/14 belegt per Handprüfung
+- Mit Suche 8/10 Richtlinienfragen, ohne Suche 1/10
+- 321 Tests + 4 Live-Tests, Langfuse-Experiment
 
-- 84 automatisierte Tests und erfolgreiche CI
-- 8 synthetische Offline-Metriken mit Wert 1,0
-- `verified_mcp` ruft alle vier MCP-Werkzeuge auf
-- Transparenter Modus `deterministic_mcp_fallback`
-- Gemessene lokale Laufzeit: rund **1,034 Sekunden**
+**Zeit:** 1:00 · **Kernaussage:** Die Zahlen sind gut, aber ehrlich eingeordnet.
 
-**Visual:** `assets/ui-execution-trace.png` mit Modellprofil, Safe-Mode-Grund und Werkzeugliste.
+## Folie 10: Fazit und Grenzen
 
-**Zielzeit:** 1:10 Minuten
+- Was es zeigt: Least Agency, prüfbare Antworten, menschliche Freigabe, alles lokal und deutsch
+- Grenzen: synthetische Daten, kein Identity Provider, kleine Testsammlungen
+- Nächste Schritte: Reranker, unabhängige Testsätze, Identity Provider
 
-**Kernaussage:** Der verifizierte Demo-Pfad ist reproduzierbar, transparent und verschleiert den übersprungenen Mistral-Lauf nicht.
-
-## Folie 9: Fazit und Grenzen
-
-**Sichtbare Inhalte**
-
-- Generative AI plus deterministische Fachsysteme
-- Agentic AI, RAG und MCP im lokalen Betrieb
-- Nachvollziehbare Quellen, Regeln und Ausführung
-- Prototyp mit synthetischen Daten, kein Produktivsystem
-- Nächste Schritte: reale Validierung, Security Review und Human Oversight
-
-**Visual:** Reduzierte Abschlussfolie mit den vier Bausteinen „Local First“, „Agentic AI“, „MCP-Evidenz“ und „deterministische Fachlogik“.
-
-**Zielzeit:** 0:45 Minuten
-
-**Kernaussage:** Der Prototyp belegt die technische Integration, behauptet aber weder reale Bankenentscheidung noch regulatorische Produktionsreife.
+**Zeit:** 0:45 · **Kernaussage:** Ein ehrlicher, nachprüfbarer Prototyp, kein Bankprodukt.
 
 ## Zeitplan
 
-| Folie | Dauer |
-|---|---:|
-| 1. Projektübersicht | 0:45 |
-| 2. Problem und Ziel | 0:55 |
-| 3. Fiktive Datenbasis | 0:50 |
-| 4. Systemfähigkeiten | 1:10 |
-| 5. Architektur | 1:15 |
-| 6. NLP und Generative AI | 1:10 |
-| 7. CASE-00031 | 1:20 |
-| 8. Qualität und Safe Mode | 1:10 |
-| 9. Fazit | 0:45 |
-| **Gesamt** | **9:20** |
+| Folie | Zeit | Summe |
+|---:|---:|---:|
+| 1 | 0:40 | 0:40 |
+| 2 | 0:55 | 1:35 |
+| 3 | 0:55 | 2:30 |
+| 4 | 1:05 | 3:35 |
+| 5 | 0:55 | 4:30 |
+| 6 | 1:00 | 5:30 |
+| 7 | 0:55 | 6:25 |
+| 8 | 0:55 | 7:20 |
+| 9 | 1:00 | 8:20 |
+| 10 | 0:45 | 9:05 |

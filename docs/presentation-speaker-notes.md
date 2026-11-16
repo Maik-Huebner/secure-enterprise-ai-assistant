@@ -1,59 +1,112 @@
-# Sprechernotizen: Secure Enterprise AI Assistant
+# Sprechertext: Secure Enterprise AI Assistant (v2.1)
 
-> **Historischer Stand (v1.0.2, Abschlussprojekt).** Dieses Dokument beschreibt die erste Version mit CrewAI und einem 24B-Mistral-Profil. Beides wurde in v1.4 durch einen LangGraph-Workflow mit einem lokalen 9B-Modell ersetzt. Aktuell gelten [README](../README.md) und [Architektur](architecture.md).
-
-Die Texte sind für eine ruhige Sprechgeschwindigkeit geplant. Regiehinweise in eckigen Klammern werden nicht vorgelesen.
+Geplant für ruhiges Sprechen, zusammen etwa neun Minuten. Regiehinweise in eckigen Klammern
+werden nicht vorgelesen.
 
 ## Folie 1: Secure Enterprise AI Assistant
 
-**Zielzeit:** 0:45 Minuten
+**Zielzeit:** 0:40 Minuten
 
-Guten Tag. Ich stelle den Secure Enterprise AI Assistant vor, einen lokalen Enterprise-KI-Assistenten für die vollständig fiktive NovaBank Financial Services AG. Das Projekt zeigt, wie generative KI mit strukturierten Daten, Unternehmenswissen, deterministischen Berechnungen und kontrolliertem Tool-Zugriff verbunden werden kann. Alle 48 Kreditfälle, Kundenprofile, Anträge, Regeln und 18 internen Richtlinien wurden eigens für den Demonstrator synthetisch erstellt. Es werden keine realen Kunden- oder Bankdaten verarbeitet. Der gezeigte Stand entspricht Release `v1.0.2`.
+Guten Tag. Ich stelle den Secure Enterprise AI Assistant vor. Er unterstützt die
+Kreditsachbearbeitung der NovaBank Financial Services AG. Diese Bank gibt es nicht: Alle Fälle,
+Personen, Richtlinien und Regeln sind synthetisch. Das System läuft vollständig lokal auf einem
+MacBook mit einem Sprachmodell mit neun Milliarden Parametern. Gezeigt wird der Stand
+Version 2.1.
 
-## Folie 2: Problem und Projektziel
+## Folie 2: Fakten aus Code, Sprache aus dem Modell
 
 **Zielzeit:** 0:55 Minuten
 
-Bei einer Kreditprüfung kommen unterschiedliche Informationsarten zusammen: strukturierte Falldaten, mathematische Kennzahlen, interne Regeln und unstrukturierte Richtlinien. Ein einfacher Chatbot kann diese Inhalte formulieren, liefert allein aber keine verlässliche Fachlogik. Besonders kritisch wären frei berechnete Finanzwerte, ausgelassene Regeln oder erfundene Schwellenwerte. Das Projektziel war deshalb eine klare Trennung. Das Sprachmodell erklärt und strukturiert. Die Financial Engine rechnet, die Compliance Engine prüft Regeln und das RAG-System liefert belegte Policy-Aussagen. Jeder fachliche Zugriff läuft kontrolliert über MCP und wird im Ausführungsprotokoll sichtbar.
+Bei einer Kreditprüfung zählen Zahlen, Regeln und Quellen. Ein reiner Chatbot kann sich
+verrechnen, eine Regel übersehen oder eine Quelle erfinden, und es klingt trotzdem überzeugend.
+Deshalb trennt das Projekt die Aufgaben streng. Fallakten, Rechnungen und Regelbefunde liefert
+geprüfter Code hinter dem Model Context Protocol. Das Sprachmodell formuliert nur aus diesen
+Nachweisen. Jede Antwort wird automatisch geprüft, und eine Entscheidung trifft immer ein
+Mensch.
 
-## Folie 3: Vollständig synthetische Datenbasis
+## Folie 3: Von v1 zu v2
 
-**Zielzeit:** 0:50 Minuten
+**Zielzeit:** 0:55 Minuten
 
-Die Datenbasis wurde vollständig für das Projekt erzeugt. Sie umfasst 48 fiktive Kreditfälle mit Kundenprofilen, Kreditanträgen und Dokumentstatus. Hinzu kommen 18 versionierte interne Richtlinien sowie ein strukturiertes Compliance-Regelwerk. Eine getrennte synthetische Ground Truth ermöglicht reproduzierbare Tests und Evaluationen. Stabile Demonstrationsfälle decken positive Entscheidungen, fehlende Dokumente und erhöhte Verschuldung ab. Diese Trennung ist wichtig: Evaluationslabels gelangen nicht als versteckte Entscheidungsevidenz an die Agents oder an den verifizierten MCP-Bericht.
+Version 1 war mein Abschlussprojekt. Danach habe ich sie selbst kritisch geprüft und die
+Schwächen aufgeschrieben. Version 2 entstand in neun Paketen, jedes mit Pull Request, Tag und
+Lernnotiz. Einige Ergebnisse: Die Suche findet im Testteil jetzt alle relevanten Dokumente unter
+den ersten fünf statt drei Viertel. Der Eingabefilter erkennt im Holdout 15 von 20 Angriffen
+statt vorher einem von zwölf. CrewAI mit einem zu großen Modell wurde durch LangGraph mit einem
+9B-Modell ersetzt. Und es gibt jetzt Anmeldung, Rollen und ein Audit-Log.
 
-## Folie 4: Was kann das System?
+## Folie 4: Architektur
 
-**Zielzeit:** 1:10 Minuten
+**Zielzeit:** 1:05 Minuten
 
-Das System unterstützt fünf Anfragetypen. Es kann einen Kundenfall strukturiert zusammenfassen, finanzielle Kennzahlen berechnen, Compliance-Regeln prüfen, die interne Wissensbasis durchsuchen und alle Ergebnisse zu einer Entscheidungsvorlage verbinden. Im gezeigten Beispiel fragt der Nutzer auf Deutsch nach der finanziellen Belastung für `CASE-00031`. Der Router wählt das Profil `fast_local` mit `qwen3.5:9b`. CrewAI lädt den Fall und ruft die Financial Engine über MCP auf. Die Antwort nennt 570,64 Euro monatliche Rate, den DTI-Anstieg von 28,41 auf 44,95 Prozent sowie Gesamtzins und Gesamtrückzahlung. Die Zahlen stammen unverändert aus dem deterministischen Werkzeug.
+[Auf das Bild zeigen, von links nach rechts.] Links ist der Zugang: Die deutsche Oberfläche
+spricht nur mit der API. Die API prüft das Token, die Rolle und die Rate Limits und schreibt das
+Audit-Log. In der Mitte läuft der LangGraph-Ablauf: Eingabefilter, Router, Werkzeugknoten,
+Antwort und Antwortprüfung. Wichtig ist: Das Modell wählt keine Werkzeuge. Der Router legt den
+Plan fest. Rechts sitzt der MCP-Server mit genau vier Werkzeugen. Er bekommt für jeden Lauf ein
+eigenes, fünf Minuten gültiges Token und prüft die Rechte noch einmal. Unten: Ollama läuft
+lokal, offene Freigaben liegen in SQLite, Langfuse ist optional.
 
-## Folie 5: Systemarchitektur
+## Folie 5: Suche und Routing
 
-**Zielzeit:** 1:15 Minuten
+**Zielzeit:** 0:55 Minuten
 
-Die Anfrage beginnt in einer deutschsprachigen Gradio-Oberfläche. Der Intent Router wählt deterministisch einen der fünf Workflows. Danach ordnet der Model Router ein Profil zu: `fast_local` mit Qwen für kurze Standardabläufe oder `complex_agentic` mit dem konfigurierten Mistral-Modell für Full Assessment. Einfache Abläufe führt CrewAI aus. Die vollständige Prüfung nutzt im lokalen Standard unmittelbar den verifizierten MCP-Pfad. Beide Wege kommunizieren über echten MCP-stdio-Transport mit FastMCP. Hinter dieser Grenze liegen vier Werkzeuge für Fallabruf, Finanzanalyse, Compliance und Wissenssuche. Kein Agent greift direkt auf die Business Services zu. Dadurch bleiben Orchestrierung, Tool-Transport und Fachlogik getrennt überprüfbar.
+Die Suche kombiniert drei Signale: Vektoren, eine klassische Wortsuche und Kennungen wie eine
+Dokument-ID. Ich habe vier Embedding-Modelle gemessen. Das kleine qwen3-embedding liegt mit einem
+MRR von 0,98 vorn. Die Suche filtert vor dem Ranking; vertrauliche Dokumente können das Ergebnis
+also nicht beeinflussen. Ist keine Fundstelle gut genug, sagt das System „keine Antwort“ und ruft
+das Modell gar nicht erst auf. Der Router erkennt im Testteil alle 24 Anfragen richtig, in acht
+Millisekunden und ohne Sprachmodell.
 
-## Folie 6: NLP und Generative AI im Projekt
+## Folie 6: Antwortprüfung und Vier-Augen-Freigabe
 
-**Zielzeit:** 1:10 Minuten
+**Zielzeit:** 1:00 Minuten
 
-Aus dem NLP- und Generative-AI-Modul verwendet das Projekt lokale LLMs über Ollama und systematisches Prompt Engineering. Der eigene RAG-Stack umfasst Dokumentaufnahme, Chunking, Embeddings, FAISS, BM25S und Hybrid Retrieval. Agentic AI wird mit CrewAI, CrewAI Flows und kontrolliertem Tool Use umgesetzt. MCP und FastMCP bilden die Werkzeuggrenze. Pydantic stellt strukturierte Ein- und Ausgaben sicher. Hinzu kommen Guardrails, eine Gradio-Oberfläche und eine reproduzierbare Evaluation. LangChain und LangGraph werden weder direkt noch transitiv verwendet. Der sichtbare Quellenbereich zeigt, dass die Wissensantwort konkrete Dokument-IDs und technische Ausführungsdaten behält.
+Jede Zahl und jede Dokument-ID in einer Antwort muss in den Nachweisen stehen, und eine
+Richtlinienaussage braucht eine Quelle. Findet die Prüfung Mängel, bekommt das Modell einen
+zweiten Versuch mit der Mängelliste. Scheitert auch der, baut der Code die Antwort selbst aus den
+Daten. Eine Entscheidungsvorlage schreibt das Modell gar nicht. Sie entsteht aus den MCP-Daten
+und pausiert dann. Freigeben darf nur eine zweite prüfende Person, nicht die Person, die die
+Vorlage angefordert hat.
 
 ## Folie 7: Praxisbeispiel CASE-00031
 
-**Zielzeit:** 1:20 Minuten
+**Zielzeit:** 0:55 Minuten
 
-Das Full Assessment verbindet alle vier fachlichen Fähigkeiten. Für `CASE-00031` liefert die Financial Engine eine monatliche Rate von 570,64 Euro. Der DTI steigt von 28,41 auf 44,95 Prozent, der Gesamtzins beträgt 5.488,40 Euro. Die Compliance Engine prüft das vollständige Regelwerk. `RULE-005` schlägt fehl, weil der DTI über der internen synthetischen NovaBank-Review-Schwelle von 40 Prozent liegt. Das ist ausdrücklich keine allgemein behauptete regulatorische Grenze. Die Empfehlung lautet `MANUAL REVIEW`. Ergänzend liefert das RAG-System passende `NB-*`-Quellen. Der Bericht übernimmt die strukturierten Werte unverändert und schließt mit `END OF VERIFIED REPORT`.
+Ein Beispiel: Für CASE-00031 rechnet der Finanzrechner eine Rate von 570,64 Euro. Die
+Schuldendienstquote steigt von 28,41 auf 44,95 Prozent. Damit liegt sie über der Prüfschwelle
+von 40 Prozent, und RULE-005 ist nicht bestanden. Die anderen neun Regeln sind bestanden. Die
+Empfehlung lautet deshalb: manuelle Prüfung. Im echten Lauf hat die anfragende Person versucht,
+ihre eigene Vorlage freizugeben, und wurde abgewiesen. Eine zweite Person hat dann freigegeben.
+Beides steht im Protokoll.
 
-## Folie 8: Qualität, Guardrails und Demo-Safe-Modus
+## Folie 8: Sicherheit
 
-**Zielzeit:** 1:10 Minuten
+**Zielzeit:** 0:55 Minuten
 
-Der Release-Stand umfasst 84 automatisierte Tests und eine erfolgreiche CI. Acht Offline-Metriken erreichen im kontrollierten synthetischen Benchmark jeweils 1,0. Dazu gehört jetzt auch die Genauigkeit der Eingabe-Guardrails auf sechs blockierten und unbedenklichen Testanfragen. Diese Werte zeigen die Konsistenz der Testsuite, nicht die Genauigkeit einer realen Bankentscheidung. Für Full Assessment ist `mistral-small3.2:24b` dem Profil `complex_agentic` zugeordnet. Der native lokale Multi-Agent-Lauf benötigt jedoch mehrere Minuten. Deshalb verwendet die Demo standardmäßig `verified_mcp`. Dieser Pfad öffnet eine echte MCP-stdio-Session, ruft alle vier Werkzeuge auf und erzeugt den Bericht in rund 1,034 Sekunden. Der Trace nennt transparent `deterministic_mcp_fallback` und behauptet keinen ausgeführten Mistral-Lauf.
+Rechte werden im Code geprüft, nie im Prompt. Sachbearbeitung sieht nur Fälle des eigenen
+Teams; ein fremder Fall sieht aus wie ein unbekannter. Die API reicht ihr Token nie weiter,
+sondern stellt für MCP ein eigenes aus. Dokumenttexte stehen im Prompt als markierte Daten, und
+ein Eingabefilter fängt bekannte Angriffe ab. Er ist aber nur eine Schicht. Das Audit-Log ist
+mit einer Hash-Kette gesichert, und alle Daten bleiben auf dem Rechner.
 
-## Folie 9: Fazit und Grenzen
+## Folie 9: Qualität ehrlich gemessen
+
+**Zielzeit:** 1:00 Minuten
+
+Mit dem echten Modell habe ich 17 Fragen gemessen. Im dritten Lauf enthalten 13 von 15
+beantwortbaren Antworten alle erwarteten Fakten, und beide Fragen ohne Antwort werden richtig
+abgelehnt. Von Hand geprüft sind 11 von 14 Antworten vollständig belegt. Ohne Suche beantwortet
+dasselbe Modell nur eine von zehn Richtlinienfragen richtig. Ehrlich gesagt: Die Fragen stammen
+von mir, und der dritte Lauf kam nach Korrekturen, er ist also optimistisch. Dazu kommen 321
+automatisierte Tests, vier Live-Tests und ein Experiment in Langfuse.
+
+## Folie 10: Fazit und Grenzen
 
 **Zielzeit:** 0:45 Minuten
 
-Der Prototyp verbindet generative KI mit deterministischer Fachlogik, Agentic AI, RAG und MCP. Lokale Modelle unterstützen die Sprache und Orchestrierung. Kontrollierte Services liefern Fälle, Berechnungen, Regelbefunde und Quellen. Das macht die Ausführung nachvollziehbar und begrenzt unbelegte Aussagen. Gleichzeitig bleiben klare Grenzen: Alle Daten sind synthetisch, der native Mistral-Modus ist experimentell und produktive Authentifizierung, Monitoring sowie regulatorische Validierung fehlen. Vor einem realen Einsatz wären repräsentative Daten, ein umfassendes Security Review und verbindliche menschliche Freigaben notwendig. Vielen Dank.
+Das Projekt zeigt, wie man ein Sprachmodell kontrolliert einsetzt: wenige Rechte für das Modell,
+geprüfte Antworten, eine Freigabe durch Menschen, alles lokal und auf Deutsch. Es ist kein
+Bankprodukt. Die Daten sind erfunden, es fehlen ein Identity Provider und unabhängige
+Testsätze. Die nächsten Schritte wären ein Reranker, größere geprüfte Testsammlungen und eine
+echte Single-Sign-on-Anbindung. Vielen Dank.

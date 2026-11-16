@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8">
+<style>
+  html,body{margin:0;padding:0;background:#ffffff}
+  svg{display:block;font-family:Calibri,"Helvetica Neue",Arial,sans-serif}
+  .t{font-size:24px;fill:#13294B;font-weight:700}
+  .s{font-size:18px;fill:#3E5470}
+  .h{font-size:20px;fill:#0E7C86;font-weight:700;letter-spacing:.5px}
+  .w{font-size:22px;fill:#ffffff;font-weight:700}
+  .ws{font-size:17px;fill:#DCE8F5}
+</style></head>
+<body>
+<svg width="1600" height="900" viewBox="0 0 1600 900" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3E5470"/>
+    </marker>
+    <marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#0E7C86"/>
+    </marker>
+  </defs>
+
+  <!-- column headings -->
+  <text x="40" y="48" class="h">ZUGANG</text>
+  <text x="440" y="48" class="h">LANGGRAPH-WORKFLOW</text>
+  <text x="1150" y="48" class="h">MCP-SERVER (SDK 2.3)</text>
+
+  <!-- column 1 -->
+  <rect x="40" y="80" width="330" height="110" rx="14" fill="#EEF3F9" stroke="#C9D6E6"/>
+  <text x="62" y="124" class="t">Gradio-Oberfläche</text>
+  <text x="62" y="156" class="s">reiner API-Client, deutsch</text>
+
+  <rect x="40" y="250" width="330" height="190" rx="14" fill="#13294B"/>
+  <text x="62" y="294" class="w">FastAPI /v1</text>
+  <text x="62" y="328" class="ws">JWT · Argon2id · Rollen</text>
+  <text x="62" y="356" class="ws">Team-Rechte · Rate Limits</text>
+  <text x="62" y="384" class="ws">Audit-Log mit Hash-Kette</text>
+  <text x="62" y="412" class="ws">Fehler nach RFC 9457</text>
+  <line x1="205" y1="190" x2="205" y2="246" stroke="#3E5470" stroke-width="3" marker-end="url(#a)"/>
+  <text x="222" y="224" class="s">JWT</text>
+
+  <!-- column 2 -->
+  <rect x="440" y="80" width="300" height="80" rx="14" fill="#EEF3F9" stroke="#C9D6E6"/>
+  <text x="460" y="116" class="t">1 Eingabefilter</text>
+  <text x="460" y="144" class="s">Prompt-Injection, DE/EN</text>
+
+  <rect x="440" y="190" width="300" height="80" rx="14" fill="#EEF3F9" stroke="#C9D6E6"/>
+  <text x="460" y="226" class="t">2 Router</text>
+  <text x="460" y="254" class="s">Regeln + Embeddings, kein LLM</text>
+
+  <rect x="440" y="300" width="300" height="80" rx="14" fill="#E3F4F4" stroke="#9AD3D6"/>
+  <text x="460" y="336" class="t">3 Werkzeugknoten</text>
+  <text x="460" y="364" class="s">fester Plan, MCP-Token</text>
+
+  <line x1="590" y1="160" x2="590" y2="187" stroke="#3E5470" stroke-width="3" marker-end="url(#a)"/>
+  <line x1="590" y1="270" x2="590" y2="297" stroke="#3E5470" stroke-width="3" marker-end="url(#a)"/>
+  <line x1="370" y1="345" x2="436" y2="120" stroke="#3E5470" stroke-width="3" marker-end="url(#a)"/>
+
+  <!-- branch: answer -->
+  <rect x="440" y="440" width="300" height="80" rx="14" fill="#EEF3F9" stroke="#C9D6E6"/>
+  <text x="460" y="476" class="t">4 Antwort</text>
+  <text x="460" y="504" class="s">qwen3.5:9b aus Nachweisen</text>
+  <rect x="440" y="550" width="300" height="80" rx="14" fill="#EEF3F9" stroke="#C9D6E6"/>
+  <text x="460" y="586" class="t">5 Antwortprüfung</text>
+  <text x="460" y="614" class="s">Zahlen, IDs, Quellen, Deutsch</text>
+  <rect x="440" y="660" width="300" height="80" rx="14" fill="#FFF4E5" stroke="#F0C98A"/>
+  <text x="460" y="696" class="t">Rückfallweg</text>
+  <text x="460" y="724" class="s">nach 2 Fehlversuchen, ohne LLM</text>
+  <line x1="590" y1="380" x2="590" y2="437" stroke="#3E5470" stroke-width="3" marker-end="url(#a)"/>
+  <line x1="590" y1="520" x2="590" y2="547" stroke="#3E5470" stroke-width="3" marker-end="url(#a)"/>
+  <line x1="590" y1="630" x2="590" y2="657" stroke="#3E5470" stroke-width="3" marker-end="url(#a)"/>
+  <path d="M440,590 C405,590 405,480 436,480" fill="none" stroke="#3E5470" stroke-width="2.5" stroke-dasharray="6 5" marker-end="url(#a)"/>
+  <text x="300" y="545" class="s">2. Versuch</text>
+
+  <!-- branch: decision brief -->
+  <rect x="790" y="440" width="300" height="80" rx="14" fill="#E3F4F4" stroke="#9AD3D6"/>
+  <text x="810" y="476" class="t">4 Vorlage</text>
+  <text x="810" y="504" class="s">Entscheidung ohne LLM</text>
+  <rect x="790" y="550" width="300" height="80" rx="14" fill="#13294B"/>
+  <text x="810" y="586" class="w">5 Freigabe ⏸</text>
+  <text x="810" y="614" class="ws">zweite Person (Vier Augen)</text>
+  <path d="M740,340 C800,340 940,360 940,436" fill="none" stroke="#0E7C86" stroke-width="3" marker-end="url(#ag)"/>
+  <text x="955" y="410" class="s">vollständige Prüfung</text>
+  <line x1="940" y1="520" x2="940" y2="547" stroke="#3E5470" stroke-width="3" marker-end="url(#a)"/>
+
+  <!-- column 3 -->
+  <rect x="1150" y="80" width="410" height="560" rx="16" fill="#F6F9FC" stroke="#C9D6E6"/>
+  <text x="1175" y="120" class="s">stdio oder Streamable HTTP</text>
+  <text x="1175" y="146" class="s">OAuth-2.1-Resource-Server</text>
+  <g>
+    <rect x="1175" y="170" width="360" height="100" rx="12" fill="#ffffff" stroke="#C9D6E6"/>
+    <text x="1195" y="208" class="t">get_customer_case</text>
+    <text x="1195" y="240" class="s">Fall-Repository, geprüfte Schemas</text>
+    <rect x="1175" y="285" width="360" height="100" rx="12" fill="#ffffff" stroke="#C9D6E6"/>
+    <text x="1195" y="323" class="t">analyze_financial_case</text>
+    <text x="1195" y="355" class="s">Decimal-Finanzrechner (Rate, DTI)</text>
+    <rect x="1175" y="400" width="360" height="100" rx="12" fill="#ffffff" stroke="#C9D6E6"/>
+    <text x="1195" y="438" class="t">check_compliance</text>
+    <text x="1195" y="470" class="s">10 Regeln + Entscheidungsservice</text>
+    <rect x="1175" y="515" width="360" height="100" rx="12" fill="#ffffff" stroke="#C9D6E6"/>
+    <text x="1195" y="553" class="t">search_internal_knowledge</text>
+    <text x="1195" y="585" class="s">FAISS + BM25 + Kennungen</text>
+  </g>
+  <path d="M740,330 C900,330 1000,200 1146,200" fill="none" stroke="#0E7C86" stroke-width="3" marker-end="url(#ag)"/>
+  <text x="960" y="178" class="s">MCP-Token (5 min)</text>
+
+  <!-- bottom: runtime -->
+  <rect x="40" y="790" width="500" height="80" rx="14" fill="#EEF3F9" stroke="#C9D6E6"/>
+  <text x="62" y="826" class="t">Ollama, lokal auf dem Mac</text>
+  <text x="62" y="854" class="s">qwen3.5:9b · qwen3-embedding:0.6b</text>
+  <rect x="570" y="790" width="460" height="80" rx="14" fill="#EEF3F9" stroke="#C9D6E6"/>
+  <text x="592" y="826" class="t">SQLite-Checkpointer</text>
+  <text x="592" y="854" class="s">offene Freigaben überstehen Neustart</text>
+  <rect x="1060" y="790" width="500" height="80" rx="14" fill="#ffffff" stroke="#9AD3D6" stroke-dasharray="8 6"/>
+  <text x="1082" y="826" class="t">Langfuse (optional)</text>
+  <text x="1082" y="854" class="s">selbst gehostet: Traces, Token, Experimente</text>
+</svg>
+</body></html>
