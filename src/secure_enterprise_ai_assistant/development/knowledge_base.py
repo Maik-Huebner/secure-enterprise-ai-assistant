@@ -12,7 +12,7 @@ EFFECTIVE_DATE = "2026-09-01"
 
 @dataclass(frozen=True)
 class Policy:
-    """One synthetic policy. ``slug`` keeps file names stable across language changes."""
+    """One synthetic policy. ``slug`` is the German, ASCII-only part of the file name."""
 
     document_id: str
     title: str
@@ -33,7 +33,7 @@ POLICIES: tuple[Policy, ...] = (
         "Richtlinie für Verbraucherkredite",
         "Kreditrisiko Privatkunden",
         "1.4",
-        "consumer-lending-policy",
+        "richtlinie-verbraucherkredite",
         """## 1 Zweck und Geltungsbereich
 Diese Richtlinie regelt unbesicherte Verbraucherkredite der NovaBank für synthetische
 Privatkunden. Sie gilt zusammen mit NB-DOC-001, NB-KYC-001 und NB-RSK-001.
@@ -64,7 +64,7 @@ Entscheidung der prüfenden Person.""",
         "Handbuch Kreditrisiko Privatkunden",
         "Kreditrisikomanagement",
         "2.2",
-        "retail-credit-risk-handbook",
+        "handbuch-kreditrisiko-privatkunden",
         """## 3 Risikobereitschaft
 Die NovaBank akzeptiert Standard-Verbraucherkreditanträge in den Risikoklassen A bis C.
 Klasse D erfordert immer eine manuelle Prüfung durch eine erfahrene prüfende Person.
@@ -91,7 +91,7 @@ Entscheidungsnachweis.""",
         "Richtlinie zur Kundenidentifizierung und KYC",
         "Bekämpfung von Finanzkriminalität",
         "3.1",
-        "customer-identification-and-kyc-policy",
+        "richtlinie-kundenidentifizierung-kyc",
         """## 2 Erforderliche Identitätsnachweise
 Die antragstellende Person muss ein gültiges Ausweisdokument vorlegen. Die
 Identitätsmerkmale werden mit dem eingereichten Antrag abgeglichen; die Demodaten der
@@ -116,7 +116,7 @@ echte Identitätsdaten gehören niemals in das Demonstrations-Repository.""",
         "Leitlinien zur Geldwäscheprävention",
         "Bekämpfung von Finanzkriminalität",
         "1.5",
-        "anti-money-laundering-guidelines",
+        "leitlinien-geldwaeschepraevention",
         """## 2 Geltungsbereich
 Diese synthetischen Leitlinien zeigen beispielhaft Überlegungen zur Geldwäscheprävention
 (AML). Sie sind keine Rechtsberatung und beschreiben nicht die Verfahren einer echten
@@ -139,7 +139,7 @@ Beschuldigungen aussprechen und keine unbelegten Befunde erzeugen.""",
         "Produktkatalog Verbraucherkredite",
         "Privatkundenprodukte",
         "2.3",
-        "consumer-credit-product-catalogue",
+        "produktkatalog-verbraucherkredite",
         """## 2.1 Produktgrenzen
 Der synthetische Standard-Ratenkredit umfasst Beträge von 1.000 EUR bis 75.000 EUR und
 Laufzeiten von 6 bis 84 Monaten. Der Zinssatz ist für die gesamte Vertragslaufzeit fest.
@@ -160,7 +160,7 @@ Tragfähigkeit und Risikozulässigkeit regeln weiterhin NB-CRD-001 und NB-RSK-00
         "Richtlinie zu erforderlichen Unterlagen für Verbraucherkredite",
         "Kreditbetrieb",
         "1.7",
-        "consumer-credit-required-documents-policy",
+        "richtlinie-erforderliche-unterlagen",
         """## 3.1 Pflichtnachweise
 Jede Verbraucherkreditakte benötigt vier Unterlagen: ein gültiges Ausweisdokument, einen
 aktuellen Einkommensnachweis, Kontoauszüge der letzten 90 Tage und ein vollständig
@@ -183,7 +183,7 @@ ungültigen und abgelaufenen Unterlagen sind in NB-DOC-002 geregelt.""",
         "Ablauf der Kreditgenehmigung",
         "Kreditbetrieb",
         "2.1",
-        "loan-approval-workflow",
+        "ablauf-kreditgenehmigung",
         """## 2 Ablaufschritte
 Die Standardreihenfolge lautet: Antragseingang, Identitätsprüfung, Prüfung der
 Unterlagen, Finanzanalyse, Richtlinien- und Compliance-Prüfung, Bestätigung durch die
@@ -206,7 +206,7 @@ verborgene Systemanweisungen.""",
         "Leitlinien für die manuelle Prüfung",
         "Kreditbetrieb",
         "1.9",
-        "manual-review-guidelines",
+        "leitlinien-manuelle-pruefung",
         """## 3 Grundsätze der Prüfung
 Die manuelle Prüfung klärt Warnungen; sie hebt kritische Befunde ohne formelle
 Ausnahmebefugnis nicht auf. Prüfende Personen dokumentieren sowohl stützende als auch
@@ -228,7 +228,7 @@ NB-RSK-001 Vorrang.""",
         "Richtlinie zur verantwortungsvollen Kreditvergabe",
         "Kundenschutz",
         "1.3",
-        "responsible-lending-policy",
+        "richtlinie-verantwortungsvolle-kreditvergabe",
         """## 2 Grundsatz
 Die NovaBank vergibt Kredite nur, wenn die strukturierten Nachweise eine tragfähige
 Rückzahlung belegen. Vertriebsziele haben niemals Vorrang vor Tragfähigkeit, KYC oder
@@ -249,7 +249,7 @@ den Assistenten nicht als rechtlich verantwortliche Entscheidungsinstanz dar."""
         "Datenschutzrichtlinie",
         "Datenschutzbeauftragte",
         "2.6",
-        "data-protection-policy",
+        "datenschutzrichtlinie",
         """## 3 Datenminimierung
 Verarbeitet werden nur die Merkmale, die der angegebene Kreditprozess benötigt.
 Demo-Umgebungen nutzen synthetische Datensätze und nehmen keine Produktivexporte und
@@ -270,7 +270,7 @@ einen Weg zur Korrektur fehlerhafter Eingabedaten.""",
         "Richtlinie zur Informationssicherheit",
         "Informationssicherheit",
         "3.2",
-        "information-security-policy",
+        "richtlinie-informationssicherheit",
         """## 4 Lokale Verarbeitung
 Sensible Unternehmensinformationen bleiben auf freigegebener lokaler Infrastruktur.
 Externe Modellanbieter sind optional und dürfen niemals eine versteckte
@@ -294,7 +294,7 @@ Dateioperation ist auf das konfigurierte Verzeichnis der Wissensbasis beschränk
         "Verfahren für Kundenbeschwerden",
         "Kundenservice",
         "1.2",
-        "customer-complaint-procedure",
+        "verfahren-kundenbeschwerden",
         """## 2 Aufnahme
 Erfasst werden Beschwerdekategorie, Fallbezug, Eingangszeit und gewünschtes Ergebnis.
 Im Freitext werden keine unnötigen Identitäts- oder Finanzdaten abgefragt.
@@ -314,7 +314,7 @@ Richtigkeit von Daten folgen zusätzlich NB-DPR-001.""",
         "Zins- und Gebührenverzeichnis",
         "Privatkundenprodukte",
         "2.0",
-        "interest-and-fee-schedule",
+        "zins-und-gebuehrenverzeichnis",
         """## 2 Darstellung der Preise
 Der jährliche Nominalzinssatz ist in jedem synthetischen Antrag gespeichert und kann je
 nach Risikoklasse unterschiedlich sein. Der Rechner ermittelt daraus den Monatszins,
@@ -335,7 +335,7 @@ fallbezogene Ausgabe des Rechners.""",
         "Leitfaden für Kreditentscheidungen",
         "Kreditbetrieb",
         "2.4",
-        "employee-credit-decision-guide",
+        "leitfaden-kreditentscheidungen",
         """## 3 Lesen der Entscheidungsunterlagen
 Am Anfang stehen die verifizierten Falldaten. Danach folgen die Kennzahlen des Rechners,
 die nicht bestandenen Compliance-Regeln und die Auszüge aus den Richtlinien. Ein
@@ -357,7 +357,7 @@ erfasst; hier stehen nur synthetische Beispiele.""",
         "Leitfaden zur Risikoklassifizierung",
         "Kreditrisikomanagement",
         "1.8",
-        "risk-classification-guide",
+        "leitfaden-risikoklassifizierung",
         """## 3 Klassen
 Klasse A steht für die beste synthetische Risikoqualität, B für gute Qualität, C für
 mittleres Risiko und D für erhöhtes Risiko mit Prüfung durch eine erfahrene prüfende
@@ -378,7 +378,7 @@ Tragfähigkeitsgrenze nicht ausgleichen.""",
         "Verfahren zur Prüfung von Unterlagen",
         "Kreditbetrieb",
         "2.5",
-        "document-verification-procedure",
+        "verfahren-pruefung-unterlagen",
         """## 3 Prüfreihenfolge
 Geprüft werden Dokumentart, Vorhandensein, Lesbarkeit, innere Stimmigkeit,
 Gültigkeitsdauer und Zuordnung zur synthetischen antragstellenden Person. Der Status
@@ -400,7 +400,7 @@ Sicherheitsereignis erfasst.""",
         "Richtlinie zur Eskalation von Kredit- und Compliance-Fällen",
         "Unternehmens-Compliance",
         "1.6",
-        "credit-and-compliance-escalation-policy",
+        "richtlinie-eskalation",
         """## 2 Eskalationsstufen
 Stufe 1 umfasst routinemäßige Warnungen, die eine Kreditprüferin oder ein Kreditprüfer
 bearbeitet. Stufe 2 umfasst mehrere Warnungen, Risikoklasse D oder wesentliche
@@ -422,7 +422,7 @@ markieren.""",
         "Internes Compliance-Handbuch",
         "Unternehmens-Compliance",
         "2.1",
-        "internal-compliance-handbook",
+        "internes-compliance-handbuch",
         """## 2 Rangfolge der Vorgaben
 Gesetzliche und aufsichtsrechtliche Pflichten haben Vorrang, danach folgen freigegebene
 Richtlinien der NovaBank, Verfahren und Arbeitsanweisungen. Dieses fiktive Handbuch dient
