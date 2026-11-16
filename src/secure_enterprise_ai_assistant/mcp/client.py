@@ -12,6 +12,7 @@ from mcp.client.stdio import stdio_client
 from secure_enterprise_ai_assistant.core.labels import format_eur, format_pct, label
 from secure_enterprise_ai_assistant.core.language import REPORT_END_MARKER
 from secure_enterprise_ai_assistant.core.settings import get_settings
+from secure_enterprise_ai_assistant.mcp.environment import server_environment
 from secure_enterprise_ai_assistant.models.orchestration import RouteDecision
 
 MCP_MODULE = "secure_enterprise_ai_assistant.mcp.server"
@@ -62,7 +63,9 @@ class VerifiedMCPReportBuilder:
         return await asyncio.wait_for(self._fetch(case_id), timeout=self.timeout_seconds)
 
     async def _fetch(self, case_id: str) -> dict[str, dict[str, Any]]:
-        parameters = StdioServerParameters(command=sys.executable, args=["-m", MCP_MODULE])
+        parameters = StdioServerParameters(
+            command=sys.executable, args=["-m", MCP_MODULE], env=server_environment()
+        )
         async with stdio_client(parameters) as (read_stream, write_stream):
             async with ClientSession(read_stream, write_stream) as session:
                 await session.initialize()
