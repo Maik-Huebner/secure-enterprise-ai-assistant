@@ -46,6 +46,7 @@ from secure_enterprise_ai_assistant.core.language import (
     forbidden_labels_in,
 )
 from secure_enterprise_ai_assistant.mcp.client import VerifiedMCPReportBuilder
+from secure_enterprise_ai_assistant.mcp.environment import server_environment
 from secure_enterprise_ai_assistant.models.orchestration import QueryIntent, RouteDecision
 
 logger = get_logger(__name__)
@@ -128,6 +129,7 @@ def _mcp_server(*allowed_tools: str) -> MCPServerStdio:
     return MCPServerStdio(
         command=sys.executable,
         args=["-m", MCP_MODULE],
+        env=server_environment(),
         tool_filter=create_static_tool_filter(allowed_tool_names=list(allowed_tools)),
         cache_tools_list=True,
     )
