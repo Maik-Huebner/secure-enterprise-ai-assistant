@@ -16,19 +16,23 @@ classifiers = [
 ]
 
 dependencies = [
+    "argon2-cffi==25.1.0",
     "crewai==1.15.41",
     "crewai-tools[mcp]==1.15.41",
     "gradio==6.32.0",
     "sentence-transformers==6.0.1",
     "faiss-cpu==1.15.0",
+    "fastapi==0.141.1",
     "bm25s==0.3.11",
     "httpx==0.28.1",
     "mcp==1.30.0",
     "numpy==2.5.3",
     "pdfplumber==0.11.10",
     "platformdirs==4.11.8",
+    "pyjwt==2.15.1",
     "pydantic-settings==2.15.0",
     "python-dotenv==1.2.3",
+    "uvicorn==0.52.4",
 ]
 
 [project.scripts]
@@ -36,6 +40,9 @@ novabank-ui = "secure_enterprise_ai_assistant.ui.app:main"
 novabank-mcp = "secure_enterprise_ai_assistant.mcp.server:main"
 novabank-evaluate = "secure_enterprise_ai_assistant.evaluation.runner:main"
 novabank-index = "secure_enterprise_ai_assistant.rag.cli:main"
+novabank-api = "secure_enterprise_ai_assistant.api.app:main"
+novabank-users = "secure_enterprise_ai_assistant.security.cli:main"
+novabank-audit = "secure_enterprise_ai_assistant.security.audit:main"
 
 [project.optional-dependencies]
 dev = [
@@ -63,6 +70,7 @@ secure_enterprise_ai_assistant = [
     "resources/knowledge_base/*.md",
     "resources/retrieval/*.json",
     "resources/routing/*.json",
+    "resources/security/*.json",
 ]
 
 [tool.pytest.ini_options]
