@@ -21,7 +21,6 @@ from secure_enterprise_ai_assistant.observability.tracing import (
 from tests.api_support import GroundedTestModel, InProcessCollector, make_settings
 from tests.conftest import REVIEWER, token_for
 
-
 # Assembled at runtime so the repository secret scan does not see a key-shaped literal.
 FAKE_SECRET_KEY = "-".join(["sk", "lf", "test", "not", "a", "real", "key"])
 
