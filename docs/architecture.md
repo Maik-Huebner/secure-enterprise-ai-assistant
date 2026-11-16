@@ -1,68 +1,64 @@
-# Architecture
+# Architektur
 
 ```mermaid
 flowchart TD
-    UI[Gradio Blocks UI] --> FLOW[CrewAI Flow]
-    FLOW --> ROUTER[Deterministic intent router]
-    ROUTER --> MODEL{Deterministic model router}
-    MODEL -->|simple workflows| QWEN[qwen3.5:9b]
-    MODEL -->|full-assessment profile| MISTRAL[mistral-small3.2:24b configured]
-    QWEN --> CREW[CrewAI specialist crew]
-    MISTRAL --> MODE{FULL_ASSESSMENT_MODE}
-    MODE -->|agentic experimental| CREW
-    MODE -->|verified_mcp default| FALLBACK[Verified MCP report builder]
-    CREW -->|native stdio discovery| MCP[FastMCP server]
-    CREW --> GUARD[Task and report guardrails]
-    GUARD -->|valid| RESPONSE[Assistant response]
-    GUARD -->|complex workflow failure| FALLBACK
-    FALLBACK -->|fresh real stdio session| MCP
-    FALLBACK --> RESPONSE
-    MCP --> CASES[Customer case repository]
-    MCP --> FIN[Decimal financial engine]
-    MCP --> COMP[Rule-driven compliance engine]
-    MCP --> RAG[Hybrid RAG service]
-    RAG --> FAISS[FAISS dense index]
-    RAG --> BM25[BM25S lexical index]
-    RAG --> KB[18 synthetic policies]
+    UI[Gradio-Oberfläche] -->|Anmeldung, JWT| API[FastAPI /v1]
+    API -->|Rechte, Rate Limit, Audit| G[LangGraph-Workflow]
+    G --> RCV[receive: Eingabefilter]
+    RCV --> RT[route: Fall-ID-Regel + hybrider Absichts-Router]
+    RT --> COL[collect_evidence: MCP-Werkzeug-Knoten]
+    COL -->|stdio, Token des Aufrufers| MCP[FastMCP-Server]
+    MCP --> CASES[Fall-Repository]
+    MCP --> FIN[Decimal-Finanzrechner]
+    MCP --> COMP[Regelwerk + Entscheidungsservice]
+    MCP --> RAG[Hybride Suche: Embeddings + BM25 + Kennungen]
+    COL -->|Wissen, Fall, Finanzen, Compliance| GEN[generate: qwen3.5:9b]
+    GEN --> VER{verify: Zahlen, Quellen, Sprache}
+    VER -->|bestanden| FIN2[finish]
+    VER -->|Mängel, 1. Versuch| GEN
+    VER -->|Mängel, 2. Versuch| FB[fallback: verifizierte Antwort ohne Modell]
+    FB --> FIN2
+    COL -->|vollständige Prüfung| DR[draft_brief: deterministische Vorlage]
+    DR --> HR[human_review: Pause ⏸]
+    HR --> CR{check_review: Vier-Augen-Prinzip}
+    CR -->|ungültig| HR
+    CR -->|gültig| END[freigegeben oder abgelehnt]
+    G -.-> CP[(SQLite-Checkpointer)]
 ```
 
-## Trust boundaries
+## Grundsätze
 
-The UI validates untrusted input before routing. Agents have no code execution and receive
-least-privilege MCP tool filters. The MCP boundary validates identifiers, query length, and
-metadata filters. File ingestion accepts only `.md`, `.txt`, and `.pdf` below the configured
-knowledge root. Retrieved text is evidence, never an instruction channel.
+1. **Fakten kommen aus Code, Sprache aus dem Modell.** Fallakten, Rechnungen, Regelergebnisse und Empfehlungen liefern deterministische Services hinter MCP. Das Sprachmodell formuliert nur.
+2. **Das Modell wählt keine Werkzeuge („Least Agency“).** Der Router legt den Werkzeugplan fest, der Werkzeug-Knoten führt ihn über MCP aus. Ein eingeschleuster Text in einem Dokument kann deshalb keinen Werkzeugaufruf auslösen.
+3. **Jede Antwort wird geprüft.** Zahlen und Dokument-IDs müssen in den Nachweisen stehen, Richtlinienaussagen brauchen eine Quelle, und englische Beschriftungen sind verboten. Bei Mängeln gibt es einen zweiten Versuch mit Rückmeldung, danach den verifizierten Rückfallweg.
+4. **Entscheidungsvorlagen schreibt kein Modell.** Sie werden aus MCP-Daten gerendert und pausieren, bis eine **zweite** prüfende Person freigibt oder ablehnt.
+5. **Rechte werden im Code geprüft, mehrfach.** Die API prüft, der Graph prüft (Vorlage, Freigabe), und jedes MCP-Werkzeug prüft mit dem Token des Aufrufers.
 
-## Routing
+## Vertrauensgrenzen
 
-The intent router selects one of five routes: knowledge, customer case, financial analysis,
-compliance check, or full assessment. A second deterministic router maps knowledge, case,
-financial, and compliance workflows to the `fast_local` Qwen profile, while full assessment
-maps to the `complex_agentic` Mistral profile. Unknown future simple intents default safely to
-Qwen. Neither routing step invokes an LLM.
+| Grenze | Schutz |
+|---|---|
+| Browser → API | JWT, Rate Limit, CORS geschlossen, Sicherheitsheader, Eingabefilter |
+| API → Graph | Principal und Token als Laufzeit-Kontext (nicht im Checkpoint) |
+| Graph → MCP | Unterprozess mit Positivliste der Einstellungen und `NOVABANK_ACCESS_TOKEN` |
+| MCP → Daten | Rechteprüfung je Werkzeug; Filter vor dem Ranking; fremde Fälle wie unbekannte |
+| Dokumente → Modell | Dokumenttext als markierte Daten (`<richtlinie>`), Quarantäne bei Injektionsmustern |
+| Modell → Nutzer | deterministische Antwortprüfung, Rückfallweg, Quellen nur aus Nachweisen |
 
-For ordinary routes the model is selected before CrewAI constructs a crew, and every agent in
-that run receives the same LLM instance. For full assessment, the profile and configured model
-are selected first, then the execution-mode gate runs. The Flow records only technical events:
-request receipt, intent, executed or configured model, profile, routing reason, selected MCP
-tools, optional sanitized fallback reason, execution mode, and completion.
+## Zustand und Persistenz
 
-## Local model and storage
+- **Graph-Zustand:** SQLite-Checkpointer unter `<RUNTIME_DIR>/graph/checkpoints.sqlite`. Offene Freigaben überstehen einen Neustart der API. Ein Test sucht das Token in der Datenbank und findet es nicht.
+- **Offene Freigaben:** kleiner Index `<RUNTIME_DIR>/graph/reviews.json`, der Entwurf selbst steckt im Checkpoint.
+- **Suchindex:** `<RUNTIME_DIR>/index/<embedder>/` mit Manifest.
+- **Benutzer und Audit-Log:** `<RUNTIME_DIR>/security/users.json` (nur Argon2id-Hashes) und `<RUNTIME_DIR>/audit/audit.jsonl` (Hash-Kette).
 
-Generation uses an Ollama-compatible endpoint with centrally configured temperature, token
-limit, request timeout, and thinking mode. `OLLAMA_FAST_MODEL` and `OLLAMA_COMPLEX_MODEL`
-configure the profiles; `FULL_ASSESSMENT_MODE` accepts `verified_mcp` (the demo default) or
-`agentic`. The legacy `OLLAMA_MODEL` environment variable remains a fallback alias for the
-fast profile. CrewAI task-output SQLite state is deliberately stored below the platform-specific
-per-user application-state directory (overridable with `RUNTIME_DIR`), never inside the installed
-package or repository. The default
-retriever boots offline with deterministic hashing; deployments can set a locally installed
-Sentence Transformer through the existing embedder abstraction.
+## Modelle
 
-For a full assessment, the default demo-safe mode invokes the deterministic verifier immediately;
-Mistral is not started. The verifier obtains all four structured results through one real stdio
-MCP client session and renders a bounded German report. The Flow records this transparently as
-`deterministic_mcp_fallback` with the demo-safe reason. The `agentic` mode keeps the experimental
-Mistral workflow and its reviewer/intermediate guardrails; terminal or completeness failure uses
-the same verifier. This path is limited to full assessments, does not replace ordinary Qwen
-CrewAI routes, and cannot access business services directly.
+| Aufgabe | Modell | Warum |
+|---|---|---|
+| Antworten | `qwen3.5:9b` über Ollama | größtes erlaubtes Modell auf 24 GB RAM; alle Routen nutzen dasselbe Modell |
+| Embeddings | `qwen3-embedding:0.6b` über Ollama | in der Messung bestes Modell (MRR 0,98), klein |
+| Absichtserkennung | dieselben Embeddings, Beispielsätze | kein Sprachmodell nötig, 8 ms |
+| Richter in der Evaluation | `qwen3.5:9b`, Temperatur 0, JSON | lokal; als Richter schwach, deshalb Stichprobe von Hand |
+
+Das frühere 24B-Profil (Mistral Small) ist entfernt: Es lag über der Hardware-Grenze und wurde im Standardmodus ohnehin nicht ausgeführt.
