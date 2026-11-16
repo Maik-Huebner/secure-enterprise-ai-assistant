@@ -1,7 +1,8 @@
 """MCP client used by the LangGraph tool node, and the deterministic decision-brief renderer.
 
 The graph never lets the language model choose tools: the router fixes the tool plan, and this
-client executes exactly that plan in one stdio session with the caller's access token.
+client executes exactly that plan in one MCP session (stdio subprocess or Streamable HTTP) with
+the caller's short-lived MCP token.
 """
 
 from __future__ import annotations
@@ -10,8 +11,10 @@ import asyncio
 import sys
 from typing import Any
 
+import httpx2
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
+from mcp.client.streamable_http import streamable_http_client
 from mcp.types import CallToolResult, TextContent
 
 from secure_enterprise_ai_assistant.core.labels import format_eur, format_pct, label
@@ -111,11 +114,20 @@ def _raise_for(tool: str, result: CallToolResult) -> None:
 
 
 class McpEvidenceClient:
-    """Executes the router's tool plan over MCP stdio on behalf of one caller."""
+    """Executes the router's tool plan over MCP (stdio or Streamable HTTP) for one caller."""
 
-    def __init__(self, access_token: str | None, timeout_seconds: int | None = None) -> None:
+    def __init__(
+        self,
+        access_token: str | None,
+        timeout_seconds: int | None = None,
+        transport: str | None = None,
+        server_url: str | None = None,
+    ) -> None:
+        settings = get_settings()
         self._access_token = access_token
-        self.timeout_seconds = timeout_seconds or get_settings().mcp_request_timeout_seconds
+        self.timeout_seconds = timeout_seconds or settings.mcp_request_timeout_seconds
+        self.transport = transport or settings.mcp_transport
+        self.server_url = server_url or settings.mcp_server_url
 
     def collect(self, route: RouteDecision, query: str) -> Evidence:
         """Return structured results keyed by 'case', 'financial', 'compliance', 'knowledge'."""
@@ -127,6 +139,8 @@ class McpEvidenceClient:
             ) from exc
 
     async def _collect(self, route: RouteDecision, query: str) -> Evidence:
+        if self.transport == "http":
+            return await self._collect_http(route, query)
         parameters = StdioServerParameters(
             command=sys.executable,
             args=["-m", MCP_MODULE],
@@ -134,25 +148,69 @@ class McpEvidenceClient:
                 {ACCESS_TOKEN_VARIABLE: self._access_token} if self._access_token else None
             ),
         )
-        evidence: Evidence = {}
         async with stdio_client(parameters) as (read_stream, write_stream):
             async with ClientSession(read_stream, write_stream) as session:
                 await session.initialize()
-                for tool in route.required_tools:
-                    if tool == "search_internal_knowledge":
-                        responses = []
-                        for arguments in knowledge_requests(route, query, evidence):
-                            result = await session.call_tool(tool, arguments)
-                            if result.isError or not isinstance(result.structuredContent, dict):
-                                _raise_for(tool, result)
-                            responses.append(dict(result.structuredContent or {}))
-                        evidence["knowledge"] = merge_knowledge(responses)
-                        continue
-                    result = await session.call_tool(tool, {"case_id": route.case_id})
-                    if result.isError or not isinstance(result.structuredContent, dict):
-                        _raise_for(tool, result)
-                    evidence[EVIDENCE_KEYS[tool]] = dict(result.structuredContent or {})
-        return evidence
+                return await run_tool_plan(session, route, query)
+
+    async def _collect_http(self, route: RouteDecision, query: str) -> Evidence:
+        headers = {"Authorization": f"Bearer {self._access_token}"} if self._access_token else {}
+        statuses: list[int] = []
+
+        async def remember_status(response: httpx2.Response) -> None:
+            # The MCP transport turns a 401 into a generic protocol error; keep the status.
+            statuses.append(response.status_code)
+
+        try:
+            async with httpx2.AsyncClient(
+                headers=headers,
+                timeout=self.timeout_seconds,
+                event_hooks={"response": [remember_status]},
+            ) as http:
+                async with streamable_http_client(self.server_url, http_client=http) as streams:
+                    async with ClientSession(streams[0], streams[1]) as session:
+                        await session.initialize()
+                        return await run_tool_plan(session, route, query)
+        except BaseExceptionGroup as group:
+            if {401, 403} & set(statuses):
+                raise AccessDeniedError("Für diese Anfrage fehlt die Berechtigung.") from group
+            for error in _leaves(group):
+                if isinstance(error, (CaseNotFoundError, AccessDeniedError, MCPClientError)):
+                    raise error from group
+            raise MCPClientError("Der MCP-HTTP-Server ist nicht erreichbar.") from group
+        except httpx2.TransportError as exc:
+            raise MCPClientError("Der MCP-HTTP-Server ist nicht erreichbar.") from exc
+
+
+def _leaves(group: BaseExceptionGroup[BaseException]) -> list[BaseException]:
+    errors: list[BaseException] = []
+    for error in group.exceptions:
+        errors.extend(_leaves(error) if isinstance(error, BaseExceptionGroup) else [error])
+    return errors
+
+
+async def run_tool_plan(session: ClientSession, route: RouteDecision, query: str) -> Evidence:
+    """Call exactly the router's tools in one MCP session; the model chooses nothing here."""
+    evidence: Evidence = {}
+    for tool in route.required_tools:
+        if tool == "search_internal_knowledge":
+            responses = []
+            for arguments in knowledge_requests(route, query, evidence):
+                result = await session.call_tool(tool, arguments)
+                responses.append(_structured(tool, result))
+            evidence["knowledge"] = merge_knowledge(responses)
+            continue
+        result = await session.call_tool(tool, {"case_id": route.case_id})
+        evidence[EVIDENCE_KEYS[tool]] = _structured(tool, result)
+    return evidence
+
+
+def _structured(tool: str, result: object) -> dict[str, Any]:
+    if not isinstance(result, CallToolResult):
+        raise MCPClientError(f"Das MCP-Werkzeug {tool} lieferte keine strukturierten Daten.")
+    if result.is_error or not isinstance(result.structured_content, dict):
+        _raise_for(tool, result)
+    return dict(result.structured_content or {})
 
 
 def render_decision_brief(case_id: str, evidence: Evidence) -> str:

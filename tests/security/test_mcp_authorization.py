@@ -62,7 +62,7 @@ async def _stdio_calls(token: str | None) -> dict[str, bool]:
                 ),
             ):
                 result = await session.call_tool(name, arguments)
-                results[label] = not result.isError
+                results[label] = not result.is_error
     return results
 
 

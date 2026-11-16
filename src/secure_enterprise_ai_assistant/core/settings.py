@@ -44,6 +44,14 @@ class Settings(BaseSettings):
     answer_max_attempts: int = Field(default=2, ge=1, le=4)
     ollama_think: bool = False
     mcp_request_timeout_seconds: int = Field(default=30, ge=5, le=300)
+    # MCP transport (v1.5): a stdio subprocess per request, or a separate Streamable HTTP
+    # server that verifies its own short-lived tokens (audience MCP_AUDIENCE).
+    mcp_transport: Literal["stdio", "http"] = "stdio"
+    mcp_host: str = "127.0.0.1"
+    mcp_port: int = Field(default=8001, ge=1024, le=65535)
+    mcp_server_url: str = "http://127.0.0.1:8001/mcp"
+    mcp_audience: str = "novabank-mcp"
+    mcp_token_ttl_minutes: int = Field(default=5, ge=1, le=30)
     runtime_dir: Path = Field(
         default_factory=lambda: user_state_path("secure-enterprise-ai-assistant")
     )

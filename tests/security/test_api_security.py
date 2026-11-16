@@ -12,7 +12,7 @@ import pytest
 from secure_enterprise_ai_assistant.security.audit import verify_chain
 from secure_enterprise_ai_assistant.security.models import Principal, Role
 from secure_enterprise_ai_assistant.security.tokens import TokenService
-from tests.api_support import PASSWORDS, TEST_SECRET, auth, login, make_client
+from tests.api_support import PASSWORDS, TEST_SECRET, InProcessCollector, auth, login, make_client
 
 PROTECTED = [
     ("GET", "/v1/me", None),
@@ -131,6 +131,32 @@ def test_tampered_token_is_rejected(api) -> None:
         client.get("/v1/me", headers=auth(f"{header}.{forged_payload}.{signature}")).status_code
         == 401
     )
+
+
+def test_mcp_tokens_do_not_open_the_api(api) -> None:
+    client, context = api
+    mcp_token = context.mcp_tokens.issue(Principal(username="sb.nord", role=Role.CASE_WORKER))[0]
+
+    assert client.get("/v1/me", headers=auth(mcp_token)).status_code == 401
+
+
+def test_chat_hands_a_fresh_mcp_token_to_the_workflow(tmp_path) -> None:
+    received: list[str | None] = []
+
+    class RecordingCollector(InProcessCollector):
+        def __init__(self, access_token: str | None) -> None:
+            received.append(access_token)
+            super().__init__(access_token)
+
+    client, context, _ = make_client(tmp_path, collector=RecordingCollector)
+    api_token = login(client, "pruefer")
+    response = client.post(
+        "/v1/chat", json={"message": "Zeige CASE-00001."}, headers=auth(api_token)
+    )
+
+    assert response.status_code == 200
+    assert received and received[0] != api_token  # no token passthrough
+    assert context.mcp_tokens.verify(str(received[0])).username == "pruefer"
 
 
 def test_deleted_user_loses_access_before_token_expiry(api) -> None:
