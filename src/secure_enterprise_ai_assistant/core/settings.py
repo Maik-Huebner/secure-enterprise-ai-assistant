@@ -73,6 +73,16 @@ class Settings(BaseSettings):
     api_rate_limit_per_minute: int = Field(default=120, ge=1, le=6000)
     hsts_enabled: bool = False
     users_file: Path | None = None
+
+    # Observability (v1.6): Langfuse, off by default. Nothing is sent without both keys.
+    langfuse_enabled: bool = False
+    langfuse_base_url: str = "http://localhost:3000"
+    langfuse_public_key: str | None = None
+    langfuse_secret_key: SecretStr | None = None
+    langfuse_pseudonymize_users: bool = True
+    # Assumed price per million tokens for the cost view; local models cost nothing.
+    llm_price_input_per_million_tokens: float = Field(default=0.0, ge=0)
+    llm_price_output_per_million_tokens: float = Field(default=0.0, ge=0)
     audit_log: Path | None = None
 
     @property

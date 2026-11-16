@@ -255,6 +255,34 @@ How to read this honestly:
   because the policies are fictional. This shows the value of retrieval, not general model
   quality.
 
+## Observability with Langfuse (v1.6, optional)
+
+Tracing is off by default. With a self-hosted Langfuse every workflow run becomes one trace: each
+graph node as a span, the model call as a generation with prompt, answer, tokens and latency, a
+pseudonymous user and the thread as session.
+
+![Langfuse trace of a financial question](docs/assets/langfuse-trace.jpg)
+
+```bash
+python scripts/langfuse_env.py --port 3000   # random secrets into deploy/langfuse/.env (git-ignored)
+make langfuse-up                             # Langfuse 4.80 + Postgres, ClickHouse, Redis, MinIO
+# copy LANGFUSE_ENABLED/BASE_URL/PUBLIC_KEY/SECRET_KEY into .env, then:
+novabank-langfuse check                      # keys work?
+novabank-langfuse setup                      # model definition with the configured token price
+novabank-langfuse datasets                   # answer suite (17) and retrieval test split (24)
+novabank-langfuse experiment                 # all 17 questions through the real workflow, scored
+```
+
+Live check on 16.11.2026 (M4 Pro, one run): 17 experiment items, mean `facts_correct` 0.882
+(15/17); 14 generations with 12,124 input and 2,192 output tokens; no JWT in any stored
+observation (checked through the Langfuse API). Local models have no API cost: the default price
+is 0, and any price set for the cost view is an assumption, shown by Langfuse in USD.
+
+Privacy: the user field is an HMAC pseudonym, but trace contents (graph state, the approval note
+of a decision brief, synthetic case data) contain names, so Langfuse access must be restricted
+like access to case files. The Compose profile binds all ports to localhost, disables telemetry
+and has no default passwords. Tests capture real traces in memory, without a server.
+
 ## REST API and security (v1.3)
 
 The FastAPI backend is the single entry point for the Gradio UI and for other systems (for
@@ -300,7 +328,7 @@ reveals it. Tests cover direct, filter-based, identifier-based and MCP-level det
   recall 0.75, no false positives on 50 benign questions), applied in the API and the workflow;
 - safe knowledge-root containment and supported-extension checks;
 - no secrets in the repository (`JWT_SECRET` has no default; the audit flags filled-in keys);
-- LangSmith tracing disabled by default; loopback binding by default;
+- Langfuse and LangSmith tracing disabled by default; loopback binding by default;
 - synthetic-data boundary repeated in data artifacts, policies, prompts, and UI.
 
 See [docs/security.md](docs/security.md) for controls and known production gaps.
@@ -308,7 +336,7 @@ See [docs/security.md](docs/security.md) for controls and known production gaps.
 ## Local setup
 
 Requirements: Python 3.13 (`>=3.13,<3.14`), Ollama, and sufficient memory for the chosen
-local model. Python 3.13.9 is the reproducibly validated runtime for release v1.5.0.
+local model. Python 3.13.9 is the reproducibly validated runtime for release v1.6.0.
 
 ```bash
 python3.13 -m venv .venv
@@ -380,7 +408,7 @@ make build
 The full test suite does not need a running model or network connection. End-to-end generation
 does require the configured Ollama server and model.
 
-Current local release gate: **297 tests passing** under Python 3.13 with warnings treated as
+Current local release gate: **304 tests passing** under Python 3.13 with warnings treated as
 errors. CI installs the package non-editably and proves that imports resolve from
 `site-packages`.
 
@@ -406,7 +434,8 @@ chain-of-thought.
 ## Repository map
 
 ```text
-docs/                 architecture, security, demo guidance, audit, and v2 plan
+deploy/langfuse/      optional self-hosted Langfuse (Docker Compose)
+docs/                 architecture, security, demo guidance, audit, v2 plan, learning notes
 reports/evaluation/   measured evaluation output
 requirements/         exact Python 3.13 dependency lock and lock policy
 scripts/              thin repository wrappers for generation, evidence, and audit
@@ -416,6 +445,7 @@ src/.../flows/        deterministic router (rules + semantic examples)
 src/.../api/          FastAPI backend
 src/.../security/     users, tokens, roles, audit log, rate limits
 src/.../mcp/          MCP server (stdio + Streamable HTTP), client, tool boundary
+src/.../observability/ Langfuse tracing and the novabank-langfuse CLI
 src/.../rag/          ingestion, FAISS/BM25S hybrid retrieval
 src/.../services/     deterministic repository, finance, and compliance logic
 src/.../ui/           Gradio Blocks application

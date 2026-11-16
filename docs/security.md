@@ -77,6 +77,24 @@ storage.
 - the access token is run context and never written to the graph checkpoint (tested);
 - final lending responsibility remains with an authorized human reviewer.
 
+## Tracing and privacy (v1.6)
+
+- Langfuse tracing is **off by default**; without `LANGFUSE_ENABLED=true` and both project keys no
+  client is created and nothing leaves the process (tested).
+- When on, traces contain prompts and answers, so they contain the (synthetic) case data that
+  reached the model. A real deployment needs a data-protection assessment, a self-hosted
+  instance in the bank's own network and a retention policy; the provided Compose profile binds
+  every port to `127.0.0.1`, disables telemetry and has no default passwords
+  (`scripts/langfuse_env.py` generates them into a git-ignored, owner-only file).
+- The trace's user field is a pseudonym (HMAC keyed by the application's JWT secret, which the
+  trace store never sees); the thread ID is the session. This keeps names out of filters and
+  dashboards, but **not** out of trace contents: the graph state (`requested_by`), the approval
+  note of a decision brief and the synthetic case data name people. Access to Langfuse must
+  therefore be restricted like access to the case files.
+- Access tokens are run context and never part of traced state; additionally, a mask function
+  removes anything that looks like a JWT before export (tested with a captured trace).
+- Langfuse keys are excluded from the settings forwarded to the MCP subprocess (tested).
+
 ## Known production gaps
 
 - one shared HS256 key instead of an identity provider (OAuth 2.1 / OpenID Connect, SSO, MFA);
@@ -87,5 +105,7 @@ storage.
 - rate limits are in-memory per process (several instances need Redis or a gateway);
 - no TLS termination in the application (belongs to a reverse proxy);
 - audit log is tamper-evident, not tamper-proof;
+- traces are not masked for personal data beyond tokens (fine for synthetic data, not for real
+  customers);
 - encrypted persistence, model-supply-chain controls, malicious-file sandboxing, and formal
   regulatory review.

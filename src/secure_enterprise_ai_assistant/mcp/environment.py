@@ -19,9 +19,14 @@ _EXTRA_NAMES = frozenset(
 )
 
 
+# Settings the tool server never needs; their secrets stay in the parent process.
+_NEVER_FORWARDED = frozenset({"LANGFUSE_PUBLIC_KEY", "LANGFUSE_SECRET_KEY"})
+
+
 def forwarded_names() -> frozenset[str]:
     """Upper-case environment variable names that belong to this application."""
-    return frozenset(name.upper() for name in Settings.model_fields) | _EXTRA_NAMES
+    names = frozenset(name.upper() for name in Settings.model_fields) | _EXTRA_NAMES
+    return names - _NEVER_FORWARDED
 
 
 def server_environment(extra: dict[str, str] | None = None) -> dict[str, str]:
