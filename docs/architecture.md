@@ -7,7 +7,7 @@ flowchart TD
     G --> RCV[receive: Eingabefilter]
     RCV --> RT[route: Fall-ID-Regel + hybrider Absichts-Router]
     RT --> COL[collect_evidence: MCP-Werkzeug-Knoten]
-    COL -->|stdio, Token des Aufrufers| MCP[FastMCP-Server]
+    COL -->|stdio oder HTTP, MCP-Token| MCP[MCP-Server, SDK 2.x]
     MCP --> CASES[Fall-Repository]
     MCP --> FIN[Decimal-Finanzrechner]
     MCP --> COMP[Regelwerk + Entscheidungsservice]
@@ -40,7 +40,8 @@ flowchart TD
 |---|---|
 | Browser → API | JWT, Rate Limit, CORS geschlossen, Sicherheitsheader, Eingabefilter |
 | API → Graph | Principal und Token als Laufzeit-Kontext (nicht im Checkpoint) |
-| Graph → MCP | Unterprozess mit Positivliste der Einstellungen und `NOVABANK_ACCESS_TOKEN` |
+| API → MCP-Token | eigenes Token mit Audience `novabank-mcp`, 5 Minuten; das API-Token wird nie weitergereicht |
+| Graph → MCP | stdio: Unterprozess mit Positivliste und `NOVABANK_ACCESS_TOKEN`; HTTP: Bearer-Token, Prüfung je Anfrage (Resource Server) |
 | MCP → Daten | Rechteprüfung je Werkzeug; Filter vor dem Ranking; fremde Fälle wie unbekannte |
 | Dokumente → Modell | Dokumenttext als markierte Daten (`<richtlinie>`), Quarantäne bei Injektionsmustern |
 | Modell → Nutzer | deterministische Antwortprüfung, Rückfallweg, Quellen nur aus Nachweisen |

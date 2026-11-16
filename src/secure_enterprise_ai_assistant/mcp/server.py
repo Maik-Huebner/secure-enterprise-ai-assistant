@@ -1,17 +1,34 @@
-"""FastMCP server exposing NovaBank capabilities as the central tool interface."""
+"""MCP server exposing NovaBank capabilities as the central tool interface (MCP SDK 2.x).
+
+Two transports:
+
+* **stdio** – one subprocess per request; the caller's MCP token arrives in
+  ``NOVABANK_ACCESS_TOKEN`` and is verified once at start-up.
+* **Streamable HTTP** – a separate, stateless server. It acts as an OAuth 2.1 *resource
+  server*: every request needs ``Authorization: Bearer <token>`` with audience
+  ``MCP_AUDIENCE``; missing or invalid tokens get 401 with a pointer to the protected-resource
+  metadata (RFC 9728). The verified identity reaches every tool, which applies the same
+  authorization as in the API.
+"""
 
 from __future__ import annotations
 
+import argparse
 import os
 import time
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
+from typing import TYPE_CHECKING
 
-import mcp.server.fastmcp.server as fastmcp_server
-from mcp.server.fastmcp import FastMCP
+from mcp.server.auth.middleware.auth_context import get_access_token
+from mcp.server.auth.provider import AccessToken
+from mcp.server.auth.settings import AuthSettings
+from mcp.server.mcpserver import MCPServer
+from mcp.server.mcpserver.exceptions import ToolError
 
+from secure_enterprise_ai_assistant import __version__
 from secure_enterprise_ai_assistant.core.logs import configure_logging, get_logger
-from secure_enterprise_ai_assistant.core.settings import get_settings
+from secure_enterprise_ai_assistant.core.settings import Settings, get_settings
 from secure_enterprise_ai_assistant.mcp.tools import MCPToolService
 from secure_enterprise_ai_assistant.models.knowledge import KnowledgeSearchResponse
 from secure_enterprise_ai_assistant.models.tools import (
@@ -19,15 +36,22 @@ from secure_enterprise_ai_assistant.models.tools import (
     CustomerCaseResult,
     FinancialAnalysisResult,
 )
-from secure_enterprise_ai_assistant.security.models import Principal
-from secure_enterprise_ai_assistant.security.tokens import InvalidTokenError, TokenService
+from secure_enterprise_ai_assistant.security.access import AccessDeniedError
+from secure_enterprise_ai_assistant.security.models import Principal, Role
+from secure_enterprise_ai_assistant.security.tokens import (
+    InvalidTokenError,
+    TokenService,
+    mcp_token_service,
+)
+from secure_enterprise_ai_assistant.services.errors import CaseNotFoundError
+
+if TYPE_CHECKING:
+    from starlette.applications import Starlette
 
 ACCESS_TOKEN_VARIABLE = "NOVABANK_ACCESS_TOKEN"
 PrincipalProvider = Callable[[], Principal]
-
-# MCP SDK 1.28 leaves the generic lifespan annotation unresolved on Python 3.13.
-# Rebuilding with the defining module's namespace follows Pydantic's prescribed fix.
-fastmcp_server.Settings.model_rebuild(_types_namespace=vars(fastmcp_server))
+# Failures whose (German, value-free) message is meant for the caller.
+EXPECTED_ERRORS = (CaseNotFoundError, AccessDeniedError, ValueError)
 
 logger = get_logger(__name__)
 
@@ -47,6 +71,11 @@ def _logged_tool_call(tool: str) -> Iterator[None]:
                 "duration_ms": round((time.perf_counter() - started) * 1000, 1),
             },
         )
+        if isinstance(exc, EXPECTED_ERRORS):
+            # Anticipated failures carry safe German messages written for the caller. MCP 2.x
+            # passes only ToolError text on; every other exception reaches the client as a
+            # generic "Error executing tool", so internals never leak.
+            raise ToolError(str(exc)) from exc
         raise
     logger.info(
         "mcp_tool_completed",
@@ -55,16 +84,8 @@ def _logged_tool_call(tool: str) -> Iterator[None]:
 
 
 def token_service_from_settings() -> TokenService | None:
-    """Return the token verifier, or ``None`` if no JWT secret is configured."""
-    settings = get_settings()
-    if settings.jwt_secret is None:
-        return None
-    return TokenService(
-        settings.jwt_secret.get_secret_value(),
-        settings.jwt_issuer,
-        settings.jwt_audience,
-        settings.jwt_ttl_minutes,
-    )
+    """The MCP token verifier of the current settings, or ``None`` without a JWT secret."""
+    return mcp_token_service(get_settings())
 
 
 def principal_from_environment() -> Principal:
@@ -80,20 +101,64 @@ def principal_from_environment() -> Principal:
         return Principal.anonymous()
 
 
+class JwtTokenVerifier:
+    """MCP ``TokenVerifier`` backed by the project's strict JWT validation."""
+
+    def __init__(self, tokens: TokenService, resource: str) -> None:
+        self._tokens = tokens
+        self._resource = resource
+
+    async def verify_token(self, token: str) -> AccessToken | None:
+        try:
+            principal = self._tokens.verify(token)
+        except InvalidTokenError:
+            logger.warning("mcp_token_rejected")
+            return None
+        assert principal.role is not None  # verify() only returns authenticated principals
+        return AccessToken(
+            token=token,
+            client_id=self._tokens.issuer,
+            scopes=[],
+            subject=principal.username,
+            claims={"role": principal.role.value, "team": principal.team},
+        )
+
+
+def principal_from_access_token() -> Principal:
+    """Principal of the current HTTP request, from the token the bearer middleware verified."""
+    access = get_access_token()
+    if access is None or access.subject is None:
+        return Principal.anonymous()
+    claims = access.claims or {}
+    try:
+        return Principal(
+            username=access.subject,
+            role=Role(str(claims.get("role"))),
+            team=claims.get("team"),
+        )
+    except ValueError:
+        return Principal.anonymous()
+
+
 def create_mcp_server(
     tool_service: MCPToolService | None = None,
     principal_provider: PrincipalProvider | None = None,
-) -> FastMCP:
+    token_verifier: JwtTokenVerifier | None = None,
+    auth: AuthSettings | None = None,
+) -> MCPServer:
     """Create a real MCP server with four allowlisted, authorization-aware tools."""
     service = tool_service or MCPToolService.build_default()
     current_principal = principal_provider or principal_from_environment
-    server = FastMCP(
+    server: MCPServer = MCPServer(
         "NovaBank Secure Enterprise Tools",
+        version=__version__,
         instructions=(
             "Nutze nur diese Werkzeuge für synthetische NovaBank-Fälle, deterministische "
             "Finanzanalyse, Compliance-Prüfung und die Suche in internen Richtlinien mit "
             "Quellenangabe."
         ),
+        token_verifier=token_verifier,
+        auth=auth,
     )
 
     @server.tool(
@@ -108,8 +173,8 @@ def create_mcp_server(
     @server.tool(
         name="analyze_financial_case",
         description=(
-            "Berechnet monatliche Rate, Gesamtrückzahlung, Gesamtzins und DTI für einen "
-            "synthetischen Fall deterministisch."
+            "Berechnet monatliche Rate, Gesamtrückzahlung, Gesamtzins, DTI und Verpflichtungen "
+            "nach Kredit für einen synthetischen Fall deterministisch."
         ),
         structured_output=True,
     )
@@ -121,7 +186,7 @@ def create_mcp_server(
         name="check_compliance",
         description=(
             "Prüft einen synthetischen Fall gegen das versionierte Compliance- und "
-            "Kreditregelwerk der NovaBank."
+            "Kreditregelwerk der NovaBank und leitet eine Empfehlung ab."
         ),
         structured_output=True,
     )
@@ -157,13 +222,56 @@ def create_mcp_server(
     return server
 
 
-def main() -> None:
-    """Run the MCP server over stdio; logs go to stderr because stdout carries MCP.
+def create_http_app(
+    settings: Settings | None = None, tool_service: MCPToolService | None = None
+) -> Starlette:
+    """Stateless Streamable HTTP app that only accepts MCP tokens (resource-server role)."""
+    settings = settings or get_settings()
+    tokens = mcp_token_service(settings)
+    if tokens is None:
+        raise RuntimeError(
+            "JWT_SECRET ist nicht gesetzt. Ohne Schlüssel startet der MCP-HTTP-Server nicht."
+        )
+    server = create_mcp_server(
+        tool_service,
+        principal_provider=principal_from_access_token,
+        token_verifier=JwtTokenVerifier(tokens, settings.mcp_server_url),
+        auth=AuthSettings.model_validate(
+            {
+                # The API issues the tokens; it is named as authorization server in the
+                # protected-resource metadata. It is not a full OAuth 2.1 authorization server.
+                "issuer_url": settings.api_base_url,
+                "resource_server_url": settings.mcp_server_url,
+                "required_scopes": [],
+                # JwtTokenVerifier checks the audience (MCP_AUDIENCE) itself.
+                "validate_token_resource": False,
+            }
+        ),
+    )
+    return server.streamable_http_app(
+        stateless_http=True, json_response=True, host=settings.mcp_host
+    )
 
-    The caller is resolved once from ``NOVABANK_ACCESS_TOKEN``; without a valid token every
-    tool call is denied.
-    """
-    configure_logging(get_settings().log_level)
+
+def main(argv: list[str] | None = None) -> None:
+    """Run the MCP server; logs go to stderr because stdout carries MCP in stdio mode."""
+    settings = get_settings()
+    parser = argparse.ArgumentParser(prog="novabank-mcp", description=__doc__.splitlines()[0])
+    parser.add_argument("--transport", choices=["stdio", "http"], default=settings.mcp_transport)
+    parser.add_argument("--host", default=settings.mcp_host)
+    parser.add_argument("--port", type=int, default=settings.mcp_port)
+    arguments = parser.parse_args(argv)
+    configure_logging(settings.log_level)
+
+    if arguments.transport == "http":
+        import uvicorn
+
+        logger.info(
+            "mcp_http_server_started", extra={"host": arguments.host, "port": arguments.port}
+        )
+        uvicorn.run(create_http_app(settings), host=arguments.host, port=arguments.port)
+        return
+
     principal = principal_from_environment()
     logger.info("mcp_server_started", extra={"user": principal.username})
     create_mcp_server(principal_provider=lambda: principal).run(transport="stdio")

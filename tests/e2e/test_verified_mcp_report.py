@@ -26,3 +26,15 @@ def test_verified_report_uses_all_structured_evidence() -> None:
     assert "Höchstwert 40,00 %" in report
     assert "28.750,00 EUR" in report
     assert "monthly payment" not in report
+
+
+def test_real_stdio_client_raises_clean_domain_errors() -> None:
+    """MCP 2.x wraps errors in task groups; the client must still raise the domain error."""
+    import pytest
+
+    from secure_enterprise_ai_assistant.services.errors import CaseNotFoundError
+    from tests.conftest import CASE_WORKER_NORD
+
+    route = IntentRouter().classify("Zeige CASE-00031.")
+    with pytest.raises(CaseNotFoundError):
+        McpEvidenceClient(token_for(CASE_WORKER_NORD)).collect(route, "nicht verwendet")

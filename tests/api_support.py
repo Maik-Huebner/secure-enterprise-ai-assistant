@@ -9,10 +9,6 @@ from pathlib import Path
 from fastapi import FastAPI
 
 with warnings.catch_warnings():
-    # Starlette 1.6 prefers httpx2 for its TestClient; httpx2 arrives with MCP 2.x (package 5).
-    warnings.filterwarnings(
-        "ignore", message="Using `httpx` with `starlette.testclient`", category=UserWarning
-    )
     # Starlette's TestClient still imports a deprecated anyio alias (third-party).
     warnings.filterwarnings(
         "ignore", message="The anyio.abc.BlockingPortal alias", category=DeprecationWarning
@@ -93,7 +89,7 @@ class InProcessCollector:
 
         self._principal = Principal.anonymous()
         if access_token:
-            service = TokenService(TEST_SECRET, "novabank-assistant", "novabank-api", 15)
+            service = TokenService(TEST_SECRET, "novabank-assistant", "novabank-mcp", 5)
             self._principal = service.verify(access_token)
 
     def collect(self, route: RouteDecision, query: str) -> dict[str, dict[str, Any]]:
@@ -154,6 +150,7 @@ def make_context(
     return ApiContext(
         settings=settings,
         tokens=TokenService(TEST_SECRET, settings.jwt_issuer, settings.jwt_audience, 15),
+        mcp_tokens=TokenService(TEST_SECRET, settings.jwt_issuer, settings.mcp_audience, 5),
         users=users,
         policy=tools.access_policy,
         tools=tools,

@@ -7,6 +7,7 @@ from datetime import UTC, datetime, timedelta
 
 import jwt
 
+from secure_enterprise_ai_assistant.core.settings import Settings
 from secure_enterprise_ai_assistant.security.models import Principal, Role
 
 ALGORITHM = "HS256"
@@ -67,3 +68,32 @@ class TokenService:
             )
         except (jwt.PyJWTError, KeyError, ValueError) as exc:
             raise InvalidTokenError("Ungültiges oder abgelaufenes Zugriffstoken.") from exc
+
+
+def api_token_service(settings: Settings) -> TokenService | None:
+    """Tokens for the REST API (audience ``JWT_AUDIENCE``); ``None`` without a secret."""
+    if settings.jwt_secret is None:
+        return None
+    return TokenService(
+        settings.jwt_secret.get_secret_value(),
+        settings.jwt_issuer,
+        settings.jwt_audience,
+        settings.jwt_ttl_minutes,
+    )
+
+
+def mcp_token_service(settings: Settings) -> TokenService | None:
+    """Short-lived tokens for the MCP server (audience ``MCP_AUDIENCE``).
+
+    The API never forwards its own bearer token to MCP ("token passthrough" is forbidden by the
+    MCP authorization spec). It issues a separate token bound to the MCP resource instead, so a
+    token stolen from the tool layer is useless at the API and vice versa.
+    """
+    if settings.jwt_secret is None:
+        return None
+    return TokenService(
+        settings.jwt_secret.get_secret_value(),
+        settings.jwt_issuer,
+        settings.mcp_audience,
+        settings.mcp_token_ttl_minutes,
+    )

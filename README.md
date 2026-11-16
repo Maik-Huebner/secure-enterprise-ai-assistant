@@ -30,7 +30,8 @@ support for employees; it does not automate final credit approval.
 - Markdown, text, and PDF ingestion with section/page provenance and safe path handling;
 - hybrid retrieval (multilingual embeddings via Ollama + BM25S + identifier signal) with a
   persistent FAISS index, filters before ranking, and calibrated scope rejection;
-- a real FastMCP server with four structured tools;
+- a real MCP server (official SDK 2.x) with four structured tools over stdio or Streamable
+  HTTP; over HTTP it is an OAuth 2.1 resource server that verifies its own short-lived tokens;
 - a LangGraph workflow (router node, MCP tool node, grounded answer, verification, retry,
   verified fallback, human approval with interrupt, SQLite checkpointer);
 - deterministic five-route classification; one local model (`qwen3.5:9b`) for every route;
@@ -51,7 +52,7 @@ flowchart LR
     API --> G[LangGraph]
     G --> R{Router}
     R --> T[MCP tool node]
-    T -->|stdio + token| M[FastMCP server]
+    T -->|stdio or HTTP + MCP token| M[MCP server]
     M --> C[Case repository]
     M --> N[Decimal finance]
     M --> P[Compliance rules + decision service]
@@ -80,6 +81,22 @@ leaves the graph. Details and trust boundaries are in [docs/architecture.md](doc
 | `search_internal_knowledge` | question + safe filters | ranked chunks with source metadata |
 
 The interface exposes no SQL, shell, generic URL, or arbitrary filesystem capability.
+
+### Transports and authentication (v1.5)
+
+| Transport | Start | Identity of the caller |
+|---|---|---|
+| stdio (default) | one subprocess per request | MCP token in `NOVABANK_ACCESS_TOKEN`, verified at start |
+| Streamable HTTP (stateless) | `novabank-mcp --transport http`, `MCP_TRANSPORT=http` | `Authorization: Bearer`, verified per request |
+
+The API never forwards its own bearer token to the tool layer ("token passthrough" is forbidden by
+the MCP authorization specification). For every workflow run it issues a separate token with
+audience `novabank-mcp` and a lifetime of five minutes. Over HTTP the server answers missing,
+forged, expired or wrongly addressed tokens with 401 and a pointer to its protected-resource
+metadata (RFC 9728, `/.well-known/oauth-protected-resource/mcp`). Expected tool failures return
+their German message; any other exception reaches the client only as "Error executing tool", so
+paths or internals never leak. `tests/security/test_mcp_http.py` starts a real HTTP server and
+tests all of this, including that HTTP and in-process evidence are identical.
 
 ## LangGraph workflow (v1.4)
 
@@ -200,7 +217,7 @@ audit probe ([docs/audit-v1.md](docs/audit-v1.md)) had measured 1 of 12 attack p
 ## Answer quality of the live model (v1.4)
 
 Measured with `scripts/evaluate_answers.py` on an Apple M4 Pro against the real stack
-(LangGraph, MCP stdio, `qwen3.5:9b`, `qwen3-embedding:0.6b`): 17 German questions (10 knowledge,
+(LangGraph, MCP stdio in v1.4, `qwen3.5:9b`, `qwen3-embedding:0.6b`): 17 German questions (10 knowledge,
 2 without an answer, 2 financial, 2 compliance, 1 case). Reports:
 `reports/evaluation/answer_quality.json` (run 3) and `answer_quality_run1.json`,
 `answer_quality_run2.json`.
@@ -259,9 +276,9 @@ example PHP or Java applications). OpenAPI documentation is served at `/docs`.
 | `pruefer` | all | `intern`, `vertraulich` | yes |
 | `admin` | all | `intern`, `vertraulich` | yes |
 
-Authorization is enforced in code and inside every MCP tool, never in a prompt. The caller's
-token travels from the API through the workflow into the MCP stdio subprocess, which verifies it
-and scopes every tool call. A foreign case returns the same 404 as an unknown case; a
+Authorization is enforced in code and inside every MCP tool, never in a prompt. The API issues
+a short-lived MCP token for the caller; the workflow hands it to the MCP server (stdio or HTTP),
+which verifies it and scopes every tool call. A foreign case returns the same 404 as an unknown case; a
 confidential document is excluded before ranking, so neither its rank nor a changed "no answer"
 reveals it. Tests cover direct, filter-based, identifier-based and MCP-level detours
 (`tests/security/`).
@@ -291,7 +308,7 @@ See [docs/security.md](docs/security.md) for controls and known production gaps.
 ## Local setup
 
 Requirements: Python 3.13 (`>=3.13,<3.14`), Ollama, and sufficient memory for the chosen
-local model. Python 3.13.9 is the reproducibly validated runtime for release v1.4.0.
+local model. Python 3.13.9 is the reproducibly validated runtime for release v1.5.0.
 
 ```bash
 python3.13 -m venv .venv
@@ -322,8 +339,14 @@ novabank-api      # http://127.0.0.1:8000, OpenAPI at /docs
 novabank-ui       # http://127.0.0.1:7860, logs in at the API
 ```
 
-The MCP server is launched automatically per request with the caller's token; it can be
-inspected separately with `novabank-mcp` over stdio (without a token every call is denied).
+By default the MCP server is launched per request over stdio. To run it as its own service:
+
+```bash
+novabank-mcp --transport http          # http://127.0.0.1:8001/mcp, needs JWT_SECRET
+MCP_TRANSPORT=http novabank-api
+```
+
+Without a valid MCP token every tool call is denied, on both transports.
 
 ## Container usage
 
@@ -357,7 +380,7 @@ make build
 The full test suite does not need a running model or network connection. End-to-end generation
 does require the configured Ollama server and model.
 
-Current local release gate: **286 tests passing** under Python 3.13 with warnings treated as
+Current local release gate: **297 tests passing** under Python 3.13 with warnings treated as
 errors. CI installs the package non-editably and proves that imports resolve from
 `site-packages`.
 
@@ -392,7 +415,7 @@ src/.../graph/        LangGraph workflow, verification, approvals
 src/.../flows/        deterministic router (rules + semantic examples)
 src/.../api/          FastAPI backend
 src/.../security/     users, tokens, roles, audit log, rate limits
-src/.../mcp/          FastMCP server and defensive tool boundary
+src/.../mcp/          MCP server (stdio + Streamable HTTP), client, tool boundary
 src/.../rag/          ingestion, FAISS/BM25S hybrid retrieval
 src/.../services/     deterministic repository, finance, and compliance logic
 src/.../ui/           Gradio Blocks application
@@ -403,8 +426,11 @@ tests/                unit and integration regression suite
 
 - The committed regression suite is intentionally compact and synthetic.
 - End-to-end answer quality and latency depend on the locally selected Ollama model.
-- Security limits of v1.3: one shared HS256 key instead of an identity provider (OAuth 2.1/OIDC,
-  SSO), users in a JSON file, in-memory rate limits per process, no TLS termination (belongs to
+- Security limits: one shared HS256 key instead of an identity provider (OAuth 2.1/OIDC,
+  SSO); the API issues the MCP tokens but is not a full OAuth 2.1 authorization server (no
+  client registration, no scopes, no token exchange endpoint); the MCP HTTP server checks
+  signature, audience and expiry, but not whether the user was deactivated in the last five
+  minutes; users in a JSON file, in-memory rate limits per process, no TLS termination (belongs to
   a reverse proxy), and an audit log that is tamper-evident, not tamper-proof. Encrypted
   storage, malware scanning, distributed tracing, and formal regulatory validation remain
   production work.

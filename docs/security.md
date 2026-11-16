@@ -23,10 +23,18 @@ This is a portfolio-grade synthetic demo, not a production banking system.
   filters documents before ranking; BM25 statistics are computed on the permitted subset (a test
   had shown that full-corpus IDF let hidden documents shift the ranking). Explicit document IDs
   or `document_id` filters for forbidden documents return nothing.
-- **Token propagation:** the API passes the caller's token into the workflow and from there into
-  the MCP stdio subprocess (`NOVABANK_ACCESS_TOKEN`). The server verifies it and scopes every
-  tool call; without a valid token every call is denied. Subprocesses receive only allowlisted
-  application settings, never the full parent environment.
+- **Token propagation (v1.5):** the API never forwards its own bearer token. For each workflow
+  run it issues a separate MCP token (audience `novabank-mcp`, 5 minutes). It reaches the MCP
+  server either in `NOVABANK_ACCESS_TOKEN` (stdio subprocess) or as `Authorization: Bearer`
+  (Streamable HTTP). The server verifies signature, issuer, audience and expiry and scopes every
+  tool call; without a valid token every call is denied. An API token is rejected by the MCP
+  server and an MCP token by the API (tested). Subprocesses receive only allowlisted application
+  settings, never the full parent environment.
+- **MCP over HTTP:** stateless Streamable HTTP, resource-server role with protected-resource
+  metadata (RFC 9728) naming the API as token issuer; 401 with `WWW-Authenticate` for missing,
+  forged, expired or wrongly addressed tokens. Only anticipated tool errors (unknown or foreign
+  case, missing rights, invalid input) return their message; any other exception is masked as
+  "Error executing tool".
 
 ## API hardening
 
@@ -72,6 +80,9 @@ storage.
 ## Known production gaps
 
 - one shared HS256 key instead of an identity provider (OAuth 2.1 / OpenID Connect, SSO, MFA);
+  the API issues MCP tokens but is not a full OAuth 2.1 authorization server;
+- the MCP HTTP server does not check deactivation within a token's five-minute lifetime and has
+  no TLS of its own (bind it to loopback or put it behind a proxy);
 - users in a JSON file instead of a directory service;
 - rate limits are in-memory per process (several instances need Redis or a gateway);
 - no TLS termination in the application (belongs to a reverse proxy);

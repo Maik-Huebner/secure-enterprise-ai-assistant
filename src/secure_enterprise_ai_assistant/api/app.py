@@ -65,7 +65,12 @@ from secure_enterprise_ai_assistant.rag.embeddings import EmbeddingUnavailableEr
 from secure_enterprise_ai_assistant.security import AccessDeniedError, AccessPolicy, Principal
 from secure_enterprise_ai_assistant.security.audit import AuditLog
 from secure_enterprise_ai_assistant.security.rate_limit import SlidingWindowLimiter
-from secure_enterprise_ai_assistant.security.tokens import InvalidTokenError, TokenService
+from secure_enterprise_ai_assistant.security.tokens import (
+    InvalidTokenError,
+    TokenService,
+    api_token_service,
+    mcp_token_service,
+)
 from secure_enterprise_ai_assistant.security.users import UserStore
 from secure_enterprise_ai_assistant.services.errors import CaseNotFoundError
 
@@ -79,6 +84,7 @@ class ApiContext:
 
     settings: Settings
     tokens: TokenService
+    mcp_tokens: TokenService
     users: UserStore
     policy: AccessPolicy
     tools: MCPToolService
@@ -104,14 +110,12 @@ def build_context(settings: Settings | None = None) -> ApiContext:
             "export JWT_SECRET=$(python -c 'import secrets; print(secrets.token_urlsafe(48))')"
         )
     tools = MCPToolService.build_default()
+    tokens, mcp_tokens = api_token_service(settings), mcp_token_service(settings)
+    assert tokens is not None and mcp_tokens is not None
     return ApiContext(
         settings=settings,
-        tokens=TokenService(
-            settings.jwt_secret.get_secret_value(),
-            settings.jwt_issuer,
-            settings.jwt_audience,
-            settings.jwt_ttl_minutes,
-        ),
+        tokens=tokens,
+        mcp_tokens=mcp_tokens,
         users=UserStore(settings.resolved_users_file),
         policy=tools.access_policy,
         tools=tools,
@@ -151,6 +155,10 @@ def create_app(context: ApiContext | None = None) -> FastAPI:
     """Create the FastAPI application."""
     ctx = context or build_context()
     settings = ctx.settings
+
+    def _mcp_token(principal: Principal) -> str:
+        # A fresh token bound to the MCP resource; the API bearer token is never forwarded.
+        return ctx.mcp_tokens.issue(principal)[0]
 
     @asynccontextmanager
     async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
@@ -250,7 +258,6 @@ def create_app(context: ApiContext | None = None) -> FastAPI:
                 401, "Benutzer ist nicht mehr aktiv.", {"WWW-Authenticate": "Bearer"}
             )
         _enforce(ctx.api_limiter, f"user:{principal.username}")
-        request.state.access_token = credentials.credentials
         return principal
 
     PrincipalDep = Annotated[Principal, Depends(current_principal)]
@@ -402,7 +409,7 @@ def create_app(context: ApiContext | None = None) -> FastAPI:
         # Defense in depth: the API filters input itself before the workflow sees it.
         message = validate_user_query(body.message)
         try:
-            result = ctx.assistant.run(message, principal, request.state.access_token)
+            result = ctx.assistant.run(message, principal, _mcp_token(principal))
         except AccessDeniedError:
             ctx.audit.record("chat_denied", principal, message_length=len(body.message))
             raise
@@ -478,7 +485,7 @@ def create_app(context: ApiContext | None = None) -> FastAPI:
             body.decision == "approve",
             body.comment,
             principal,
-            request.state.access_token,
+            _mcp_token(principal),
         )
         ctx.reviews.close(thread_id, body.decision == "approve", principal.username)
         ctx.audit.record(
