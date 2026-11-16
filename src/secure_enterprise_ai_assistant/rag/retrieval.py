@@ -42,6 +42,15 @@ LEXICAL_WEIGHT = 0.45
 SECTION_BONUS = 1.0
 DOCUMENT_BONUS = 0.5
 BM25_CACHE_SIZE = 64
+# Scores are compared at this precision and ties are broken by chunk position, so that rankings
+# do not depend on platform-specific float rounding or library tie order (CI is Linux/x86).
+SCORE_DECIMALS = 6
+
+
+def _stable_ranking(pairs: list[tuple[int, float]]) -> list[tuple[int, float]]:
+    return sorted(pairs, key=lambda item: (-round(item[1], SCORE_DECIMALS), item[0]))
+
+
 DOCUMENT_ID_PATTERN = re.compile(r"\bNB-[A-Z]{3}-\d{3}\b", re.IGNORECASE)
 SECTION_PATTERN = re.compile(r"\b(?:abschnitt|section|ziffer)\s+(\d+(?:\.\d+)*)\b", re.IGNORECASE)
 # Used only when no calibrated threshold exists for a semantic embedder.
@@ -175,11 +184,13 @@ class HybridRetriever:
         params = faiss.SearchParameters()
         params.sel = selector
         scores, indices = self._faiss.search(query_vector, len(positions), params=params)
-        return [
-            (int(index), float(score))
-            for index, score in zip(indices[0], scores[0], strict=True)
-            if index >= 0
-        ]
+        return _stable_ranking(
+            [
+                (int(index), float(score))
+                for index, score in zip(indices[0], scores[0], strict=True)
+                if index >= 0
+            ]
+        )
 
     def _lexical_ranking(self, query: str, positions: list[int]) -> list[tuple[int, float]]:
         subset = tuple(positions)
@@ -189,10 +200,12 @@ class HybridRetriever:
             k=len(subset),
             show_progress=False,
         )
-        return [
-            (subset[int(index)], float(score))
-            for index, score in zip(indices[0], scores[0], strict=True)
-        ]
+        return _stable_ranking(
+            [
+                (subset[int(index)], float(score))
+                for index, score in zip(indices[0], scores[0], strict=True)
+            ]
+        )
 
     def _identifier_bonus(self, query: str, positions: list[int]) -> dict[int, float]:
         """Bonus for chunks of explicitly mentioned documents; the named section scores highest."""
@@ -247,7 +260,7 @@ class HybridRetriever:
             )
             for index in positions
         ]
-        results.sort(key=lambda item: item.combined_score, reverse=True)
+        results.sort(key=lambda item: -round(item.combined_score, SCORE_DECIMALS))
         selected = results[:top_k]
         in_scope = bool(selected) and (bool(identifier) or self._has_evidence(selected))
         return KnowledgeSearchResponse(
