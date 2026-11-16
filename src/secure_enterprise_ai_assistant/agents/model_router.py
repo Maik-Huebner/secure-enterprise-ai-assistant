@@ -35,10 +35,10 @@ class ModelSelection(DomainModel):
 
 
 SIMPLE_REASONS: dict[QueryIntent, str] = {
-    QueryIntent.KNOWLEDGE: "simple knowledge workflow",
-    QueryIntent.CUSTOMER_CASE: "simple customer-case workflow",
-    QueryIntent.FINANCIAL_ANALYSIS: "simple financial-analysis workflow",
-    QueryIntent.COMPLIANCE_CHECK: "simple compliance workflow",
+    QueryIntent.KNOWLEDGE: "einfacher Wissensablauf",
+    QueryIntent.CUSTOMER_CASE: "einfacher Fallablauf",
+    QueryIntent.FINANCIAL_ANALYSIS: "einfacher Ablauf der Finanzanalyse",
+    QueryIntent.COMPLIANCE_CHECK: "einfacher Compliance-Ablauf",
 }
 COMPLEX_INTENTS = frozenset({QueryIntent.FULL_ASSESSMENT})
 
@@ -55,7 +55,9 @@ class ModelRouter:
             return ModelSelection(
                 model=self.settings.ollama_complex_model,
                 profile=ModelProfile.COMPLEX_AGENTIC,
-                reason="full multi-agent assessment requires robust tool calling",
+                reason=(
+                    "vollständige Prüfung mit mehreren Agenten braucht zuverlässige Werkzeugaufrufe"
+                ),
                 complexity_class=ComplexityClass.COMPLEX,
             )
         return ModelSelection(
@@ -63,7 +65,7 @@ class ModelRouter:
             profile=ModelProfile.FAST_LOCAL,
             reason=SIMPLE_REASONS.get(
                 route.intent,
-                "simple or unrecognized workflow defaults to the fast local model",
+                "einfacher oder unbekannter Ablauf nutzt das schnelle lokale Modell",
             ),
             complexity_class=ComplexityClass.SIMPLE,
         )

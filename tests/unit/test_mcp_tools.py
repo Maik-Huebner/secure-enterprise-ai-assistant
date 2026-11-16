@@ -26,16 +26,16 @@ def test_compliance_tool_reports_demo_problem(tools: MCPToolService) -> None:
 
 
 def test_tool_boundary_rejects_invalid_inputs(tools: MCPToolService) -> None:
-    with pytest.raises(ValueError, match="five digits"):
+    with pytest.raises(ValueError, match="fünf Ziffern"):
         tools.get_customer_case("../CASE-00001")
-    with pytest.raises(ValueError, match="between 1 and 10"):
-        tools.search_internal_knowledge("valid question", top_k=100)
-    with pytest.raises(ValueError, match="between 1 and 10"):
-        tools.search_internal_knowledge("valid question", top_k=True)
-    with pytest.raises(ValueError, match="document_id filter"):
-        tools.search_internal_knowledge("valid question", document_id="../../secrets")
-    with pytest.raises(ValueError, match="unsupported content"):
-        tools.search_internal_knowledge("valid question", owner="A" * 121)
+    with pytest.raises(ValueError, match="zwischen 1 und 10"):
+        tools.search_internal_knowledge("gültige Frage", top_k=100)
+    with pytest.raises(ValueError, match="zwischen 1 und 10"):
+        tools.search_internal_knowledge("gültige Frage", top_k=True)
+    with pytest.raises(ValueError, match="Filter document_id"):
+        tools.search_internal_knowledge("gültige Frage", document_id="../../secrets")
+    with pytest.raises(ValueError, match="unzulässige Zeichen"):
+        tools.search_internal_knowledge("gültige Frage", owner="A" * 121)
 
 
 def test_knowledge_tool_returns_sources(tools: MCPToolService) -> None:

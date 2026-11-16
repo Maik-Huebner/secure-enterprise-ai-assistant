@@ -6,7 +6,7 @@
         "annual_interest_rate_pct": "4.90",
         "application_id": "A-20001",
         "customer_id": "C-10001",
-        "purpose": "Energy-efficient home improvement",
+        "purpose": "Energieeffiziente Wohnungsmodernisierung",
         "requested_amount_eur": "18250.00",
         "status": "under_review",
         "term_months": 48
@@ -47,7 +47,7 @@
         "annual_interest_rate_pct": "6.20",
         "application_id": "A-20002",
         "customer_id": "C-10002",
-        "purpose": "Vehicle purchase",
+        "purpose": "Fahrzeugkauf",
         "requested_amount_eur": "26500.00",
         "status": "under_review",
         "term_months": 60
@@ -88,7 +88,7 @@
         "annual_interest_rate_pct": "7.10",
         "application_id": "A-20003",
         "customer_id": "C-10003",
-        "purpose": "Energy-efficient home improvement",
+        "purpose": "Energieeffiziente Wohnungsmodernisierung",
         "requested_amount_eur": "29250.00",
         "status": "under_review",
         "term_months": 60
@@ -129,7 +129,7 @@
         "annual_interest_rate_pct": "6.40",
         "application_id": "A-20004",
         "customer_id": "C-10004",
-        "purpose": "Vehicle purchase",
+        "purpose": "Fahrzeugkauf",
         "requested_amount_eur": "23000.00",
         "status": "under_review",
         "term_months": 48
@@ -170,7 +170,7 @@
         "annual_interest_rate_pct": "5.80",
         "application_id": "A-20005",
         "customer_id": "C-10005",
-        "purpose": "Energy-efficient home improvement",
+        "purpose": "Energieeffiziente Wohnungsmodernisierung",
         "requested_amount_eur": "24000.00",
         "status": "under_review",
         "term_months": 60
@@ -211,7 +211,7 @@
         "annual_interest_rate_pct": "7.40",
         "application_id": "A-20006",
         "customer_id": "C-10006",
-        "purpose": "Vehicle purchase",
+        "purpose": "Fahrzeugkauf",
         "requested_amount_eur": "19750.00",
         "status": "under_review",
         "term_months": 48
@@ -252,7 +252,7 @@
         "annual_interest_rate_pct": "9.20",
         "application_id": "A-20007",
         "customer_id": "C-10007",
-        "purpose": "Energy-efficient home improvement",
+        "purpose": "Energieeffiziente Wohnungsmodernisierung",
         "requested_amount_eur": "30500.00",
         "status": "under_review",
         "term_months": 48
@@ -293,7 +293,7 @@
         "annual_interest_rate_pct": "6.00",
         "application_id": "A-20008",
         "customer_id": "C-10008",
-        "purpose": "Vehicle purchase",
+        "purpose": "Fahrzeugkauf",
         "requested_amount_eur": "20750.00",
         "status": "under_review",
         "term_months": 48
@@ -334,7 +334,7 @@
         "annual_interest_rate_pct": "4.90",
         "application_id": "A-20009",
         "customer_id": "C-10009",
-        "purpose": "Energy-efficient home improvement",
+        "purpose": "Energieeffiziente Wohnungsmodernisierung",
         "requested_amount_eur": "19000.00",
         "status": "under_review",
         "term_months": 48
@@ -375,7 +375,7 @@
         "annual_interest_rate_pct": "6.20",
         "application_id": "A-20010",
         "customer_id": "C-10010",
-        "purpose": "Vehicle purchase",
+        "purpose": "Fahrzeugkauf",
         "requested_amount_eur": "26000.00",
         "status": "under_review",
         "term_months": 60
@@ -416,7 +416,7 @@
         "annual_interest_rate_pct": "7.10",
         "application_id": "A-20011",
         "customer_id": "C-10011",
-        "purpose": "Energy-efficient home improvement",
+        "purpose": "Energieeffiziente Wohnungsmodernisierung",
         "requested_amount_eur": "28750.00",
         "status": "under_review",
         "term_months": 60
@@ -457,7 +457,7 @@
         "annual_interest_rate_pct": "6.40",
         "application_id": "A-20012",
         "customer_id": "C-10012",
-        "purpose": "Vehicle purchase",
+        "purpose": "Fahrzeugkauf",
         "requested_amount_eur": "22500.00",
         "status": "under_review",
         "term_months": 48
@@ -498,7 +498,7 @@
         "annual_interest_rate_pct": "5.80",
         "application_id": "A-20013",
         "customer_id": "C-10013",
-        "purpose": "Energy-efficient home improvement",
+        "purpose": "Energieeffiziente Wohnungsmodernisierung",
         "requested_amount_eur": "24750.00",
         "status": "under_review",
         "term_months": 60
@@ -539,7 +539,7 @@
         "annual_interest_rate_pct": "7.40",
         "application_id": "A-20014",
         "customer_id": "C-10014",
-        "purpose": "Vehicle purchase",
+        "purpose": "Fahrzeugkauf",
         "requested_amount_eur": "20500.00",
         "status": "under_review",
         "term_months": 48
@@ -580,7 +580,7 @@
         "annual_interest_rate_pct": "9.20",
         "application_id": "A-20015",
         "customer_id": "C-10015",
-        "purpose": "Energy-efficient home improvement",
+        "purpose": "Energieeffiziente Wohnungsmodernisierung",
         "requested_amount_eur": "30000.00",
         "status": "under_review",
         "term_months": 48
@@ -621,7 +621,7 @@
         "annual_interest_rate_pct": "6.00",
         "application_id": "A-20016",
         "customer_id": "C-10016",
-        "purpose": "Vehicle purchase",
+        "purpose": "Fahrzeugkauf",
         "requested_amount_eur": "20250.00",
         "status": "under_review",
         "term_months": 48
@@ -662,7 +662,7 @@
         "annual_interest_rate_pct": "6.40",
         "application_id": "A-20017",
         "customer_id": "C-10017",
-        "purpose": "Energy-efficient home improvement",
+        "purpose": "Energieeffiziente Wohnungsmodernisierung",
         "requested_amount_eur": "22500.00",
         "status": "under_review",
         "term_months": 48
@@ -703,7 +703,7 @@
         "annual_interest_rate_pct": "6.20",
         "application_id": "A-20018",
         "customer_id": "C-10018",
-        "purpose": "Vehicle purchase",
+        "purpose": "Fahrzeugkauf",
         "requested_amount_eur": "26750.00",
         "status": "under_review",
         "term_months": 60
@@ -744,7 +744,7 @@
         "annual_interest_rate_pct": "7.10",
         "application_id": "A-20019",
         "customer_id": "C-10019",
-        "purpose": "Energy-efficient home improvement",
+        "purpose": "Energieeffiziente Wohnungsmodernisierung",
         "requested_amount_eur": "29500.00",
         "status": "under_review",
         "term_months": 60
@@ -785,7 +785,7 @@
         "annual_interest_rate_pct": "6.40",
         "application_id": "A-20020",
         "customer_id": "C-10020",
-        "purpose": "Vehicle purchase",
+        "purpose": "Fahrzeugkauf",
         "requested_amount_eur": "22000.00",
         "status": "under_review",
         "term_months": 48
@@ -826,7 +826,7 @@
         "annual_interest_rate_pct": "5.80",
         "application_id": "A-20021",
         "customer_id": "C-10021",
-        "purpose": "Energy-efficient home improvement",
+        "purpose": "Energieeffiziente Wohnungsmodernisierung",
         "requested_amount_eur": "24250.00",
         "status": "under_review",
         "term_months": 60
@@ -867,7 +867,7 @@
         "annual_interest_rate_pct": "7.40",
         "application_id": "A-20022",
         "customer_id": "C-10022",
-        "purpose": "Vehicle purchase",
+        "purpose": "Fahrzeugkauf",
         "requested_amount_eur": "20000.00",
         "status": "under_review",
         "term_months": 48
@@ -908,7 +908,7 @@
         "annual_interest_rate_pct": "9.20",
         "application_id": "A-20023",
         "customer_id": "C-10023",
-        "purpose": "Energy-efficient home improvement",
+        "purpose": "Energieeffiziente Wohnungsmodernisierung",
         "requested_amount_eur": "30750.00",
         "status": "under_review",
         "term_months": 48
@@ -949,7 +949,7 @@
         "annual_interest_rate_pct": "6.00",
         "application_id": "A-20024",
         "customer_id": "C-10024",
-        "purpose": "Vehicle purchase",
+        "purpose": "Fahrzeugkauf",
         "requested_amount_eur": "21000.00",
         "status": "under_review",
         "term_months": 48
@@ -990,7 +990,7 @@
         "annual_interest_rate_pct": "4.90",
         "application_id": "A-20025",
         "customer_id": "C-10025",
-        "purpose": "Energy-efficient home improvement",
+        "purpose": "Energieeffiziente Wohnungsmodernisierung",
         "requested_amount_eur": "18000.00",
         "status": "under_review",
         "term_months": 48
@@ -1031,7 +1031,7 @@
         "annual_interest_rate_pct": "6.20",
         "application_id": "A-20026",
         "customer_id": "C-10026",
-        "purpose": "Vehicle purchase",
+        "purpose": "Fahrzeugkauf",
         "requested_amount_eur": "26250.00",
         "status": "under_review",
         "term_months": 60
@@ -1072,7 +1072,7 @@
         "annual_interest_rate_pct": "7.10",
         "application_id": "A-20027",
         "customer_id": "C-10027",
-        "purpose": "Energy-efficient home improvement",
+        "purpose": "Energieeffiziente Wohnungsmodernisierung",
         "requested_amount_eur": "29000.00",
         "status": "under_review",
         "term_months": 60
@@ -1113,7 +1113,7 @@
         "annual_interest_rate_pct": "6.40",
         "application_id": "A-20028",
         "customer_id": "C-10028",
-        "purpose": "Vehicle purchase",
+        "purpose": "Fahrzeugkauf",
         "requested_amount_eur": "22750.00",
         "status": "under_review",
         "term_months": 48
@@ -1154,7 +1154,7 @@
         "annual_interest_rate_pct": "5.80",
         "application_id": "A-20029",
         "customer_id": "C-10029",
-        "purpose": "Energy-efficient home improvement",
+        "purpose": "Energieeffiziente Wohnungsmodernisierung",
         "requested_amount_eur": "25000.00",
         "status": "under_review",
         "term_months": 60
@@ -1195,7 +1195,7 @@
         "annual_interest_rate_pct": "7.40",
         "application_id": "A-20030",
         "customer_id": "C-10030",
-        "purpose": "Vehicle purchase",
+        "purpose": "Fahrzeugkauf",
         "requested_amount_eur": "19500.00",
         "status": "under_review",
         "term_months": 48
@@ -1236,7 +1236,7 @@
         "annual_interest_rate_pct": "7.10",
         "application_id": "A-20031",
         "customer_id": "C-10031",
-        "purpose": "Energy-efficient home improvement",
+        "purpose": "Energieeffiziente Wohnungsmodernisierung",
         "requested_amount_eur": "28750.00",
         "status": "under_review",
         "term_months": 60
@@ -1277,7 +1277,7 @@
         "annual_interest_rate_pct": "6.00",
         "application_id": "A-20032",
         "customer_id": "C-10032",
-        "purpose": "Vehicle purchase",
+        "purpose": "Fahrzeugkauf",
         "requested_amount_eur": "20500.00",
         "status": "under_review",
         "term_months": 48
@@ -1318,7 +1318,7 @@
         "annual_interest_rate_pct": "4.90",
         "application_id": "A-20033",
         "customer_id": "C-10033",
-        "purpose": "Energy-efficient home improvement",
+        "purpose": "Energieeffiziente Wohnungsmodernisierung",
         "requested_amount_eur": "18750.00",
         "status": "under_review",
         "term_months": 48
@@ -1359,7 +1359,7 @@
         "annual_interest_rate_pct": "6.20",
         "application_id": "A-20034",
         "customer_id": "C-10034",
-        "purpose": "Vehicle purchase",
+        "purpose": "Fahrzeugkauf",
         "requested_amount_eur": "27000.00",
         "status": "under_review",
         "term_months": 60
@@ -1400,7 +1400,7 @@
         "annual_interest_rate_pct": "7.10",
         "application_id": "A-20035",
         "customer_id": "C-10035",
-        "purpose": "Energy-efficient home improvement",
+        "purpose": "Energieeffiziente Wohnungsmodernisierung",
         "requested_amount_eur": "28500.00",
         "status": "under_review",
         "term_months": 60
@@ -1441,7 +1441,7 @@
         "annual_interest_rate_pct": "6.40",
         "application_id": "A-20036",
         "customer_id": "C-10036",
-        "purpose": "Vehicle purchase",
+        "purpose": "Fahrzeugkauf",
         "requested_amount_eur": "22250.00",
         "status": "under_review",
         "term_months": 48
@@ -1482,7 +1482,7 @@
         "annual_interest_rate_pct": "5.80",
         "application_id": "A-20037",
         "customer_id": "C-10037",
-        "purpose": "Energy-efficient home improvement",
+        "purpose": "Energieeffiziente Wohnungsmodernisierung",
         "requested_amount_eur": "24500.00",
         "status": "under_review",
         "term_months": 60
@@ -1523,7 +1523,7 @@
         "annual_interest_rate_pct": "7.40",
         "application_id": "A-20038",
         "customer_id": "C-10038",
-        "purpose": "Vehicle purchase",
+        "purpose": "Fahrzeugkauf",
         "requested_amount_eur": "20250.00",
         "status": "under_review",
         "term_months": 48
@@ -1564,7 +1564,7 @@
         "annual_interest_rate_pct": "9.20",
         "application_id": "A-20039",
         "customer_id": "C-10039",
-        "purpose": "Energy-efficient home improvement",
+        "purpose": "Energieeffiziente Wohnungsmodernisierung",
         "requested_amount_eur": "31000.00",
         "status": "under_review",
         "term_months": 48
@@ -1605,7 +1605,7 @@
         "annual_interest_rate_pct": "6.00",
         "application_id": "A-20040",
         "customer_id": "C-10040",
-        "purpose": "Vehicle purchase",
+        "purpose": "Fahrzeugkauf",
         "requested_amount_eur": "20000.00",
         "status": "under_review",
         "term_months": 48
@@ -1646,7 +1646,7 @@
         "annual_interest_rate_pct": "4.90",
         "application_id": "A-20041",
         "customer_id": "C-10041",
-        "purpose": "Energy-efficient home improvement",
+        "purpose": "Energieeffiziente Wohnungsmodernisierung",
         "requested_amount_eur": "18250.00",
         "status": "under_review",
         "term_months": 48
@@ -1687,7 +1687,7 @@
         "annual_interest_rate_pct": "6.20",
         "application_id": "A-20042",
         "customer_id": "C-10042",
-        "purpose": "Vehicle purchase",
+        "purpose": "Fahrzeugkauf",
         "requested_amount_eur": "26500.00",
         "status": "under_review",
         "term_months": 60
@@ -1728,7 +1728,7 @@
         "annual_interest_rate_pct": "7.10",
         "application_id": "A-20043",
         "customer_id": "C-10043",
-        "purpose": "Energy-efficient home improvement",
+        "purpose": "Energieeffiziente Wohnungsmodernisierung",
         "requested_amount_eur": "29250.00",
         "status": "under_review",
         "term_months": 60
@@ -1769,7 +1769,7 @@
         "annual_interest_rate_pct": "6.40",
         "application_id": "A-20044",
         "customer_id": "C-10044",
-        "purpose": "Vehicle purchase",
+        "purpose": "Fahrzeugkauf",
         "requested_amount_eur": "23000.00",
         "status": "under_review",
         "term_months": 48
@@ -1810,7 +1810,7 @@
         "annual_interest_rate_pct": "5.80",
         "application_id": "A-20045",
         "customer_id": "C-10045",
-        "purpose": "Energy-efficient home improvement",
+        "purpose": "Energieeffiziente Wohnungsmodernisierung",
         "requested_amount_eur": "24000.00",
         "status": "under_review",
         "term_months": 60
@@ -1851,7 +1851,7 @@
         "annual_interest_rate_pct": "7.40",
         "application_id": "A-20046",
         "customer_id": "C-10046",
-        "purpose": "Vehicle purchase",
+        "purpose": "Fahrzeugkauf",
         "requested_amount_eur": "19750.00",
         "status": "under_review",
         "term_months": 48
@@ -1892,7 +1892,7 @@
         "annual_interest_rate_pct": "9.20",
         "application_id": "A-20047",
         "customer_id": "C-10047",
-        "purpose": "Energy-efficient home improvement",
+        "purpose": "Energieeffiziente Wohnungsmodernisierung",
         "requested_amount_eur": "30500.00",
         "status": "under_review",
         "term_months": 48
@@ -1933,7 +1933,7 @@
         "annual_interest_rate_pct": "6.00",
         "application_id": "A-20048",
         "customer_id": "C-10048",
-        "purpose": "Vehicle purchase",
+        "purpose": "Fahrzeugkauf",
         "requested_amount_eur": "20750.00",
         "status": "under_review",
         "term_months": 48
@@ -1972,5 +1972,5 @@
   ],
   "dataset_id": "NOVABANK-SYNTHETIC-CREDIT-CASES-V1",
   "dataset_seed": 20260914,
-  "synthetic_data_disclaimer": "NovaBank Financial Services AG is a fictional organization. All customers, applications, policies, rules, and financial data included in this project are synthetic and created solely for demonstration, testing, and portfolio purposes."
+  "synthetic_data_disclaimer": "NovaBank Financial Services AG ist eine fiktive Organisation. Alle Kunden, Anträge, Richtlinien, Regeln und Finanzdaten in diesem Projekt sind synthetisch und wurden ausschließlich für Demonstrations-, Test- und Portfoliozwecke erstellt."
 }

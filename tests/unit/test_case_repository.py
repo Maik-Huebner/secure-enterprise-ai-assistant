@@ -37,5 +37,5 @@ def test_invalid_json_dataset_is_rejected(tmp_path) -> None:
     path = tmp_path / "cases.json"
     path.write_text(json.dumps({"cases": [{"not": "a case"}]}), encoding="utf-8")
 
-    with pytest.raises(DatasetError, match="domain validation"):
+    with pytest.raises(DatasetError, match="Fachmodell"):
         CustomerCaseRepository.from_json(path)
