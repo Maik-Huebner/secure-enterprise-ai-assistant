@@ -1,0 +1,9 @@
+{
+  "description": "Out-of-scope thresholds calibrated on the retrieval dev split by scripts/benchmark_retrieval.py.",
+  "min_semantic_score": {
+    "ollama:bge-m3": 0.545,
+    "ollama:qwen3-embedding:0.6b": 0.5021,
+    "ollama:embeddinggemma": 0.3677
+  },
+  "calibrated_at": "2026-11-16T14:09:43+00:00"
+}

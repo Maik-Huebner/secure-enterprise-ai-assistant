@@ -1,4 +1,9 @@
-"""Reproducible offline evaluation for routing, tools, retrieval, and guardrails."""
+"""Reproducible offline evaluation (no model, no network): the CI baseline.
+
+Retrieval and routing here use the deterministic hashing embedder and keyword rules, because CI
+has no Ollama. Measurements with real embedding models are produced locally by
+``scripts/benchmark_retrieval.py`` and ``scripts/benchmark_routing.py``.
+"""
 
 from __future__ import annotations
 
@@ -8,15 +13,20 @@ import json
 from pathlib import Path
 from typing import Any
 
-from secure_enterprise_ai_assistant.flows.router import TOOLS_BY_INTENT, IntentRouter
+from secure_enterprise_ai_assistant.evaluation.retrieval_metrics import metrics, observe
+from secure_enterprise_ai_assistant.flows.router import IntentRouter
 from secure_enterprise_ai_assistant.guardrails import detect_attack_categories
 from secure_enterprise_ai_assistant.mcp.tools import MCPToolService
-from secure_enterprise_ai_assistant.models.orchestration import QueryIntent
+from secure_enterprise_ai_assistant.models.knowledge import KnowledgeSearchResponse
+from secure_enterprise_ai_assistant.rag.embeddings import HashingEmbedder
+from secure_enterprise_ai_assistant.rag.service import KnowledgeService
 from secure_enterprise_ai_assistant.resources import (
     CASES_PATH,
     EVALUATION_SUITE_PATH,
     GUARDRAIL_SUITE_PATH,
     KNOWLEDGE_ROOT,
+    RETRIEVAL_SUITE_PATH,
+    ROUTING_SUITE_PATH,
     RULES_PATH,
 )
 
@@ -42,114 +52,100 @@ def _corpus_sha256(root: Path) -> str:
     return digest.hexdigest()
 
 
+def offline_tools() -> MCPToolService:
+    """Tool service with the deterministic hashing baseline, independent of local settings."""
+    return MCPToolService.build(KnowledgeService.from_directory(embedder=HashingEmbedder()))
+
+
 def run_evaluation(
     suite_path: Path = DEFAULT_SUITE,
     tools: MCPToolService | None = None,
 ) -> dict[str, Any]:
     """Run deterministic measurements without requiring a model or network access."""
     suite = json.loads(suite_path.read_text(encoding="utf-8"))
-    router = IntentRouter()
-    tools = tools or MCPToolService.build_default()
+    tools = tools or offline_tools()
+    measured: dict[str, float] = {}
+    counts: dict[str, int] = {}
 
-    routing_correct = 0
-    selection_correct = 0
-    for query, expected_value in suite["routing"]:
-        expected = QueryIntent(expected_value)
-        decision = router.classify(query)
-        routing_correct += decision.intent == expected
-        selection_correct += decision.required_tools == TOOLS_BY_INTENT[expected]
+    routing = json.loads(ROUTING_SUITE_PATH.read_text(encoding="utf-8"))
+    router = IntentRouter()
+    for split in ("dev", "test"):
+        items = routing[split]
+        correct = sum(router.classify(query).intent.value == expected for query, expected in items)
+        measured[f"routing_keyword_{split}_accuracy"] = _ratio(correct, len(items))
+        counts[f"routing_{split}_queries"] = len(items)
 
     financial_correct = 0
     for case_id, expected in suite["financial"].items():
-        metrics = tools.analyze_financial_case(case_id).metrics
+        financial = tools.analyze_financial_case(case_id).metrics
         actual = [
-            str(metrics.monthly_payment_eur),
-            str(metrics.debt_to_income_before_pct),
-            str(metrics.debt_to_income_after_pct),
-            str(metrics.total_interest_eur),
-            str(metrics.total_repayment_eur),
+            str(financial.monthly_payment_eur),
+            str(financial.debt_to_income_before_pct),
+            str(financial.debt_to_income_after_pct),
+            str(financial.total_interest_eur),
+            str(financial.total_repayment_eur),
         ]
         financial_correct += actual == expected
+    measured["financial_calculation_exact_match"] = _ratio(
+        financial_correct, len(suite["financial"])
+    )
+    counts["financial_cases"] = len(suite["financial"])
 
     compliance_correct = 0
     for case_id, expected in suite["compliance"].items():
-        actual = [
+        failed = [
             item.rule_id for item in tools.check_compliance(case_id).findings if not item.passed
         ]
-        compliance_correct += actual == expected
+        compliance_correct += failed == expected
+    measured["compliance_rule_exact_match"] = _ratio(compliance_correct, len(suite["compliance"]))
+    counts["compliance_cases"] = len(suite["compliance"])
 
-    retrieval_hits = 0
-    attributed = 0
-    for question, expected_document in suite["retrieval"]:
-        response = tools.search_internal_knowledge(question, top_k=5)
-        documents = {item.chunk.document_id for item in response.results}
-        retrieval_hits += expected_document in documents
-        attributed += bool(response.results) and all(
-            item.chunk.document_id and item.chunk.title and item.chunk.section
-            for item in response.results
-        )
+    retrieval = json.loads(RETRIEVAL_SUITE_PATH.read_text(encoding="utf-8"))
 
-    out_of_scope_correct = sum(
-        tools.search_internal_knowledge(question).out_of_scope for question in suite["out_of_scope"]
-    )
+    def search(question: str) -> KnowledgeSearchResponse:
+        return tools.search_internal_knowledge(question, top_k=5)
+
+    for split in ("dev", "test"):
+        retrieval_result = metrics(observe(search, retrieval[split]))
+        for name in ("recall_at_5", "mrr", "ndcg_at_5", "no_answer_accuracy"):
+            measured[f"retrieval_hashing_{split}_{name}"] = retrieval_result[name]
+        counts[f"retrieval_{split}_questions"] = len(retrieval[split])
+
     guardrail_suite = json.loads(GUARDRAIL_SUITE_PATH.read_text(encoding="utf-8"))
-    guardrail_metrics: dict[str, float] = {}
-    guardrail_counts: dict[str, int] = {}
     for split in ("dev", "holdout"):
         attacks = guardrail_suite[split]["attacks"]
         benign = guardrail_suite[split]["benign"]
         blocked = sum(bool(detect_attack_categories(query)) for query in attacks)
         false_positives = sum(bool(detect_attack_categories(query)) for query in benign)
-        guardrail_metrics[f"guardrail_{split}_attack_recall"] = _ratio(blocked, len(attacks))
-        guardrail_metrics[f"guardrail_{split}_false_positive_rate"] = _ratio(
-            false_positives, len(benign)
-        )
-        guardrail_counts[f"guardrail_{split}_attacks"] = len(attacks)
-        guardrail_counts[f"guardrail_{split}_benign"] = len(benign)
+        measured[f"guardrail_{split}_attack_recall"] = _ratio(blocked, len(attacks))
+        measured[f"guardrail_{split}_false_positive_rate"] = _ratio(false_positives, len(benign))
+        counts[f"guardrail_{split}_attacks"] = len(attacks)
+        counts[f"guardrail_{split}_benign"] = len(benign)
 
-    counts = {
-        "routing_queries": len(suite["routing"]),
-        "financial_cases": len(suite["financial"]),
-        "compliance_cases": len(suite["compliance"]),
-        "retrieval_queries": len(suite["retrieval"]),
-        "out_of_scope_queries": len(suite["out_of_scope"]),
-        **guardrail_counts,
-    }
     return {
-        "schema_version": 1,
-        "suite": "secure_enterprise_ai_assistant/resources/evaluation/evaluation_suite.json",
+        "schema_version": 2,
+        "suite": "secure_enterprise_ai_assistant/resources/evaluation/",
         "dataset": "NOVABANK-SYNTHETIC-CREDIT-CASES-V1",
         "inputs": {
             "suite_sha256": _sha256(suite_path),
+            "routing_suite_sha256": _sha256(ROUTING_SUITE_PATH),
+            "retrieval_suite_sha256": _sha256(RETRIEVAL_SUITE_PATH),
+            "guardrail_suite_sha256": _sha256(GUARDRAIL_SUITE_PATH),
             "cases_sha256": _sha256(CASES_PATH),
             "rules_sha256": _sha256(RULES_PATH),
-            "guardrail_suite_sha256": _sha256(GUARDRAIL_SUITE_PATH),
             "knowledge_corpus_sha256": _corpus_sha256(KNOWLEDGE_ROOT),
         },
         "counts": counts,
-        "metrics": {
-            "routing_accuracy": _ratio(routing_correct, counts["routing_queries"]),
-            "tool_selection_accuracy": _ratio(selection_correct, counts["routing_queries"]),
-            "financial_calculation_exact_match": _ratio(
-                financial_correct, counts["financial_cases"]
-            ),
-            "compliance_rule_exact_match": _ratio(compliance_correct, counts["compliance_cases"]),
-            "retrieval_recall_at_5": _ratio(retrieval_hits, counts["retrieval_queries"]),
-            "source_attribution_rate": _ratio(attributed, counts["retrieval_queries"]),
-            "out_of_scope_accuracy": _ratio(out_of_scope_correct, counts["out_of_scope_queries"]),
-            **guardrail_metrics,
-        },
+        "metrics": measured,
         "metric_notes": {
-            "tool_selection_accuracy": (
-                "Derived from the routed intent via TOOLS_BY_INTENT; equals routing accuracy "
-                "by construction and is not an independent measurement."
+            "routing_keyword_test_accuracy": (
+                "Keyword baseline only; the semantic/hybrid router needs Ollama and is reported "
+                "in reports/evaluation/routing_comparison.json."
             ),
-            "source_attribution_rate": (
-                "Checks only that returned chunks carry document ID, title, and section; "
-                "ingestion always fills these fields. It does not check that a cited source "
-                "supports an answer."
+            "retrieval_hashing_test_recall_at_5": (
+                "Hashing baseline only; real embedding models are compared in "
+                "reports/evaluation/retrieval_comparison.json."
             ),
-            "retrieval_recall_at_5": "Only five questions; expanded in v1.2.",
             "guardrail_dev_attack_recall": (
                 "The dev split was used to design the patterns and is optimistic by construction."
             ),
@@ -161,12 +157,12 @@ def run_evaluation(
         },
         "comparisons": {
             "llm_only": "not_run_requires_local_model",
-            "rag": "measured_offline",
+            "rag": "measured_offline_hashing_baseline",
             "agentic_rag_mcp_verification": "requires_demo_runtime",
         },
         "limitations": (
-            "Small synthetic regression suite; it does not measure real lending quality, "
-            "legal compliance, free-form model accuracy, or production security."
+            "Small synthetic suites written by the project author; they do not measure real "
+            "lending quality, legal compliance, free-form model accuracy, or production security."
         ),
     }
 

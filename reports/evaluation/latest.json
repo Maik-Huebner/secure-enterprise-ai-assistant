@@ -2,7 +2,7 @@
   "comparisons": {
     "agentic_rag_mcp_verification": "requires_demo_runtime",
     "llm_only": "not_run_requires_local_model",
-    "rag": "measured_offline"
+    "rag": "measured_offline_hashing_baseline"
   },
   "counts": {
     "compliance_cases": 5,
@@ -11,25 +11,27 @@
     "guardrail_dev_benign": 30,
     "guardrail_holdout_attacks": 20,
     "guardrail_holdout_benign": 20,
-    "out_of_scope_queries": 3,
-    "retrieval_queries": 5,
-    "routing_queries": 10
+    "retrieval_dev_questions": 24,
+    "retrieval_test_questions": 24,
+    "routing_dev_queries": 25,
+    "routing_test_queries": 24
   },
   "dataset": "NOVABANK-SYNTHETIC-CREDIT-CASES-V1",
   "inputs": {
     "cases_sha256": "f9d5838ebbbfe9dbdff008b5d3e1d155a2aaa866e10f31883bbde47eeca2f5b4",
     "guardrail_suite_sha256": "b0124d7c8d62263dca2fc805ac807fa57f0f9d2fc9a86b63361b3060f542139a",
     "knowledge_corpus_sha256": "56b42708a90125cd4d563b2d051c2d5eeb7b4820423fc284d2df4be1c396a59b",
+    "retrieval_suite_sha256": "fdd7f5c0db1b001de30e4aa87b95b81f7ce43065d6d89d82a1700b747eb7ae05",
+    "routing_suite_sha256": "e079d3dfe54d759c4c54b3dbf6446b98065fd5ee0f1534aaa137e04892cf9ead",
     "rules_sha256": "7c993cc89a9945d4046ee1e65b299b1f788e128ef2a58bfa08a4f34d8d005e89",
-    "suite_sha256": "3c57e0df5be22e48c9e8e614bbd36855470ad49c3b856040f7fff32dabb447b7"
+    "suite_sha256": "00f264ee34763389eab57ccedd65379fd536813ef0d9d4b0c858f98211f93686"
   },
-  "limitations": "Small synthetic regression suite; it does not measure real lending quality, legal compliance, free-form model accuracy, or production security.",
+  "limitations": "Small synthetic suites written by the project author; they do not measure real lending quality, legal compliance, free-form model accuracy, or production security.",
   "metric_notes": {
     "guardrail_dev_attack_recall": "The dev split was used to design the patterns and is optimistic by construction.",
     "guardrail_holdout_attack_recall": "The holdout split was written after the patterns and measured without tuning. Both splits were written by the pattern author, so this is no independent benchmark.",
-    "retrieval_recall_at_5": "Only five questions; expanded in v1.2.",
-    "source_attribution_rate": "Checks only that returned chunks carry document ID, title, and section; ingestion always fills these fields. It does not check that a cited source supports an answer.",
-    "tool_selection_accuracy": "Derived from the routed intent via TOOLS_BY_INTENT; equals routing accuracy by construction and is not an independent measurement."
+    "retrieval_hashing_test_recall_at_5": "Hashing baseline only; real embedding models are compared in reports/evaluation/retrieval_comparison.json.",
+    "routing_keyword_test_accuracy": "Keyword baseline only; the semantic/hybrid router needs Ollama and is reported in reports/evaluation/routing_comparison.json."
   },
   "metrics": {
     "compliance_rule_exact_match": 1.0,
@@ -38,12 +40,17 @@
     "guardrail_dev_false_positive_rate": 0.0,
     "guardrail_holdout_attack_recall": 0.75,
     "guardrail_holdout_false_positive_rate": 0.0,
-    "out_of_scope_accuracy": 1.0,
-    "retrieval_recall_at_5": 0.8,
-    "routing_accuracy": 1.0,
-    "source_attribution_rate": 0.8,
-    "tool_selection_accuracy": 1.0
+    "retrieval_hashing_dev_mrr": 0.6892,
+    "retrieval_hashing_dev_ndcg_at_5": 0.729,
+    "retrieval_hashing_dev_no_answer_accuracy": 1.0,
+    "retrieval_hashing_dev_recall_at_5": 0.85,
+    "retrieval_hashing_test_mrr": 0.6183,
+    "retrieval_hashing_test_ndcg_at_5": 0.6509,
+    "retrieval_hashing_test_no_answer_accuracy": 1.0,
+    "retrieval_hashing_test_recall_at_5": 0.8,
+    "routing_keyword_dev_accuracy": 1.0,
+    "routing_keyword_test_accuracy": 0.9167
   },
-  "schema_version": 1,
-  "suite": "secure_enterprise_ai_assistant/resources/evaluation/evaluation_suite.json"
+  "schema_version": 2,
+  "suite": "secure_enterprise_ai_assistant/resources/evaluation/"
 }
