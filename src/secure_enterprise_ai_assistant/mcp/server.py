@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+import os
 import time
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 
 import mcp.server.fastmcp.server as fastmcp_server
@@ -18,6 +19,11 @@ from secure_enterprise_ai_assistant.models.tools import (
     CustomerCaseResult,
     FinancialAnalysisResult,
 )
+from secure_enterprise_ai_assistant.security.models import Principal
+from secure_enterprise_ai_assistant.security.tokens import InvalidTokenError, TokenService
+
+ACCESS_TOKEN_VARIABLE = "NOVABANK_ACCESS_TOKEN"
+PrincipalProvider = Callable[[], Principal]
 
 # MCP SDK 1.28 leaves the generic lifespan annotation unresolved on Python 3.13.
 # Rebuilding with the defining module's namespace follows Pydantic's prescribed fix.
@@ -48,9 +54,39 @@ def _logged_tool_call(tool: str) -> Iterator[None]:
     )
 
 
-def create_mcp_server(tool_service: MCPToolService | None = None) -> FastMCP:
-    """Create a real stdio/HTTP-capable MCP server with four allowlisted tools."""
+def token_service_from_settings() -> TokenService | None:
+    """Return the token verifier, or ``None`` if no JWT secret is configured."""
+    settings = get_settings()
+    if settings.jwt_secret is None:
+        return None
+    return TokenService(
+        settings.jwt_secret.get_secret_value(),
+        settings.jwt_issuer,
+        settings.jwt_audience,
+        settings.jwt_ttl_minutes,
+    )
+
+
+def principal_from_environment() -> Principal:
+    """Resolve the caller of a stdio server from its access token; anonymous otherwise."""
+    token = os.environ.get(ACCESS_TOKEN_VARIABLE, "")
+    verifier = token_service_from_settings()
+    if not token or verifier is None:
+        return Principal.anonymous()
+    try:
+        return verifier.verify(token)
+    except InvalidTokenError:
+        logger.warning("mcp_token_rejected")
+        return Principal.anonymous()
+
+
+def create_mcp_server(
+    tool_service: MCPToolService | None = None,
+    principal_provider: PrincipalProvider | None = None,
+) -> FastMCP:
+    """Create a real MCP server with four allowlisted, authorization-aware tools."""
     service = tool_service or MCPToolService.build_default()
+    current_principal = principal_provider or principal_from_environment
     server = FastMCP(
         "NovaBank Secure Enterprise Tools",
         instructions=(
@@ -67,7 +103,7 @@ def create_mcp_server(tool_service: MCPToolService | None = None) -> FastMCP:
     )
     def get_customer_case(case_id: str) -> CustomerCaseResult:
         with _logged_tool_call("get_customer_case"):
-            return service.get_customer_case(case_id)
+            return service.get_customer_case(case_id, principal=current_principal())
 
     @server.tool(
         name="analyze_financial_case",
@@ -79,7 +115,7 @@ def create_mcp_server(tool_service: MCPToolService | None = None) -> FastMCP:
     )
     def analyze_financial_case(case_id: str) -> FinancialAnalysisResult:
         with _logged_tool_call("analyze_financial_case"):
-            return service.analyze_financial_case(case_id)
+            return service.analyze_financial_case(case_id, principal=current_principal())
 
     @server.tool(
         name="check_compliance",
@@ -91,7 +127,7 @@ def create_mcp_server(tool_service: MCPToolService | None = None) -> FastMCP:
     )
     def check_compliance(case_id: str) -> ComplianceCheckResult:
         with _logged_tool_call("check_compliance"):
-            return service.check_compliance(case_id)
+            return service.check_compliance(case_id, principal=current_principal())
 
     @server.tool(
         name="search_internal_knowledge",
@@ -111,6 +147,7 @@ def create_mcp_server(tool_service: MCPToolService | None = None) -> FastMCP:
         with _logged_tool_call("search_internal_knowledge"):
             return service.search_internal_knowledge(
                 question,
+                principal=current_principal(),
                 top_k=top_k,
                 document_id=document_id,
                 owner=owner,
@@ -121,9 +158,15 @@ def create_mcp_server(tool_service: MCPToolService | None = None) -> FastMCP:
 
 
 def main() -> None:
-    """Run the MCP server over stdio; logs go to stderr because stdout carries MCP."""
+    """Run the MCP server over stdio; logs go to stderr because stdout carries MCP.
+
+    The caller is resolved once from ``NOVABANK_ACCESS_TOKEN``; without a valid token every
+    tool call is denied.
+    """
     configure_logging(get_settings().log_level)
-    create_mcp_server().run(transport="stdio")
+    principal = principal_from_environment()
+    logger.info("mcp_server_started", extra={"user": principal.username})
+    create_mcp_server(principal_provider=lambda: principal).run(transport="stdio")
 
 
 if __name__ == "__main__":

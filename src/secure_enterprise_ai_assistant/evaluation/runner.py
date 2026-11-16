@@ -29,6 +29,7 @@ from secure_enterprise_ai_assistant.resources import (
     ROUTING_SUITE_PATH,
     RULES_PATH,
 )
+from secure_enterprise_ai_assistant.security import Principal
 
 DEFAULT_SUITE = EVALUATION_SUITE_PATH
 
@@ -57,6 +58,11 @@ def offline_tools() -> MCPToolService:
     return MCPToolService.build(KnowledgeService.from_directory(embedder=HashingEmbedder()))
 
 
+# The offline benchmark measures business logic, not authorization; it runs with explicit
+# full rights. Authorization has its own tests.
+EVALUATOR = Principal.system()
+
+
 def run_evaluation(
     suite_path: Path = DEFAULT_SUITE,
     tools: MCPToolService | None = None,
@@ -77,7 +83,7 @@ def run_evaluation(
 
     financial_correct = 0
     for case_id, expected in suite["financial"].items():
-        financial = tools.analyze_financial_case(case_id).metrics
+        financial = tools.analyze_financial_case(case_id, principal=EVALUATOR).metrics
         actual = [
             str(financial.monthly_payment_eur),
             str(financial.debt_to_income_before_pct),
@@ -94,7 +100,9 @@ def run_evaluation(
     compliance_correct = 0
     for case_id, expected in suite["compliance"].items():
         failed = [
-            item.rule_id for item in tools.check_compliance(case_id).findings if not item.passed
+            item.rule_id
+            for item in tools.check_compliance(case_id, principal=EVALUATOR).findings
+            if not item.passed
         ]
         compliance_correct += failed == expected
     measured["compliance_rule_exact_match"] = _ratio(compliance_correct, len(suite["compliance"]))
@@ -103,7 +111,7 @@ def run_evaluation(
     retrieval = json.loads(RETRIEVAL_SUITE_PATH.read_text(encoding="utf-8"))
 
     def search(question: str) -> KnowledgeSearchResponse:
-        return tools.search_internal_knowledge(question, top_k=5)
+        return tools.search_internal_knowledge(question, principal=EVALUATOR, top_k=5)
 
     for split in ("dev", "test"):
         retrieval_result = metrics(observe(search, retrieval[split]))

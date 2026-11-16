@@ -47,6 +47,7 @@ from secure_enterprise_ai_assistant.core.language import (
 )
 from secure_enterprise_ai_assistant.mcp.client import VerifiedMCPReportBuilder
 from secure_enterprise_ai_assistant.mcp.environment import server_environment
+from secure_enterprise_ai_assistant.mcp.server import ACCESS_TOKEN_VARIABLE
 from secure_enterprise_ai_assistant.models.orchestration import QueryIntent, RouteDecision
 
 logger = get_logger(__name__)
@@ -124,12 +125,17 @@ class LocalFirstCrew(Crew):
         self._task_output_handler = LocalTaskOutputStorageHandler(runtime_dir)
 
 
-def _mcp_server(*allowed_tools: str) -> MCPServerStdio:
-    """Configure native CrewAI MCP discovery with a strict per-agent allowlist."""
+def _mcp_server(*allowed_tools: str, access_token: str | None = None) -> MCPServerStdio:
+    """Configure native CrewAI MCP discovery with a strict per-agent allowlist.
+
+    The caller's access token travels to the subprocess, which enforces authorization itself.
+    """
     return MCPServerStdio(
         command=sys.executable,
         args=["-m", MCP_MODULE],
-        env=server_environment(),
+        env=server_environment(
+            {ACCESS_TOKEN_VARIABLE: access_token} if access_token is not None else None
+        ),
         tool_filter=create_static_tool_filter(allowed_tool_names=list(allowed_tools)),
         cache_tools_list=True,
     )
@@ -154,9 +160,10 @@ def _agent(**kwargs: Any) -> Agent:
 class AgentFactory:
     """Build focused local-LLM agents with least-privilege MCP capabilities."""
 
-    def __init__(self, settings: Settings | None = None) -> None:
+    def __init__(self, settings: Settings | None = None, access_token: str | None = None) -> None:
         self.settings = settings or get_settings()
         self.max_execution_time = self.settings.agent_max_execution_seconds
+        self.access_token = access_token
 
     def create_llm(self, selection: ModelSelection) -> LLM:
         """Create an LLM for one explicit, previously audited model selection."""
@@ -177,7 +184,7 @@ class AgentFactory:
             backstory="Du arbeitest nur mit synthetischen Demofällen und strukturierten "
             f"MCP-Ausgaben. {GERMAN_RESPONSE_RULE}",
             llm=llm,
-            mcps=[_mcp_server("get_customer_case")],
+            mcps=[_mcp_server("get_customer_case", access_token=self.access_token)],
             allow_delegation=False,
             allow_code_execution=False,
             max_iter=5,
@@ -192,7 +199,7 @@ class AgentFactory:
             backstory="Du verwirfst schwache Belege und erfindest niemals Richtlinien oder "
             f"Quellenangaben. {GERMAN_RESPONSE_RULE}",
             llm=llm,
-            mcps=[_mcp_server("search_internal_knowledge")],
+            mcps=[_mcp_server("search_internal_knowledge", access_token=self.access_token)],
             allow_delegation=False,
             allow_code_execution=False,
             max_iter=6,
@@ -207,7 +214,11 @@ class AgentFactory:
             backstory="Du erklärst die Ausgabe des Rechners für synthetische NovaBank-Fälle. "
             f"{GERMAN_RESPONSE_RULE}",
             llm=llm,
-            mcps=[_mcp_server("get_customer_case", "analyze_financial_case")],
+            mcps=[
+                _mcp_server(
+                    "get_customer_case", "analyze_financial_case", access_token=self.access_token
+                )
+            ],
             allow_delegation=False,
             allow_code_execution=False,
             max_iter=6,
@@ -227,6 +238,7 @@ class AgentFactory:
                     "get_customer_case",
                     "check_compliance",
                     "search_internal_knowledge",
+                    access_token=self.access_token,
                 )
             ],
             allow_delegation=False,
@@ -420,7 +432,9 @@ class CrewOrchestrator:
         ):
             self.execution_mode = "deterministic_mcp_fallback"
             self.fallback_reason = DEMO_SAFE_FALLBACK_REASON
-            return VerifiedMCPReportBuilder().build(query, route)
+            return VerifiedMCPReportBuilder(access_token=self.factory.access_token).build(
+                query, route
+            )
         try:
             output = str(self.build(query, route, selection).kickoff())
         except Exception as exc:
@@ -438,7 +452,9 @@ class CrewOrchestrator:
                     "full_assessment_fallback",
                     extra={"cause": "crew_execution_failed", "error_type": type(exc).__name__},
                 )
-                return VerifiedMCPReportBuilder().build(query, route)
+                return VerifiedMCPReportBuilder(access_token=self.factory.access_token).build(
+                    query, route
+                )
             raise
         if route.intent == QueryIntent.FULL_ASSESSMENT and not is_complete_decision_brief(output):
             self.execution_mode = "deterministic_mcp_fallback"
@@ -447,7 +463,9 @@ class CrewOrchestrator:
                 "Entscheidungsvorlage nicht bestanden"
             )
             logger.warning("full_assessment_fallback", extra={"cause": "incomplete_brief"})
-            return VerifiedMCPReportBuilder().build(query, route)
+            return VerifiedMCPReportBuilder(access_token=self.factory.access_token).build(
+                query, route
+            )
         return sanitize_model_output(output)
 
 
