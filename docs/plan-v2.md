@@ -158,3 +158,11 @@ Beides kann nicht gleichzeitig installiert sein. Bliebe die Reihenfolge, müsste
 2. **Modelle herunterladen:** Für den Vergleich in Paket 2 `ollama pull bge-m3` (etwa 1,2 GB) und `ollama pull qwen3-embedding:0.6b` (etwa 0,6 GB). Den optionalen Reranker frage ich erst, wenn es so weit ist. *(Empfehlung: ja)*
 3. **24B-Profil streichen:** Alles läuft mit `qwen3.5:9b`. *(Empfehlung: ja)*
 4. **CrewAI entfernen** in Paket 4, wie von dir vorgegeben. *(Empfehlung: ja)*
+
+## Abweichungen bei der Umsetzung
+
+| Paket | Geplant | Umgesetzt | Grund |
+|---|---|---|---|
+| 4 | Werkzeug-Knoten mit `langchain-mcp-adapters` | eigener kleiner MCP-Client | Der Adapter macht MCP-Werkzeuge zu Werkzeugen, die das Modell selbst wählt. Das widerspricht „Least Agency“. Außerdem verlangt er `mcp<2`. |
+| 5 | Server auf FastMCP 4 | offizielles MCP-SDK 2.3 (`MCPServer`) | Das SDK bringt Streamable HTTP und Token-Prüfung schon mit. FastMCP 4 hätte rund 20 zusätzliche Pakete gebracht (u. a. `cyclopts`, `websockets`, `watchfiles`, `pyperclip`), die das Projekt nicht braucht. |
+| 5 | MCP-Server prüft das JWT der API | eigenes MCP-Token (Audience `novabank-mcp`, 5 Minuten) | Die MCP-Spezifikation verbietet „Token Passthrough“: Ein Server darf nur Tokens annehmen, die für ihn ausgestellt wurden. |
