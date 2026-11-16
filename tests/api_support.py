@@ -1,4 +1,4 @@
-"""Shared test setup: a real API app with test users, hashing search and a stub workflow."""
+"""Shared test setup: a real API app with test users, hashing search and a test answer model."""
 
 from __future__ import annotations
 
@@ -19,11 +19,22 @@ with warnings.catch_warnings():
     )
     from fastapi.testclient import TestClient
 
-from secure_enterprise_ai_assistant.api.app import ApiContext, FlowOutcome, FlowRunner, create_app
+import re
+from collections.abc import Callable
+from typing import Any
+
+from secure_enterprise_ai_assistant.api.app import ApiContext, create_app
 from secure_enterprise_ai_assistant.core.settings import Settings
-from secure_enterprise_ai_assistant.flows.router import IntentRouter
+from secure_enterprise_ai_assistant.graph.assistant import AssistantService
+from secure_enterprise_ai_assistant.graph.llm import AnswerModel
+from secure_enterprise_ai_assistant.graph.reviews import ReviewStore
+from secure_enterprise_ai_assistant.mcp.client import (
+    EVIDENCE_KEYS,
+    knowledge_requests,
+    merge_knowledge,
+)
 from secure_enterprise_ai_assistant.mcp.tools import MCPToolService
-from secure_enterprise_ai_assistant.models.orchestration import QueryIntent, TraceEvent
+from secure_enterprise_ai_assistant.models.orchestration import RouteDecision
 from secure_enterprise_ai_assistant.rag.embeddings import HashingEmbedder
 from secure_enterprise_ai_assistant.rag.service import KnowledgeService
 from secure_enterprise_ai_assistant.security import Principal, Role
@@ -46,22 +57,69 @@ def offline_tools() -> MCPToolService:
     return MCPToolService.build(KnowledgeService.from_directory(embedder=HashingEmbedder()))
 
 
-def stub_flow(message: str, principal: Principal, access_token: str) -> FlowOutcome:
-    """Deterministic workflow stand-in that respects the decision-brief permission."""
-    del access_token
-    route = IntentRouter().classify(message)
-    if route.intent == QueryIntent.FULL_ASSESSMENT:
-        offline_tools().access_policy.require_decision_brief(principal)
-    trace = [
-        TraceEvent(event="request_received", detail="Anfrage empfangen"),
-        TraceEvent(event="intent_classified", detail=route.intent.value),
-        TraceEvent(event="model_selected", detail="qwen3.5:9b"),
-        TraceEvent(event="model_profile", detail="fast_local"),
-        TraceEvent(event="execution_mode", detail="crewai"),
-    ]
-    return FlowOutcome(
-        answer=f"Antwort mit Quelle NB-DOC-001 für {principal.username}", route=route, trace=trace
-    )
+class GroundedTestModel:
+    """Answers by restating the evidence block and citing the first policy: always grounded."""
+
+    name = "test-model"
+
+    def generate(self, system: str, user: str) -> str:
+        del system
+        block = user.split("<nachweise>", 1)[1].split("</nachweise>", 1)[0]
+        citation = re.search(r'<richtlinie id="([^"]+)" abschnitt="([^"]+)"', block)
+        text = re.sub(r"<[^>]+>", "", block).strip()
+        cite = f" ({citation.group(1)}, Abschnitt {citation.group(2)})" if citation else ""
+        return f"Antwort auf Grundlage der Nachweise{cite}:\n{text[:800]}"
+
+
+class InventingTestModel:
+    """Always invents a number and a document: must be caught by verification."""
+
+    name = "inventing-model"
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def generate(self, system: str, user: str) -> str:
+        del system, user
+        self.calls += 1
+        return "Die monatliche Rate beträgt 999,99 EUR laut NB-XYZ-999, Abschnitt 1."
+
+
+class InProcessCollector:
+    """Test stand-in for McpEvidenceClient: same tool methods and authorization, no subprocess."""
+
+    def __init__(self, access_token: str | None) -> None:
+        from tests.conftest import token_for  # noqa: F401  (ensures the test secret is set)
+
+        self._principal = Principal.anonymous()
+        if access_token:
+            service = TokenService(TEST_SECRET, "novabank-assistant", "novabank-api", 15)
+            self._principal = service.verify(access_token)
+
+    def collect(self, route: RouteDecision, query: str) -> dict[str, dict[str, Any]]:
+        tools, principal = offline_tools(), self._principal
+        evidence: dict[str, dict[str, Any]] = {}
+        for tool in route.required_tools:
+            if tool == "get_customer_case":
+                result: Any = tools.get_customer_case(str(route.case_id), principal=principal)
+            elif tool == "analyze_financial_case":
+                result = tools.analyze_financial_case(str(route.case_id), principal=principal)
+            elif tool == "check_compliance":
+                result = tools.check_compliance(str(route.case_id), principal=principal)
+            else:
+                responses = [
+                    tools.search_internal_knowledge(
+                        arguments["question"],
+                        principal=principal,
+                        top_k=arguments["top_k"],
+                        document_id=arguments.get("document_id"),
+                    ).model_dump(mode="json")
+                    for arguments in knowledge_requests(route, query, evidence)
+                ]
+                evidence["knowledge"] = merge_knowledge(responses)
+                continue
+            evidence[EVIDENCE_KEYS[tool]] = result.model_dump(mode="json")
+        return evidence
 
 
 def make_settings(**overrides: object) -> Settings:
@@ -79,7 +137,10 @@ def make_settings(**overrides: object) -> Settings:
 
 
 def make_context(
-    tmp_path: Path, flow_runner: FlowRunner = stub_flow, **overrides: object
+    tmp_path: Path,
+    model_factory: Callable[[], AnswerModel] = GroundedTestModel,
+    collector: Callable[[str | None], Any] = InProcessCollector,
+    **overrides: object,
 ) -> ApiContext:
     settings = make_settings(**overrides)
     users = UserStore(tmp_path / "users.json")
@@ -97,7 +158,10 @@ def make_context(
         policy=tools.access_policy,
         tools=tools,
         audit=AuditLog(tmp_path / "audit.jsonl"),
-        flow_runner=flow_runner,
+        assistant=AssistantService(
+            model_factory=model_factory, collector=collector, settings=settings
+        ),
+        reviews=ReviewStore(tmp_path / "reviews.json"),
     )
 
 

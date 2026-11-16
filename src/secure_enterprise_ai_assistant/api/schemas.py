@@ -51,6 +51,8 @@ class ChatRequest(StrictModel):
 
 
 class ChatResponse(StrictModel):
+    thread_id: str
+    status: Literal["completed", "awaiting_approval", "approved", "rejected"]
     answer: str
     intent: str
     case_id: str | None
@@ -58,6 +60,23 @@ class ChatResponse(StrictModel):
     execution_mode: str | None
     sources: list[str]
     trace: list[TraceEvent]
+
+
+class ReviewSummary(StrictModel):
+    thread_id: str
+    case_id: str
+    requested_by: str
+    requested_at: str
+    status: Literal["pending", "approved", "rejected"]
+
+
+class ReviewDetail(ReviewSummary):
+    draft: str
+
+
+class ReviewDecisionRequest(StrictModel):
+    decision: Literal["approve", "reject"]
+    comment: str = Field(default="", max_length=500)
 
 
 class HealthResponse(StrictModel):
