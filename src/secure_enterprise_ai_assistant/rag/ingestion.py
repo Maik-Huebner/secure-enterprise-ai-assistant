@@ -10,6 +10,7 @@ import pdfplumber
 from secure_enterprise_ai_assistant.guardrails import scan_untrusted_content
 from secure_enterprise_ai_assistant.models.knowledge import KnowledgeChunk
 
+METADATA_SECTION = "Dokumentmetadaten"
 METADATA_FIELDS = {
     "Dokument-ID": "document_id",
     "Titel": "title",
@@ -56,6 +57,10 @@ class KnowledgeIngestor:
         text = path.read_text(encoding="utf-8")
         metadata = self._metadata(text, path)
         sections = self._sections(text)
+        # The header block (metadata lines and disclaimer) carries no policy content; its fields
+        # are stored on every chunk instead of competing as a search hit.
+        if len(sections) > 1 and sections[0][0] == METADATA_SECTION:
+            sections = sections[1:]
         return self._build_chunks(metadata, sections)
 
     def _ingest_pdf(self, path: Path) -> list[KnowledgeChunk]:
@@ -87,7 +92,7 @@ class KnowledgeIngestor:
     @staticmethod
     def _sections(text: str) -> list[tuple[str, str, int | None]]:
         sections: list[tuple[str, str, int | None]] = []
-        current_title = "Dokumentmetadaten"
+        current_title = METADATA_SECTION
         current_lines: list[str] = []
         for line in text.splitlines():
             if line.startswith("## "):

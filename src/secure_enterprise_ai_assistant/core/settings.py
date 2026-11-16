@@ -29,7 +29,13 @@ class Settings(BaseSettings):
     ollama_complex_model: str = Field(default="mistral-small3.2:24b", min_length=1)
     full_assessment_mode: Literal["verified_mcp", "agentic"] = "verified_mcp"
     ollama_request_timeout_seconds: int = Field(default=180, ge=15, le=900)
-    embedding_model: str = ""
+    # Embeddings: "ollama" for real use; "hashing" only for fast tests and offline baselines.
+    embedding_backend: Literal["ollama", "sentence_transformers", "hashing"] = "ollama"
+    embedding_model: str = "qwen3-embedding:0.6b"
+    router_mode: Literal["keyword", "semantic", "hybrid"] = "hybrid"
+    embedding_timeout_seconds: int = Field(default=120, ge=5, le=900)
+    # Optional override for the persistent index folder; default is <runtime_dir>/index.
+    index_dir: Path | None = None
     app_env: str = "development"
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
     llm_temperature: float = Field(default=0.1, ge=0, le=2)
@@ -42,6 +48,10 @@ class Settings(BaseSettings):
     )
     ui_server_name: str = "127.0.0.1"
     ui_server_port: int = Field(default=7860, ge=1024, le=65535)
+
+    @property
+    def resolved_index_dir(self) -> Path:
+        return self.index_dir or self.runtime_dir / "index"
 
 
 @lru_cache
