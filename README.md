@@ -146,14 +146,15 @@ kalibriert (`resources/retrieval/thresholds.json`).
 ### Vorher/nachher: Hashing gegen echte Embedding-Modelle
 
 Gemessen am 16.11.2026 auf einem Apple M4 Pro mit `scripts/benchmark_retrieval.py`
-(`reports/evaluation/retrieval_comparison.json`). Test-Split: 20 beantwortbare deutsche Fragen
+(`reports/evaluation/retrieval_comparison.json`; Qualitätswerte bei der Wiederholung nach
+der Umbenennung der Richtlinien-Dateien unverändert, Latenzen aus dem letzten Lauf). Test-Split: 20 beantwortbare deutsche Fragen
 (Umschreibungen, zusammengesetzte Wörter, Dokument- und Abschnittsnummern) und 4 ohne Antwort.
 
 | Embedder | Recall@5 | MRR | nDCG@5 | „Keine Antwort“ richtig | Falsch abgelehnt | Latenz |
 |---|---:|---:|---:|---:|---:|---:|
 | Hashing (v1-Standard) | 0,75 | 0,60 | 0,63 | 1,00 | 0,10 | 0,2 ms |
-| bge-m3 | 1,00 | 0,92 | 0,92 | 1,00 | 0,00 | 25 ms |
-| **qwen3-embedding:0.6b** (Standard) | **1,00** | **0,98** | **0,96** | **1,00** | **0,00** | 32 ms |
+| bge-m3 | 1,00 | 0,92 | 0,92 | 1,00 | 0,00 | 26 ms |
+| **qwen3-embedding:0.6b** (Standard) | **1,00** | **0,98** | **0,96** | **1,00** | **0,00** | 30 ms |
 | embeddinggemma | 0,95 | 0,90 | 0,89 | 1,00 | 0,05 | 21 ms |
 
 Bei 20 Fragen sind 0,10 Recall genau zwei Fragen. Die Fragen stammen vom Projektautor; es ist ein

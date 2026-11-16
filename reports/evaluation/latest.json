@@ -19,19 +19,19 @@
   "dataset": "NOVABANK-SYNTHETIC-CREDIT-CASES-V1",
   "inputs": {
     "cases_sha256": "f9d5838ebbbfe9dbdff008b5d3e1d155a2aaa866e10f31883bbde47eeca2f5b4",
-    "guardrail_suite_sha256": "b0124d7c8d62263dca2fc805ac807fa57f0f9d2fc9a86b63361b3060f542139a",
-    "knowledge_corpus_sha256": "578cc84e97ede778357bc2a003658609261f222ad0cf3ff20b2e2589dbc5bdc7",
-    "retrieval_suite_sha256": "fdd7f5c0db1b001de30e4aa87b95b81f7ce43065d6d89d82a1700b747eb7ae05",
-    "routing_suite_sha256": "e079d3dfe54d759c4c54b3dbf6446b98065fd5ee0f1534aaa137e04892cf9ead",
+    "guardrail_suite_sha256": "1ac7bbabd019725a57660abf06e209c67c45ec67db5841728e7df98407dfb8c2",
+    "knowledge_corpus_sha256": "4e586930f0e044a76e61bf09713ef0be931104a263dd09405a3b3517eb3ea3b9",
+    "retrieval_suite_sha256": "6021641424de08112e2b55d3e0cdccc773a3934ea9ca7f2641df6eb58125a6aa",
+    "routing_suite_sha256": "27521da916cd076df8082988a2dc0d7a1395d4437c66abc57b0019fa05636343",
     "rules_sha256": "064ab3603a3c045e22c30eb4919e13aa8d2c8d744e439188b5f6ea64c2217514",
-    "suite_sha256": "00f264ee34763389eab57ccedd65379fd536813ef0d9d4b0c858f98211f93686"
+    "suite_sha256": "cbbe8b418985db9cc85a010632ef94dfe16fdab9e859d6677a1ced2e98feb793"
   },
-  "limitations": "Small synthetic suites written by the project author; they do not measure real lending quality, legal compliance, free-form model accuracy, or production security.",
+  "limitations": "Kleine synthetische Testsammlungen vom Projektautor. Sie messen weder echte Kreditqualität noch Rechtskonformität, freie Modellgenauigkeit oder Produktionssicherheit.",
   "metric_notes": {
-    "guardrail_dev_attack_recall": "The dev split was used to design the patterns and is optimistic by construction.",
-    "guardrail_holdout_attack_recall": "The holdout split was written after the patterns and measured without tuning. Both splits were written by the pattern author, so this is no independent benchmark.",
-    "retrieval_hashing_test_recall_at_5": "Hashing baseline only; real embedding models are compared in reports/evaluation/retrieval_comparison.json.",
-    "routing_keyword_test_accuracy": "Keyword baseline only; the semantic/hybrid router needs Ollama and is reported in reports/evaluation/routing_comparison.json."
+    "guardrail_dev_attack_recall": "Mit dem dev-Split wurden die Muster entworfen; der Wert ist daher zu optimistisch.",
+    "guardrail_holdout_attack_recall": "Der holdout-Split wurde nach den Mustern geschrieben und ohne Nachjustieren gemessen. Beide Splits stammen vom Autor der Muster; das ist kein unabhängiger Benchmark.",
+    "retrieval_hashing_test_recall_at_5": "Nur die Hashing-Basislinie; echte Embedding-Modelle werden in reports/evaluation/retrieval_comparison.json verglichen.",
+    "routing_keyword_test_accuracy": "Nur die Stichwort-Basislinie; der semantische/hybride Router braucht Ollama und steht in reports/evaluation/routing_comparison.json."
   },
   "metrics": {
     "compliance_rule_exact_match": 1.0,

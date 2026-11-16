@@ -6,13 +6,13 @@ Usage:
 
 from __future__ import annotations
 
-import argparse
 import json
 import time
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from secure_enterprise_ai_assistant.core.cli import GermanArgumentParser
 from secure_enterprise_ai_assistant.core.settings import get_settings
 from secure_enterprise_ai_assistant.flows.router import IntentRouter
 from secure_enterprise_ai_assistant.rag.embeddings import OllamaEmbedder
@@ -41,8 +41,17 @@ def _evaluate(router: IntentRouter, items: list[list[str]]) -> dict[str, Any]:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--model", default=get_settings().embedding_model)
+    parser = GermanArgumentParser(
+        description="Stichwort-, semantisches und hybrides Routing vergleichen (braucht Ollama)."
+    )
+    parser.add_argument(
+        "--modell",
+        "--model",
+        dest="model",
+        default=get_settings().embedding_model,
+        metavar="MODELL",
+        help="Embedding-Modell in Ollama",
+    )
     args = parser.parse_args()
     suite = json.loads(ROUTING_SUITE_PATH.read_text(encoding="utf-8"))
     embedder = OllamaEmbedder(args.model, base_url=get_settings().ollama_base_url)
@@ -59,8 +68,9 @@ def main() -> None:
         "measured_at": datetime.now(tz=UTC).isoformat(timespec="seconds"),
         "embedder": embedder.name,
         "note": (
-            "Keyword stems come from the intent examples and the dev split only. The test split "
-            "was written by the same author before the rules, so it is not a blind benchmark."
+            "Die Stichwortstämme stammen nur aus den Beispielanfragen und dem dev-Split. Der "
+            "test-Split wurde vom selben Autor vor den Regeln geschrieben; er ist also kein "
+            "Blindtest."
         ),
         "results": results,
     }

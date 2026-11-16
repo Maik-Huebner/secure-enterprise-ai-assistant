@@ -147,20 +147,20 @@ def run_evaluation(
         "metrics": measured,
         "metric_notes": {
             "routing_keyword_test_accuracy": (
-                "Keyword baseline only; the semantic/hybrid router needs Ollama and is reported "
-                "in reports/evaluation/routing_comparison.json."
+                "Nur die Stichwort-Basislinie; der semantische/hybride Router braucht Ollama "
+                "und steht in reports/evaluation/routing_comparison.json."
             ),
             "retrieval_hashing_test_recall_at_5": (
-                "Hashing baseline only; real embedding models are compared in "
-                "reports/evaluation/retrieval_comparison.json."
+                "Nur die Hashing-Basislinie; echte Embedding-Modelle werden in "
+                "reports/evaluation/retrieval_comparison.json verglichen."
             ),
             "guardrail_dev_attack_recall": (
-                "The dev split was used to design the patterns and is optimistic by construction."
+                "Mit dem dev-Split wurden die Muster entworfen; der Wert ist daher zu optimistisch."
             ),
             "guardrail_holdout_attack_recall": (
-                "The holdout split was written after the patterns and measured without tuning. "
-                "Both splits were written by the pattern author, so this is no independent "
-                "benchmark."
+                "Der holdout-Split wurde nach den Mustern geschrieben und ohne Nachjustieren "
+                "gemessen. Beide Splits stammen vom Autor der Muster; das ist kein unabhängiger "
+                "Benchmark."
             ),
         },
         "comparisons": {
@@ -169,8 +169,9 @@ def run_evaluation(
             "agentic_rag_mcp_verification": "requires_demo_runtime",
         },
         "limitations": (
-            "Small synthetic suites written by the project author; they do not measure real "
-            "lending quality, legal compliance, free-form model accuracy, or production security."
+            "Kleine synthetische Testsammlungen vom Projektautor. Sie messen weder echte "
+            "Kreditqualität noch Rechtskonformität, freie Modellgenauigkeit oder "
+            "Produktionssicherheit."
         ),
     }
 
@@ -179,7 +180,7 @@ def write_report(report: dict[str, Any], output_path: Path) -> None:
     """Persist a deterministic evidence report."""
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(
-        json.dumps(report, indent=2, sort_keys=True) + "\n",
+        json.dumps(report, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
 

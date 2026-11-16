@@ -10,7 +10,7 @@ REPORT_PATH = REPOSITORY_ROOT / "reports" / "evaluation" / "latest.json"
 
 def main() -> None:
     report = validate_evidence(REPORT_PATH)
-    print(f"PASS: {len(report['metrics'])} evaluation metrics match committed evidence")
+    print(f"OK: {len(report['metrics'])} Messwerte stimmen mit dem eingecheckten Bericht überein")
 
 
 if __name__ == "__main__":

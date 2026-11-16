@@ -1,5 +1,5 @@
 {
-  "description": "German retrieval questions. 'relevant' lists every acceptable document; an empty list means the knowledge base has no answer. Thresholds are calibrated on 'dev' only; 'test' is reported.",
+  "description": "Deutsche Suchfragen. 'relevant' nennt jedes zulässige Dokument; eine leere Liste heißt, dass die Wissensbasis keine Antwort hat. Schwellenwerte werden nur auf 'dev' kalibriert; berichtet wird 'test'.",
   "dev": [
     {"question": "Welche vier Unterlagen gehören in jede Verbraucherkreditakte?", "relevant": ["NB-DOC-001"], "type": "direct"},
     {"question": "Was muss ich als Selbstständiger zusätzlich einreichen?", "relevant": ["NB-DOC-001"], "type": "paraphrase"},

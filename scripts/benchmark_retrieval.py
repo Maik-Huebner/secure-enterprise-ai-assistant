@@ -10,7 +10,6 @@ resources/retrieval/thresholds.json.
 
 from __future__ import annotations
 
-import argparse
 import json
 import platform
 import time
@@ -20,6 +19,7 @@ from typing import Any
 
 import httpx
 
+from secure_enterprise_ai_assistant.core.cli import GermanArgumentParser
 from secure_enterprise_ai_assistant.core.settings import get_settings
 from secure_enterprise_ai_assistant.evaluation.retrieval_metrics import (
     calibrate_threshold,
@@ -68,7 +68,7 @@ def _benchmark(embedder: Embedder, suite: dict[str, Any]) -> dict[str, Any]:
     )
     production_test = observe(lambda question: production.search(question, top_k=5), suite["test"])
     if metrics(production_test)["recall_at_5"] != metrics(test, threshold)["recall_at_5"]:
-        raise RuntimeError(f"Benchmark and production disagree for {embedder.name}.")
+        raise RuntimeError(f"Messung und Produktivsuche weichen ab für {embedder.name}.")
     misses = [
         {
             "question": item.question,
@@ -92,9 +92,17 @@ def _benchmark(embedder: Embedder, suite: dict[str, Any]) -> dict[str, Any]:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = GermanArgumentParser(
+        description="Embedding-Modelle auf den deutschen Suchfragen vergleichen (braucht Ollama)."
+    )
     parser.add_argument(
-        "--models", nargs="*", default=["bge-m3", "qwen3-embedding:0.6b", "embeddinggemma"]
+        "--modelle",
+        "--models",
+        dest="models",
+        nargs="*",
+        default=["bge-m3", "qwen3-embedding:0.6b", "embeddinggemma"],
+        metavar="MODELL",
+        help="Embedding-Modelle in Ollama",
     )
     args = parser.parse_args()
     settings = get_settings()
@@ -120,8 +128,9 @@ def main() -> None:
             for model in args.models
         },
         "method": (
-            "Hybrid FAISS + BM25S + identifier signal, top_k=5. The semantic out-of-scope "
-            "threshold is calibrated on dev only; test metrics are reported with that threshold."
+            "Hybrid aus FAISS, BM25S und Kennungssignal, top_k=5. Die semantische Schwelle für "
+            "Fragen außerhalb der Wissensbasis wird nur auf dev kalibriert; die test-Werte "
+            "gelten mit dieser Schwelle."
         ),
         "results": results,
     }
@@ -143,11 +152,11 @@ def main() -> None:
     for result in results:
         test = result["test"]
         print(
-            f"{result['embedder']:<34} test recall@5={test['recall_at_5']:.3f} "
+            f"{result['embedder']:<34} Test recall@5={test['recall_at_5']:.3f} "
             f"mrr={test['mrr']:.3f} ndcg@5={test['ndcg_at_5']:.3f} "
-            f"no-answer={test['no_answer_accuracy']:.3f} "
-            f"false-reject={test['false_rejection_rate']:.3f} "
-            f"latency={test['median_latency_ms']} ms"
+            f"keine-Antwort={test['no_answer_accuracy']:.3f} "
+            f"Fehlablehnung={test['false_rejection_rate']:.3f} "
+            f"Latenz={test['median_latency_ms']} ms"
         )
 
 

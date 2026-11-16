@@ -1,7 +1,7 @@
 {
-  "measured_at": "2026-11-16T14:09:46+00:00",
+  "measured_at": "2026-11-16T19:37:34+00:00",
   "embedder": "ollama:qwen3-embedding:0.6b",
-  "note": "Keyword stems come from the intent examples and the dev split only. The test split was written by the same author before the rules, so it is not a blind benchmark.",
+  "note": "Die Stichwortstämme stammen nur aus den Beispielanfragen und dem dev-Split. Der test-Split wurde vom selben Autor vor den Regeln geschrieben; er ist also kein Blindtest.",
   "results": {
     "keyword": {
       "dev": {
@@ -35,14 +35,14 @@
         "accuracy": 1.0,
         "correct": 25,
         "total": 25,
-        "mean_latency_ms": 24.3,
+        "mean_latency_ms": 25.0,
         "errors": []
       },
       "test": {
         "accuracy": 1.0,
         "correct": 24,
         "total": 24,
-        "mean_latency_ms": 24.7,
+        "mean_latency_ms": 24.8,
         "errors": []
       }
     },
@@ -51,14 +51,14 @@
         "accuracy": 1.0,
         "correct": 25,
         "total": 25,
-        "mean_latency_ms": 5.3,
+        "mean_latency_ms": 5.2,
         "errors": []
       },
       "test": {
         "accuracy": 1.0,
         "correct": 24,
         "total": 24,
-        "mean_latency_ms": 7.7,
+        "mean_latency_ms": 7.8,
         "errors": []
       }
     }
