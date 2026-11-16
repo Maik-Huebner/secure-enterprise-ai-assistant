@@ -24,6 +24,7 @@ flowchart TD
     CR -->|ungültig| HR
     CR -->|gültig| END[freigegeben oder abgelehnt]
     G -.-> CP[(SQLite-Checkpointer)]
+    G -.->|optional, Callbacks| LF[(Langfuse, selbst gehostet)]
 ```
 
 ## Grundsätze
@@ -52,6 +53,10 @@ flowchart TD
 - **Offene Freigaben:** kleiner Index `<RUNTIME_DIR>/graph/reviews.json`, der Entwurf selbst steckt im Checkpoint.
 - **Suchindex:** `<RUNTIME_DIR>/index/<embedder>/` mit Manifest.
 - **Benutzer und Audit-Log:** `<RUNTIME_DIR>/security/users.json` (nur Argon2id-Hashes) und `<RUNTIME_DIR>/audit/audit.jsonl` (Hash-Kette).
+
+## Beobachtbarkeit (optional)
+
+Mit `LANGFUSE_ENABLED=true` wird jeder Lauf ein Trace in einem selbst gehosteten Langfuse: jeder Graph-Knoten als Span, der Modellaufruf als Generation mit Prompt, Antwort und Token, Nutzer pseudonymisiert, Thread als Sitzung. Kosten rechnet Langfuse aus einer Modelldefinition mit einstellbarem Preis (`novabank-langfuse setup`). Ohne Schalter und Schlüssel wird kein Client erzeugt.
 
 ## Modelle
 
