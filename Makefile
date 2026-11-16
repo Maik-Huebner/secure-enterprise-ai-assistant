@@ -1,6 +1,15 @@
 PYTHON ?= python
+PIP_AUDIT ?= pipx run pip-audit==2.10.1
 
-.PHONY: install-lock quality typecheck test evidence-check reproduce-evidence audit build
+# Temporary, documented exceptions. chromadb arrives only through CrewAI, is not used by this
+# package, and has no fixed release yet. Remove together with CrewAI (v2 work package 4).
+AUDIT_IGNORES = \
+	--ignore-vuln PYSEC-2026-311 \
+	--ignore-vuln PYSEC-2026-3813 \
+	--ignore-vuln PYSEC-2026-3814 \
+	--ignore-vuln PYSEC-2026-3815
+
+.PHONY: install-lock quality typecheck test evidence-check reproduce-evidence audit deps-audit build
 
 install-lock:
 	$(PYTHON) -m pip install --no-deps -r requirements/lock-py313.txt
@@ -14,7 +23,7 @@ typecheck:
 	$(PYTHON) -m mypy
 
 test:
-	$(PYTHON) -m pytest -q -W error
+	$(PYTHON) -m pytest -q -W error --cov --cov-report=term
 
 evidence-check:
 	$(PYTHON) scripts/check_evidence.py
@@ -24,6 +33,9 @@ reproduce-evidence:
 
 audit:
 	$(PYTHON) scripts/audit_repository.py
+
+deps-audit:
+	$(PIP_AUDIT) --requirement requirements/lock-py313.txt --no-deps --disable-pip $(AUDIT_IGNORES)
 
 build:
 	$(PYTHON) -m build --no-isolation
