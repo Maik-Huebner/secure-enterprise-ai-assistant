@@ -3,7 +3,7 @@ Titel: Richtlinie zu erforderlichen Unterlagen für Verbraucherkredite
 Version: 1.7
 Gültig ab: 2026-09-01
 Verantwortlich: Kreditbetrieb
-Klassifizierung: Intern – synthetische Demo
+Klassifizierung: intern
 
 # Richtlinie zu erforderlichen Unterlagen für Verbraucherkredite
 

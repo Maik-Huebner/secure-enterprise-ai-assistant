@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import Field
 
 from secure_enterprise_ai_assistant.models.domain import DomainModel
@@ -16,6 +18,7 @@ class KnowledgeChunk(DomainModel):
     version: str
     effective_date: str
     owner: str
+    classification: Literal["intern", "vertraulich"] = "vertraulich"
     section: str
     page: int | None = Field(default=None, ge=1)
     content: str = Field(min_length=1)

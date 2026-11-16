@@ -3,7 +3,7 @@ Titel: Verfahren für Kundenbeschwerden
 Version: 1.2
 Gültig ab: 2026-09-01
 Verantwortlich: Kundenservice
-Klassifizierung: Intern – synthetische Demo
+Klassifizierung: intern
 
 # Verfahren für Kundenbeschwerden
 

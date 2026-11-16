@@ -3,7 +3,7 @@ Titel: Richtlinie zur Informationssicherheit
 Version: 3.2
 Gültig ab: 2026-09-01
 Verantwortlich: Informationssicherheit
-Klassifizierung: Intern – synthetische Demo
+Klassifizierung: vertraulich
 
 # Richtlinie zur Informationssicherheit
 

@@ -3,7 +3,7 @@ Titel: Richtlinie zur Kundenidentifizierung und KYC
 Version: 3.1
 Gültig ab: 2026-09-01
 Verantwortlich: Bekämpfung von Finanzkriminalität
-Klassifizierung: Intern – synthetische Demo
+Klassifizierung: intern
 
 # Richtlinie zur Kundenidentifizierung und KYC
 

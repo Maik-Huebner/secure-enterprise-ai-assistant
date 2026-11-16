@@ -3,7 +3,7 @@ Titel: Internes Compliance-Handbuch
 Version: 2.1
 Gültig ab: 2026-09-01
 Verantwortlich: Unternehmens-Compliance
-Klassifizierung: Intern – synthetische Demo
+Klassifizierung: intern
 
 # Internes Compliance-Handbuch
 

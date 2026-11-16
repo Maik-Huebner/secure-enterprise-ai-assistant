@@ -3,7 +3,7 @@ Titel: Richtlinie für Verbraucherkredite
 Version: 1.4
 Gültig ab: 2026-09-01
 Verantwortlich: Kreditrisiko Privatkunden
-Klassifizierung: Intern – synthetische Demo
+Klassifizierung: intern
 
 # Richtlinie für Verbraucherkredite
 

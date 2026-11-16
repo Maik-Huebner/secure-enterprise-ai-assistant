@@ -19,7 +19,7 @@ logger = get_logger(__name__)
 
 INDEX_SCHEMA_VERSION = 1
 # Bump when ingestion/chunking changes so that existing indexes are rebuilt.
-CHUNKER_VERSION = "2"
+CHUNKER_VERSION = "3"
 
 _MANIFEST = "manifest.json"
 _CHUNKS = "chunks.json"

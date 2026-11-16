@@ -3,7 +3,7 @@ Titel: Verfahren zur Prüfung von Unterlagen
 Version: 2.5
 Gültig ab: 2026-09-01
 Verantwortlich: Kreditbetrieb
-Klassifizierung: Intern – synthetische Demo
+Klassifizierung: intern
 
 # Verfahren zur Prüfung von Unterlagen
 

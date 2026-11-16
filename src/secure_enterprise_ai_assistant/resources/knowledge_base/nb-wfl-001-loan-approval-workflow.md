@@ -3,7 +3,7 @@ Titel: Ablauf der Kreditgenehmigung
 Version: 2.1
 Gültig ab: 2026-09-01
 Verantwortlich: Kreditbetrieb
-Klassifizierung: Intern – synthetische Demo
+Klassifizierung: intern
 
 # Ablauf der Kreditgenehmigung
 

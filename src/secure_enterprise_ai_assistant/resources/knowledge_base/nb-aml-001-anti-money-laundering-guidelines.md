@@ -3,7 +3,7 @@ Titel: Leitlinien zur Geldwäscheprävention
 Version: 1.5
 Gültig ab: 2026-09-01
 Verantwortlich: Bekämpfung von Finanzkriminalität
-Klassifizierung: Intern – synthetische Demo
+Klassifizierung: vertraulich
 
 # Leitlinien zur Geldwäscheprävention
 

@@ -149,6 +149,10 @@ class HybridRetriever:
         """Return the sorted IDs of all indexed (non-quarantined) documents."""
         return sorted({chunk.document_id for chunk in self._chunks})
 
+    def document_classes(self) -> dict[str, str]:
+        """Return the classification of every indexed document."""
+        return {chunk.document_id: chunk.classification for chunk in self._chunks}
+
     def _permitted_positions(
         self,
         metadata_filter: dict[str, str] | None,
