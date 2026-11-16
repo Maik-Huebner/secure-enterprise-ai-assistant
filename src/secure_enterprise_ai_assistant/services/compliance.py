@@ -9,6 +9,7 @@ from pathlib import Path
 
 from pydantic import TypeAdapter, ValidationError
 
+from secure_enterprise_ai_assistant.core.labels import format_eur, format_pct, label
 from secure_enterprise_ai_assistant.models.domain import (
     ComplianceFinding,
     ComplianceRule,
@@ -59,19 +60,19 @@ class ComplianceService:
         }
         rule_ids = [rule.rule_id for rule in rules]
         if len(rule_ids) != len(set(rule_ids)):
-            raise ComplianceConfigurationError("Ruleset contains duplicate rule IDs.")
+            raise ComplianceConfigurationError("Das Regelwerk enthält doppelte Regel-IDs.")
         predicates = {str(rule.parameters.get("predicate")) for rule in rules}
         unknown = predicates - self._evaluators.keys()
         if unknown:
             raise ComplianceConfigurationError(
-                f"Ruleset contains non-allowlisted predicates: {sorted(unknown)}"
+                f"Das Regelwerk enthält nicht freigegebene Prüffunktionen: {sorted(unknown)}"
             )
         for rule in rules:
             predicate = str(rule.parameters["predicate"])
             missing = REQUIRED_PARAMETERS[predicate] - rule.parameters.keys()
             if missing:
                 raise ComplianceConfigurationError(
-                    f"{rule.rule_id} is missing required parameters: {sorted(missing)}"
+                    f"{rule.rule_id}: erforderliche Parameter fehlen: {sorted(missing)}"
                 )
 
     @classmethod
@@ -81,17 +82,21 @@ class ComplianceService:
             payload = json.loads(path.read_text(encoding="utf-8"))
         except FileNotFoundError as exc:
             raise ComplianceConfigurationError(
-                "Compliance rules are missing from the installation."
+                "Die Compliance-Regeln fehlen in der Installation."
             ) from exc
         except json.JSONDecodeError as exc:
-            raise ComplianceConfigurationError("Compliance rules are not valid JSON.") from exc
+            raise ComplianceConfigurationError(
+                "Die Compliance-Regeln sind kein gültiges JSON."
+            ) from exc
         if not isinstance(payload, dict) or not isinstance(payload.get("rules"), list):
-            raise ComplianceConfigurationError("Compliance ruleset must contain a 'rules' list.")
+            raise ComplianceConfigurationError(
+                "Das Compliance-Regelwerk muss eine Liste 'rules' enthalten."
+            )
         try:
             rules = TypeAdapter(list[ComplianceRule]).validate_python(payload["rules"])
         except ValidationError as exc:
             raise ComplianceConfigurationError(
-                "Compliance rules failed schema validation."
+                "Die Compliance-Regeln entsprechen nicht dem Schema."
             ) from exc
         return cls(rules)
 
@@ -119,13 +124,15 @@ class ComplianceService:
         blocked = self._csv_parameter(rule, "statuses")
         actual = case.customer.kyc_status.value
         passed = actual not in blocked
-        return passed, f"KYC status is {actual}."
+        return passed, f"KYC-Status ist {label(actual)}."
 
     @staticmethod
     def _kyc_equals(case: CreditCase, rule: ComplianceRule) -> tuple[bool, str]:
         expected = str(rule.parameters["status"])
         actual = case.customer.kyc_status.value
-        return actual == expected, f"KYC status is {actual}; required status is {expected}."
+        return actual == expected, (
+            f"KYC-Status ist {label(actual)}; erforderlich ist {label(expected)}."
+        )
 
     def _required_documents_present(
         self, case: CreditCase, rule: ComplianceRule
@@ -135,8 +142,9 @@ class ComplianceService:
             item.document_type for item in case.documents if item.status == DocumentStatus.PRESENT
         }
         missing = sorted(required - present)
-        return not missing, "All mandatory documents are present." if not missing else (
-            f"Missing or unusable mandatory documents: {', '.join(missing)}."
+        return not missing, "Alle Pflichtunterlagen liegen vor." if not missing else (
+            "Fehlende oder unbrauchbare Pflichtunterlagen: "
+            f"{', '.join(label(item) for item in missing)}."
         )
 
     @staticmethod
@@ -147,36 +155,53 @@ class ComplianceService:
             for item in case.documents
             if item.status in {DocumentStatus.EXPIRED, DocumentStatus.INVALID}
         )
-        return not invalid, "No expired or invalid documents found." if not invalid else (
-            f"Expired or invalid documents: {', '.join(invalid)}."
+        return (
+            not invalid,
+            "Keine abgelaufenen oder ungültigen Unterlagen gefunden."
+            if not invalid
+            else (
+                "Abgelaufene oder ungültige Unterlagen: "
+                f"{', '.join(label(item) for item in invalid)}."
+            ),
         )
 
     def _dti_at_most(self, case: CreditCase, rule: ComplianceRule) -> tuple[bool, str]:
         maximum = Decimal(str(rule.parameters["maximum_pct"]))
         actual = self._financial_service.analyze(case).debt_to_income_after_pct
-        return actual <= maximum, f"Post-loan DTI is {actual}% (maximum {maximum}%)."
+        return actual <= maximum, (
+            f"DTI nach Kredit beträgt {format_pct(actual)} (Höchstwert {format_pct(maximum)})."
+        )
 
     def _risk_class_in(self, case: CreditCase, rule: ComplianceRule) -> tuple[bool, str]:
         allowed = self._csv_parameter(rule, "classes")
         actual = case.customer.risk_class.value
-        return actual in allowed, f"Risk class is {actual}; eligible classes are {sorted(allowed)}."
+        return actual in allowed, (
+            f"Risikoklasse ist {actual}; zulässig sind {', '.join(sorted(allowed))}."
+        )
 
     @staticmethod
     def _temporary_employment_months(case: CreditCase, rule: ComplianceRule) -> tuple[bool, str]:
         minimum = int(rule.parameters["minimum_months"])
         if case.customer.employment_status != EmploymentStatus.TEMPORARY:
-            return True, "Employment is not temporary; rule is not applicable."
+            return True, "Die Beschäftigung ist nicht befristet; die Regel ist nicht anwendbar."
         actual = case.customer.months_employed
-        return actual >= minimum, f"Temporary employment continuity is {actual} months."
+        return actual >= minimum, (
+            f"Die befristete Beschäftigung besteht seit {actual} Monaten "
+            f"(Mindestdauer {minimum} Monate)."
+        )
 
     @staticmethod
     def _amount_at_most(case: CreditCase, rule: ComplianceRule) -> tuple[bool, str]:
         maximum = Decimal(str(rule.parameters["maximum_eur"]))
         actual = case.application.requested_amount_eur
-        return actual <= maximum, f"Requested amount is EUR {actual} (maximum EUR {maximum})."
+        return actual <= maximum, (
+            f"Beantragter Betrag ist {format_eur(actual)} (Höchstwert {format_eur(maximum)})."
+        )
 
     @staticmethod
     def _term_at_most(case: CreditCase, rule: ComplianceRule) -> tuple[bool, str]:
         maximum = int(rule.parameters["maximum_months"])
         actual = case.application.term_months
-        return actual <= maximum, f"Requested term is {actual} months (maximum {maximum})."
+        return actual <= maximum, (
+            f"Beantragte Laufzeit beträgt {actual} Monate (Höchstwert {maximum} Monate)."
+        )
