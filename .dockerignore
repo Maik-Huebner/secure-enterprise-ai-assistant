@@ -28,3 +28,5 @@ build
 .env
 .env.*
 !.env.example
+tools
+node_modules

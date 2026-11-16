@@ -9,7 +9,7 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 
 def main() -> None:
     for result in audit_repository(REPOSITORY_ROOT):
-        print(f"PASS: {result}")
+        print(f"OK: {result}")
 
 
 if __name__ == "__main__":

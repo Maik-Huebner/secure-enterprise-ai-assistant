@@ -1,24 +1,25 @@
-# Dependency lock strategy
+# Strategie für die Lock-Datei
 
-`lock-py313.txt` is the exact transitive environment used by CI and the container for Python 3.13.
-The project metadata also constrains every direct runtime and development dependency. Install the
-lock first and then install the project non-editably with `--no-deps --no-build-isolation`.
+`lock-py313.txt` ist die exakte transitive Umgebung, die CI und Container für Python 3.13
+verwenden. Zusätzlich begrenzen die Projekt-Metadaten jede direkte Laufzeit- und
+Entwicklungsabhängigkeit. Erst die Lock-Datei installieren, danach das Projekt nicht editierbar
+mit `--no-deps --no-build-isolation`.
 
-PyTorch should be installed from its official CPU wheel index before the lock on Linux CI or in
-the container. The local-version CPU wheel satisfies the pinned public version without installing
-unused CUDA runtime packages.
+PyTorch wird unter Linux (CI und Container) vor der Lock-Datei aus dem offiziellen CPU-Index
+installiert. Das CPU-Wheel mit lokaler Versionskennung erfüllt die festgelegte öffentliche
+Version, ohne ungenutzte CUDA-Pakete mitzubringen.
 
-Release v1.4.0 officially supports Python `>=3.13,<3.14`. Python 3.13.9 plus this lock is the
-reproducibly validated runtime used by the release gate, CI, Fresh-Clone validation, and Docker.
-Earlier Python versions are not claimed as supported until they pass equivalent lock-level
-validation.
+Unterstützt wird Python `>=3.13,<3.14`. Python 3.13.9 mit dieser Lock-Datei ist die
+reproduzierbar geprüfte Laufzeit für Release-Prüfung, CI, Prüfung auf frischem Klon und Docker.
+Ältere Python-Versionen gelten erst als unterstützt, wenn sie eine gleichwertige Prüfung auf
+Lock-Ebene bestehen.
 
-## Refreshing the lock
+## Lock-Datei erneuern
 
-Resolve from `pyproject.toml` with `uv`, targeting macOS 14 on arm64. That target keeps CUDA
-packages out of the lock; Linux uses the CPU PyTorch wheel installed beforehand. `uv` keeps every
-version already present in the output file unless a package is named with `--upgrade-package`,
-so the diff stays limited to intended changes:
+Mit `uv` aus `pyproject.toml` auflösen, Ziel macOS 14 auf arm64. Dieses Ziel hält CUDA-Pakete aus
+der Lock-Datei heraus; Linux nutzt das vorher installierte CPU-Wheel von PyTorch. `uv` behält jede
+Version aus der vorhandenen Ausgabedatei, solange ein Paket nicht mit `--upgrade-package` genannt
+wird; so bleibt der Diff auf die gewollten Änderungen begrenzt:
 
 ```bash
 MACOSX_DEPLOYMENT_TARGET=14.0 uv pip compile pyproject.toml --extra dev \
@@ -28,10 +29,11 @@ MACOSX_DEPLOYMENT_TARGET=14.0 uv pip compile pyproject.toml --extra dev \
   -o requirements/lock-py313.txt
 ```
 
-Then restore the two header comment lines, review the diff, install the lock in a fresh virtual
-environment, and run every Make target (including `make deps-audit`) plus the wheel smoke test.
-Do not hand-edit individual transitive versions without repeating that validation.
+Danach die beiden Kommentarzeilen am Anfang wiederherstellen, den Diff prüfen, die Lock-Datei in
+einer frischen virtuellen Umgebung installieren und jedes Make-Ziel ausführen (auch
+`make deps-audit`), dazu den Rauchtest mit dem Wheel. Einzelne transitive Versionen nicht von Hand
+ändern, ohne diese Prüfung zu wiederholen.
 
-## Known exceptions
+## Bekannte Ausnahmen
 
-None. `make deps-audit` runs without ignore rules since CrewAI and chromadb were removed (v1.4).
+Keine. `make deps-audit` läuft ohne Ausnahmeregeln, seit CrewAI und chromadb entfernt wurden (v1.4).

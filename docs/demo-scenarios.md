@@ -2,7 +2,7 @@
 
 Alle Fälle und Richtlinien sind synthetisch. Für die Demo zwei Benutzer anlegen, zum Beispiel
 `anna.becker` und `tom.klein` mit der Rolle `pruefer`, sowie `max.muster` als `sachbearbeiter`
-in `team-nord` (siehe README, „Local setup“).
+in `team-nord` (siehe README, „Lokal starten“).
 
 ## 1 – Wissensfrage mit Quellen
 

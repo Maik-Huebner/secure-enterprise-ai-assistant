@@ -21,9 +21,9 @@ def validate_evidence(
     try:
         committed = json.loads(report_path.read_text(encoding="utf-8"))
     except FileNotFoundError as exc:
-        raise EvidenceValidationError(f"Evidence report not found: {report_path}") from exc
+        raise EvidenceValidationError(f"Evaluationsbericht nicht gefunden: {report_path}") from exc
     except json.JSONDecodeError as exc:
-        raise EvidenceValidationError("Evidence report is not valid JSON.") from exc
+        raise EvidenceValidationError("Der Evaluationsbericht ist kein gültiges JSON.") from exc
 
     measured = run_evaluation(suite_path)
     if committed != measured:
@@ -31,7 +31,7 @@ def validate_evidence(
             key for key in set(committed) | set(measured) if committed.get(key) != measured.get(key)
         )
         raise EvidenceValidationError(
-            "Committed evaluation evidence does not match a fresh offline run; "
-            f"differing sections: {differing_sections}"
+            "Der eingecheckte Evaluationsbericht passt nicht zu einem frischen Offline-Lauf; "
+            f"abweichende Abschnitte: {differing_sections}"
         )
     return measured

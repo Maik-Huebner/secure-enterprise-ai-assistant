@@ -1,6 +1,6 @@
 [project]
 name = "secure-enterprise-ai-assistant"
-version = "2.0.0"
+version = "2.1.0"
 description = "Security-oriented local AI portfolio reference with LangGraph, MCP, RAG, and synthetic financial workflows."
 readme = "README.md"
 requires-python = ">=3.13,<3.14"

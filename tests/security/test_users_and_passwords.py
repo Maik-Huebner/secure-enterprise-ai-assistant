@@ -66,8 +66,10 @@ def test_users_cli_prompts_for_the_password(tmp_path, monkeypatch, capsys) -> No
     monkeypatch.setattr(cli, "get_settings", lambda: settings)
     monkeypatch.setattr("getpass.getpass", lambda _prompt: PASSWORD)
 
-    assert cli.main(["add", "max.muster", "--role", "sachbearbeiter", "--team", "team-nord"]) == 0
-    assert cli.main(["list"]) == 0
+    assert (
+        cli.main(["anlegen", "max.muster", "--rolle", "sachbearbeiter", "--team", "team-nord"]) == 0
+    )
+    assert cli.main(["anzeigen"]) == 0
     output = capsys.readouterr().out
     assert "max.muster" in output and "team-nord" in output
     assert PASSWORD not in output
@@ -82,6 +84,7 @@ def test_users_cli_reads_the_password_from_stdin(tmp_path, monkeypatch, capsys) 
     monkeypatch.setattr(cli, "get_settings", lambda: settings)
     monkeypatch.setattr("sys.stdin", io.StringIO(PASSWORD + "\n"))
 
+    # The English names from v2.0.0 remain as aliases.
     assert cli.main(["add", "anna.becker", "--role", "pruefer", "--password-stdin"]) == 0
     assert PASSWORD not in capsys.readouterr().out
     assert PASSWORD not in (tmp_path / "users.json").read_text()

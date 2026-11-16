@@ -1,5 +1,5 @@
 {
-  "description": "Answer-quality suite. Each fact is a list of accepted spellings; an answer is correct when every fact is present. 'expected_documents' are acceptable citations. 'no_answer' items must be declined.",
+  "description": "Testfälle zur Antwortqualität. Jede Tatsache ist eine Liste zulässiger Schreibweisen; eine Antwort ist richtig, wenn alle Tatsachen vorkommen. 'expected_documents' sind zulässige Quellen. Fragen vom Typ 'no_answer' müssen abgelehnt werden.",
   "items": [
     {"question": "Welche Unterlagen benötigt NovaBank für einen Konsumentenkredit?", "kind": "knowledge",
      "facts": [["Ausweis"], ["Einkommensnachweis"], ["Kontoauszüge", "Kontoauszug"], ["90 Tage"], ["Kreditantragsformular", "Kreditantrag"]],

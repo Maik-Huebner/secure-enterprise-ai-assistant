@@ -13,7 +13,6 @@ Two transports:
 
 from __future__ import annotations
 
-import argparse
 import os
 import time
 from collections.abc import Callable, Iterator
@@ -27,6 +26,7 @@ from mcp.server.mcpserver import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
 
 from secure_enterprise_ai_assistant import __version__
+from secure_enterprise_ai_assistant.core.cli import GermanArgumentParser
 from secure_enterprise_ai_assistant.core.logs import configure_logging, get_logger
 from secure_enterprise_ai_assistant.core.settings import Settings, get_settings
 from secure_enterprise_ai_assistant.mcp.tools import MCPToolService
@@ -256,10 +256,22 @@ def create_http_app(
 def main(argv: list[str] | None = None) -> None:
     """Run the MCP server; logs go to stderr because stdout carries MCP in stdio mode."""
     settings = get_settings()
-    parser = argparse.ArgumentParser(prog="novabank-mcp", description=__doc__.splitlines()[0])
-    parser.add_argument("--transport", choices=["stdio", "http"], default=settings.mcp_transport)
-    parser.add_argument("--host", default=settings.mcp_host)
-    parser.add_argument("--port", type=int, default=settings.mcp_port)
+    parser = GermanArgumentParser(
+        prog="novabank-mcp",
+        description="MCP-Server mit den NovaBank-Werkzeugen (fiktive Daten, MCP SDK 2.x).",
+    )
+    parser.add_argument(
+        "--transport",
+        choices=["stdio", "http"],
+        default=settings.mcp_transport,
+        help="stdio: ein Prozess pro Anfrage; http: eigener Server (Streamable HTTP)",
+    )
+    parser.add_argument(
+        "--host", default=settings.mcp_host, metavar="ADRESSE", help="Adresse im HTTP-Betrieb"
+    )
+    parser.add_argument(
+        "--port", type=int, default=settings.mcp_port, metavar="PORT", help="Port im HTTP-Betrieb"
+    )
     arguments = parser.parse_args(argv)
     configure_logging(settings.log_level)
 

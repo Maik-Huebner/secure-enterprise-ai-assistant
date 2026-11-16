@@ -188,7 +188,7 @@ def test_index_cli_reports_status_and_rebuilds(tmp_path: Path, monkeypatch, caps
     monkeypatch.setattr(cli, "build_embedder", lambda _settings: FakeSemanticEmbedder())
 
     assert cli.main(["status"]) == 1
-    assert cli.main(["rebuild"]) == 0
+    assert cli.main(["neu-aufbauen"]) == 0
     assert cli.main(["status"]) == 0
     output = capsys.readouterr().out
     assert "Index neu aufgebaut" in output

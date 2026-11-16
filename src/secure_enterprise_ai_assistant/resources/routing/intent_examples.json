@@ -1,5 +1,5 @@
 {
-  "description": "Example requests per case intent for the semantic router. Must not overlap with resources/evaluation/routing_suite.json.",
+  "description": "Beispielanfragen je Fallabsicht für den semantischen Router. Sie dürfen sich nicht mit resources/evaluation/routing_suite.json überschneiden.",
   "customer_case": [
     "Zeige CASE-00001.",
     "Lade die Falldaten von CASE-00002.",

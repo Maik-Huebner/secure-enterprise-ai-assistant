@@ -76,16 +76,16 @@ def audit_repository(repository_root: Path) -> list[str]:
 
     missing = sorted(REQUIRED_FILES - relative_files)
     if missing:
-        failures.append(f"missing required files: {missing}")
+        failures.append(f"Pflichtdateien fehlen: {missing}")
 
     for path in files:
         relative = path.relative_to(root)
         if any(part in FORBIDDEN_TRACKED_PARTS for part in relative.parts):
-            failures.append(f"forbidden tracked or versionable artifact: {relative}")
+            failures.append(f"verbotenes Artefakt im Repository: {relative}")
         if path.is_symlink() and not path.resolve().is_relative_to(root):
-            failures.append(f"symlink escapes repository: {relative}")
+            failures.append(f"symbolischer Link zeigt aus dem Repository: {relative}")
         if path.is_file() and path.stat().st_size > 10 * 1024 * 1024:
-            failures.append(f"unexpected file larger than 10 MiB: {relative}")
+            failures.append(f"Datei größer als 10 MiB: {relative}")
 
     for path in files:
         if not path.is_file() or path.suffix.lower() in {".docx", ".pdf", ".png", ".pptx"}:
@@ -96,17 +96,17 @@ def audit_repository(repository_root: Path) -> list[str]:
             continue
         for pattern in SECRET_PATTERNS:
             if pattern.search(text):
-                failures.append(f"possible secret in {path.relative_to(root)}")
+                failures.append(f"mögliches Geheimnis in {path.relative_to(root)}")
         if path.name.lower() not in {"license", "security.md", "responsible_use.md"}:
             for pattern in OVERCLAIM_PATTERNS:
                 if pattern.search(text):
                     failures.append(
-                        f"unsupported claim '{pattern.pattern}' in {path.relative_to(root)}"
+                        f"unbelegte Behauptung '{pattern.pattern}' in {path.relative_to(root)}"
                     )
 
     pyproject = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
     if pyproject["project"]["version"] != __version__:
-        failures.append("pyproject and package versions differ")
+        failures.append("Versionen in pyproject und Paket weichen ab")
 
     source_text = "\n".join(
         path.read_text(encoding="utf-8")
@@ -115,21 +115,21 @@ def audit_repository(repository_root: Path) -> list[str]:
     )
     forbidden_import_overrides = ("sys.path" + ".insert", "PYTHON" + "PATH")
     if any(marker in source_text for marker in forbidden_import_overrides):
-        failures.append("source relies on an import-path override")
+        failures.append("Quellcode verbiegt den Importpfad")
     if re.search(r"Path\(__file__\).*parents\[[2-9]\]", source_text):
-        failures.append("package source derives a repository root from __file__")
+        failures.append("Paketcode leitet das Repository-Verzeichnis aus __file__ ab")
 
     try:
         validate_evidence(root / "reports" / "evaluation" / "latest.json")
     except Exception as exc:
-        failures.append(f"evaluation evidence invalid: {exc}")
+        failures.append(f"Evaluationsbericht ungültig: {exc}")
 
     if failures:
         raise RepositoryAuditError("\n".join(f"- {failure}" for failure in failures))
     return [
-        f"{len(files)} tracked/versionable files inspected",
-        "required release files present",
-        "no tracked cache, environment, runtime, or oversized artifacts",
-        "no known secret signatures or prohibited overclaims",
-        "package version and evaluation evidence are consistent",
+        f"{len(files)} versionierte Dateien geprüft",
+        "alle Pflichtdateien vorhanden",
+        "keine Caches, Umgebungen, Laufzeitdaten oder übergroßen Dateien",
+        "keine bekannten Geheimnis-Muster und keine unbelegten Behauptungen",
+        "Paketversion und Evaluationsbericht passen zusammen",
     ]

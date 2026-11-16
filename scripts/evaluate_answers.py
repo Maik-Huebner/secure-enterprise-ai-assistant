@@ -191,13 +191,14 @@ def main() -> None:
         "machine": f"{platform.system()} {platform.machine()}",
         "model": settings.ollama_fast_model,
         "embedding_model": settings.embedding_model,
-        "judge": f"{settings.ollama_fast_model} (same model, temperature 0, JSON mode)",
+        "judge": f"{settings.ollama_fast_model} (dasselbe Modell, Temperatur 0, JSON-Modus)",
         "counts": {"items": len(rows), "answerable": len(answerable), "knowledge": len(knowledge)},
         "summary": summary,
         "notes": (
-            "Facts are checked by substring match on accepted spellings. The faithfulness judge "
-            "is the same 9B model that writes the answers and is therefore a weak, biased judge; "
-            "see manual_review for a spot check. LLM-only means the same model without evidence."
+            "Tatsachen werden per Teilstring-Vergleich mit zulässigen Schreibweisen geprüft. Der "
+            "Treue-Richter ist dasselbe 9B-Modell, das die Antworten schreibt, und damit ein "
+            "schwacher, voreingenommener Richter; siehe manual_review für eine Stichprobe. "
+            "LLM-only heißt: dasselbe Modell ohne Nachweise."
         ),
         "items": rows,
         # Filled in by hand after reading every grounded answer (see docs/lernnotizen).

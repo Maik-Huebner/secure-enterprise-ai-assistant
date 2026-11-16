@@ -1,5 +1,5 @@
 {
-  "description": "Routing evaluation. 'dev' may be used to choose the router variant; 'test' is reported. Phrasings differ from resources/routing/intent_examples.json.",
+  "description": "Routing-Auswertung. 'dev' darf zur Wahl der Router-Variante dienen; berichtet wird 'test'. Englische Fragen sind Absicht (Robustheit). Die Formulierungen unterscheiden sich von resources/routing/intent_examples.json.",
   "dev": [
     ["Zeige mir CASE-00012.", "customer_case"],
     ["Welche Unterlagen liegen zu CASE-00017 vor?", "customer_case"],

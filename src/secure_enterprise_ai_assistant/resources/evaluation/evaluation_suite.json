@@ -1,5 +1,5 @@
 {
-  "description": "Deterministic financial and compliance expectations. Routing, retrieval and guardrail suites live in their own files.",
+  "description": "Deterministische Erwartungen an Finanzkennzahlen und Compliance. Routing-, Such- und Eingabefilter-Testfälle liegen in eigenen Dateien.",
   "financial": {
     "CASE-00001": [
       "419.46",

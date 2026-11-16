@@ -1,5 +1,5 @@
 {
-  "description": "Synthetic team responsibility for credit cases. Case workers see only their team's cases; reviewers and admins see all.",
+  "description": "Synthetische Teamzuständigkeit für Kreditfälle. Sachbearbeitung sieht nur die Fälle des eigenen Teams; Prüfung und Administration sehen alle.",
   "teams": {
     "team-nord": {"first_case": 1, "last_case": 24},
     "team-sued": {"first_case": 25, "last_case": 48}
